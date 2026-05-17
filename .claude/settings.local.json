@@ -17,7 +17,15 @@
       "Bash(rm -f /tmp/flixsy_logo.svg.png)",
       "Bash(qlmanage -t -s 512 -o /tmp assets/images/flixsy_logo.svg)",
       "Read(//tmp/**)",
-      "Read(//private/tmp/**)"
+      "Read(//private/tmp/**)",
+      "Bash(flutter analyze *)",
+      "Bash(git -C /Users/brianmarx/Desktop/flixsy log --all --oneline)",
+      "Bash(git -C /Users/brianmarx/Desktop/flixsy branch -a)",
+      "Bash(git -C /Users/brianmarx/Desktop/flixsy remote -v)",
+      "Bash(git -C /Users/brianmarx/Desktop/flixsy ls-files)",
+      "Bash(git grep *)",
+      "Bash(echo \"=== EXIT $? ===\")",
+      "Bash(git rm *)"
     ]
   }
 }

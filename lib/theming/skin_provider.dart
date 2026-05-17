@@ -16,3 +16,21 @@ final skinConfigProvider = Provider<SkinConfig>((ref) {
       ref.watch(activeSkinProvider).valueOrNull ?? AppSkin.classic;
   return skinRegistry[activeSkin]!;
 });
+
+/// Persists the user's skin choice and records the change for analytics.
+///
+/// Writing the preference updates the Drift-backed [activeSkinProvider]
+/// stream, which re-themes the whole app — callers do not refresh anything.
+class SkinController {
+  const SkinController(this._ref);
+
+  final Ref _ref;
+
+  Future<void> selectSkin(AppSkin skin) async {
+    await _ref.read(preferencesRepositoryProvider).setActiveSkin(skin);
+    await _ref.read(analyticsServiceProvider).logSkinChanged(skin.name);
+  }
+}
+
+final skinControllerProvider =
+    Provider<SkinController>((ref) => SkinController(ref));

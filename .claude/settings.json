@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -iE '\\\\.\\(json|env|plist|properties|cfg|config\\)$')"
+    ]
+  }
+}

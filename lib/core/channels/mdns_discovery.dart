@@ -1,0 +1,127 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:multicast_dns/multicast_dns.dart';
+
+import '../errors/connect_failure.dart';
+
+/// A single service instance resolved via mDNS / DNS-SD.
+class MdnsService {
+  MdnsService({
+    required this.name,
+    required this.host,
+    required this.port,
+    required this.address,
+  });
+
+  /// The fully-qualified instance name from the PTR record.
+  final String name;
+
+  /// The target hostname from the SRV record.
+  final String host;
+
+  /// The TCP port from the SRV record.
+  final int port;
+
+  /// The resolved IPv4 address.
+  final String address;
+
+  @override
+  String toString() => 'MdnsService(name: $name, address: $address:$port)';
+}
+
+/// Reusable mDNS / DNS-SD discovery, wrapping the `multicast_dns` package.
+///
+/// Finds devices that advertise over Bonjour rather than SSDP — notably
+/// Android TV, which publishes `_androidtvremote2._tcp`. Plain Dart — no
+/// Riverpod and no platform channel.
+///
+/// [start] runs a single timed browse sweep (PTR → SRV → A records); call it
+/// again to re-scan. Subscribe to [services] before calling [start].
+class MdnsDiscovery {
+  MdnsDiscovery({required String serviceType})
+    : _query = serviceType.endsWith('.local')
+          ? serviceType
+          : '$serviceType.local';
+
+  /// The DNS-SD service name to browse — `serviceType` with a `.local` suffix.
+  final String _query;
+
+  final StreamController<MdnsService> _controller =
+      StreamController<MdnsService>.broadcast();
+  final Set<String> _seenNames = <String>{};
+
+  MDnsClient? _client;
+
+  /// Distinct services discovered since the last [start]. Each instance name
+  /// is emitted at most once per discovery session.
+  Stream<MdnsService> get services => _controller.stream;
+
+  /// Whether a browse sweep is currently running.
+  bool get isRunning => _client != null;
+
+  /// Starts the mDNS client and begins browsing for the service type.
+  ///
+  /// Subscribe to [services] before calling this. A no-op if already running.
+  /// Throws [DiscoveryFailure] if the client cannot be started.
+  Future<void> start() async {
+    if (_client != null) return;
+    _seenNames.clear();
+    final client = MDnsClient();
+    try {
+      await client.start();
+    } on SocketException catch (e) {
+      throw DiscoveryFailure('mDNS client failed to start: ${e.message}');
+    }
+    _client = client;
+    unawaited(_browse(client));
+  }
+
+  /// Stops the mDNS client. Safe to call when not running; the instance can be
+  /// [start]ed again afterwards.
+  Future<void> stop() async {
+    _client?.stop();
+    _client = null;
+    _seenNames.clear();
+  }
+
+  /// Stops browsing and closes [services]. The instance is unusable after
+  /// this — call once, from the owning channel's `dispose`.
+  Future<void> dispose() async {
+    await stop();
+    await _controller.close();
+  }
+
+  Future<void> _browse(MDnsClient client) async {
+    try {
+      await for (final ptr in client.lookup<PtrResourceRecord>(
+        ResourceRecordQuery.serverPointer(_query),
+      )) {
+        if (!identical(_client, client)) return; // stopped mid-browse
+        await for (final srv in client.lookup<SrvResourceRecord>(
+          ResourceRecordQuery.service(ptr.domainName),
+        )) {
+          await for (final ip in client.lookup<IPAddressResourceRecord>(
+            ResourceRecordQuery.addressIPv4(srv.target),
+          )) {
+            if (!identical(_client, client)) return;
+            if (!_seenNames.add(ptr.domainName)) continue;
+            if (_controller.isClosed) return;
+            _controller.add(
+              MdnsService(
+                name: ptr.domainName,
+                host: srv.target,
+                port: srv.port,
+                address: ip.address.address,
+              ),
+            );
+          }
+        }
+      }
+    } on Object catch (e) {
+      if (!_controller.isClosed) {
+        _controller.addError(DiscoveryFailure('mDNS lookup failed: $e'));
+      }
+    }
+  }
+}

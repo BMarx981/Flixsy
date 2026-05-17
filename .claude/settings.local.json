@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xcrun simctl *)",
+      "Bash(pod install *)",
+      "Bash(flutter clean *)",
+      "WebFetch(domain:flutter.dev)",
+      "Bash(flutter --version)",
+      "Bash(flutter build *)",
+      "Read(//Users/brianmarx/Downloads/flixsy-icons-all/android/res/values/**)",
+      "Read(//Users/brianmarx/Downloads/flixsy-icons-all/android/res/mipmap-anydpi-v26/**)",
+      "Bash(cp /Users/brianmarx/Downloads/flixsy-icons-all/android/res/mipmap-__TRACKED_VAR__/*.png /Users/brianmarx/Desktop/flixsy/android/app/src/main/res/mipmap-__TRACKED_VAR__/)",
+      "Bash(cp /Users/brianmarx/Downloads/flixsy-icons-all/android/res/mipmap-anydpi-v26/*.xml /Users/brianmarx/Desktop/flixsy/android/app/src/main/res/mipmap-anydpi-v26/)",
+      "Bash(cp /Users/brianmarx/Downloads/flixsy-icons-all/android/res/values/ic_launcher_background.xml /Users/brianmarx/Desktop/flixsy/android/app/src/main/res/values/ic_launcher_background.xml)",
+      "Read(//Users/brianmarx/Downloads/flixsy-icons-all/**)",
+      "Bash(python3 -)",
+      "Bash(rm -f /tmp/flixsy_logo.svg.png)",
+      "Bash(qlmanage -t -s 512 -o /tmp assets/images/flixsy_logo.svg)",
+      "Read(//tmp/**)",
+      "Read(//private/tmp/**)"
+    ]
+  }
+}

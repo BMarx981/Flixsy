@@ -1,0 +1,52 @@
+name: flixsy
+description: "A Flutter TV remote control app for iOS and Android."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+
+  # Local database
+  drift: ^2.20.3
+  sqlite3_flutter_libs: ^0.5.27
+  path_provider: ^2.1.5
+  path: ^1.9.0
+
+  # Routing
+  auto_route: ^9.3.0
+
+  # Firebase
+  firebase_core: ^3.13.0
+  firebase_analytics: ^11.4.4
+
+  # Ads
+  google_mobile_ads: ^5.3.0
+
+  # SVG rendering
+  flutter_svg: ^2.0.10
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # Code generation
+  build_runner: ^2.4.14
+  drift_dev: ^2.20.3
+  auto_route_generator: ^9.3.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/

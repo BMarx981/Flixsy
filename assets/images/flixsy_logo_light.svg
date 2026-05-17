@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Flixsy logo mark — light-mode variant, transparent background.
+       Identical to flixsy_logo.svg except the star is filled with the
+       light splash background (#F4F2F7) so it reads as cut-out negative
+       space on a light surface. -->
+  <!-- pink disc -->
+  <circle cx="512" cy="512" r="356" fill="#FF3D8A"/>
+  <!-- outer ring -->
+  <circle cx="512" cy="512" r="424" fill="none" stroke="#511838" stroke-width="16"/>
+  <!-- 4-point sparkle star (concave sides, sharp tips) -->
+  <path fill="#F4F2F7" d="M512 200
+    C512 474 550 512 824 512
+    C550 512 512 550 512 824
+    C512 550 474 512 200 512
+    C474 512 512 474 512 200 Z"/>
+</svg>

@@ -53,6 +53,27 @@ class SsdpResponse {
   String toString() => 'SsdpResponse(usn: $usn, location: $location)';
 }
 
+/// The discovery surface a per-vendor channel depends on: a results stream
+/// plus sweep lifecycle.
+///
+/// [SsdpDiscovery] is the production implementation; it is exposed as an
+/// interface so channels (`RokuConnectChannel`, …) depend on the contract
+/// rather than the concrete socket-backed class, letting tests substitute a
+/// fake that feeds [responses] directly.
+abstract interface class SsdpDiscoverer {
+  /// Distinct devices discovered since the last [start].
+  Stream<SsdpResponse> get responses;
+
+  /// Begins an `M-SEARCH` sweep. Throws [DiscoveryFailure] if it cannot start.
+  Future<void> start();
+
+  /// Stops the sweep; the discoverer can be [start]ed again afterwards.
+  Future<void> stop();
+
+  /// Stops the sweep and closes [responses]. The instance is unusable after.
+  Future<void> dispose();
+}
+
 /// Reusable SSDP discovery over UDP multicast.
 ///
 /// Each per-vendor channel owns one [SsdpDiscovery] configured with that
@@ -67,7 +88,7 @@ class SsdpResponse {
 /// ssdp.responses.listen((r) => print('found ${r.host}'));
 /// await ssdp.start();
 /// ```
-class SsdpDiscovery {
+class SsdpDiscovery implements SsdpDiscoverer {
   SsdpDiscovery({
     required this.searchTarget,
     this.mx = 3,
@@ -104,6 +125,7 @@ class SsdpDiscovery {
 
   /// Distinct devices discovered since the last [start]. Each `USN` is emitted
   /// at most once per discovery session.
+  @override
   Stream<SsdpResponse> get responses => _controller.stream;
 
   /// Whether a discovery sweep is currently running.
@@ -113,6 +135,7 @@ class SsdpDiscovery {
   ///
   /// Subscribe to [responses] before calling this. A no-op if already running.
   /// Throws [DiscoveryFailure] if the socket cannot be bound.
+  @override
   Future<void> start() async {
     if (_socket != null) return;
     _seenUsns.clear();
@@ -129,6 +152,7 @@ class SsdpDiscovery {
 
   /// Stops the sweep and releases the socket. Safe to call when not running;
   /// the instance can be [start]ed again afterwards.
+  @override
   Future<void> stop() async {
     _retryTimer?.cancel();
     _retryTimer = null;
@@ -139,6 +163,7 @@ class SsdpDiscovery {
 
   /// Stops the sweep and closes [responses]. The instance is unusable after
   /// this — call once, from the owning channel's `dispose`.
+  @override
   Future<void> dispose() async {
     await stop();
     await _controller.close();

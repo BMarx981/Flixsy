@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Splash / launch screen background — dark mode. -->
+    <color name="launch_background">#0E0A18</color>
+</resources>

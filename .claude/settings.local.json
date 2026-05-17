@@ -31,7 +31,18 @@
       "mcp__dart__pub",
       "mcp__dart__analyze_files",
       "mcp__dart__dart_format",
-      "mcp__dart__run_tests"
+      "mcp__dart__run_tests",
+      "Bash(grep -rhoE \"onKeyPressed\\\\\\([^\\)]*\\\\\\)|sendKey\\\\\\(['\\\\\"][^'\\\\\"]*['\\\\\"]\\\\\\)|RemoteKey\\\\.[a-zA-Z]+|'[A-Z_]{2,}'\" lib/features/home lib/theming)",
+      "Bash(grep -rhoE \"keyCode: '[A-Z_]+'|'[A-Z_]{2,}'\" lib/theming lib/features)",
+      "Bash(grep -oE \"'[A-Z_]{2,}'\")",
+      "Bash(dart format *)",
+      "Bash(rm -f /tmp/qltest/*)",
+      "Bash(mkdir -p /tmp/qltest)",
+      "Bash(qlmanage -t -s 1024 -o /tmp/qltest assets/images/flixsy_logo.svg)",
+      "Bash(sips -g pixelWidth -g pixelHeight -g hasAlpha /tmp/qltest/*.png)",
+      "Bash(cat values/colors.xml)",
+      "Bash(cat values-night/colors.xml)",
+      "Bash(ls -d values-v31 values-night-v31)"
     ]
   }
 }

@@ -19,12 +19,12 @@
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
                             </imageView>
                         </subviews>
-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" name="LaunchBackground"/>
                         <constraints>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="1a2-6s-vTC"/>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="4X2-HB-R7a"/>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="width" constant="220" id="D0J-gY-54B"/>
-                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="height" constant="330" id="N5f-RN-2ql"/>
+                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="height" constant="220" id="N5f-RN-2ql"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -34,6 +34,9 @@
         </scene>
     </scenes>
     <resources>
-        <image name="LaunchImage" width="220" height="330"/>
+        <image name="LaunchImage" width="220" height="220"/>
+        <namedColor name="LaunchBackground">
+            <color red="0.95686274509803915" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
     </resources>
 </document>

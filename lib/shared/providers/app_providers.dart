@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../analytics/analytics_service.dart';
 import '../../core/channels/connect_channel.dart';
+import '../../core/channels/remote_channel.dart';
 import '../../data/database/app_database.dart';
 import '../../data/repositories/preferences_repository.dart';
 import '../../domain/repositories/i_preferences_repository.dart';
@@ -33,7 +34,10 @@ final adServiceProvider = Provider<AdService>((ref) {
   return AdService(analytics);
 });
 
-/// Singleton ConnectSDK bridge. Do not instantiate [ConnectChannel] elsewhere.
-final connectChannelProvider = Provider<ConnectChannel>((ref) {
+/// App-wide [RemoteChannel]. Phase 0 keeps the native [ConnectChannel] as the
+/// implementation; Phase 3 replaces it with the pure-Dart
+/// `CompositeRemoteChannel`. Always go through this provider — never
+/// instantiate a channel elsewhere.
+final connectChannelProvider = Provider<RemoteChannel>((ref) {
   return ConnectChannel();
 });

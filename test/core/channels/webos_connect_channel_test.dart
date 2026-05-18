@@ -325,6 +325,61 @@ void main() {
       },
     );
   });
+  group('pairing', () {
+    test('emits pairingRequired(confirmOnTv) while the TV prompts', () async {
+      final connector = _FakeConnector();
+      final channel = await _discoveredChannel(connector, _CredentialStore());
+      addTearDown(channel.dispose);
+
+      final paired = channel.deviceEvents.firstWhere(
+        (e) => e['type'] == 'pairingRequired',
+      );
+      final connecting = channel.connectToDevice(_deviceId);
+      await _settle();
+      // The TV shows its prompt: an interim response precedes `registered`.
+      connector.sockets[0].receive(
+        jsonEncode({
+          'type': 'response',
+          'id': 'register_0',
+          'payload': {'pairingType': 'PROMPT'},
+        }),
+      );
+
+      final event = await paired;
+      expect(event['deviceId'], _deviceId);
+      expect(event['kind'], 'confirmOnTv');
+
+      await _completeHandshake(connector);
+      await connecting;
+    });
+
+    test('does not emit pairingRequired when a stored key is reused', () async {
+      final connector = _FakeConnector();
+      final credentials = _CredentialStore();
+      await credentials.save(_deviceId, 'STORED');
+      final channel = await _discoveredChannel(connector, credentials);
+      addTearDown(channel.dispose);
+
+      final events = <String>[];
+      channel.deviceEvents.listen((e) => events.add(e['type'] as String));
+
+      final connecting = channel.connectToDevice(_deviceId);
+      await _completeHandshake(connector, clientKey: 'STORED');
+      await connecting;
+
+      expect(events, isNot(contains('pairingRequired')));
+    });
+
+    test('submitPairingCode throws — webOS pairs on the TV', () async {
+      final channel = _channel();
+      addTearDown(channel.dispose);
+
+      await expectLater(
+        channel.submitPairingCode('123456'),
+        throwsA(isA<ConnectFailure>()),
+      );
+    });
+  });
 }
 
 /// Hands out [_FakeWebSocket]s and records every socket opened.

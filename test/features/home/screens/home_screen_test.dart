@@ -159,6 +159,9 @@ class _FakeRemoteChannel implements RemoteChannel {
   Future<void> sendKeyCommand(String key) async => sentKeys.add(key);
 
   @override
+  Future<void> submitPairingCode(String code) async {}
+
+  @override
   Future<void> startDiscovery() async {}
 
   @override

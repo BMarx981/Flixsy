@@ -38,6 +38,10 @@ class CompositeRemoteChannel implements RemoteChannel {
   /// The sub-channel of the currently connected device, if any.
   RemoteChannel? _activeChannel;
 
+  /// The sub-channel whose `connectToDevice` is currently in flight — the
+  /// target for [submitPairingCode] during code-based pairing.
+  RemoteChannel? _pairingChannel;
+
   @override
   Stream<Map<String, dynamic>> get deviceEvents => _events.stream;
 
@@ -80,8 +84,22 @@ class CompositeRemoteChannel implements RemoteChannel {
     if (_activeChannel != null && !identical(_activeChannel, owner)) {
       await _activeChannel!.disconnect();
     }
-    await owner.connectToDevice(deviceId);
+    _pairingChannel = owner;
+    try {
+      await owner.connectToDevice(deviceId);
+    } finally {
+      _pairingChannel = null;
+    }
     _activeChannel = owner;
+  }
+
+  @override
+  Future<void> submitPairingCode(String code) async {
+    final channel = _pairingChannel;
+    if (channel == null) {
+      throw const ConnectionFailure('No pairing is in progress');
+    }
+    await channel.submitPairingCode(code);
   }
 
   @override

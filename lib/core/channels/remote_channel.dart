@@ -26,6 +26,7 @@ import '../errors/connect_failure.dart';
 /// | `deviceLost`             | `deviceId`: `String`                              |
 /// | `connectionStateChanged` | `state`: `connected` \| `disconnected` \| `error` |
 /// | `discoveryError`         | `message`: `String`                              |
+/// | `pairingRequired`        | `deviceId`: `String`, `kind`: `confirmOnTv` \| `enterCode` |
 abstract interface class RemoteChannel {
   /// Broadcast stream of discovery and connection events. See the class doc
   /// for the event-map shape.
@@ -41,11 +42,21 @@ abstract interface class RemoteChannel {
   Future<void> stopDiscovery();
 
   /// Connects to the device with the given [deviceId] — an `id` previously
-  /// surfaced by a `deviceFound` event. May block while the user accepts an
-  /// on-screen pairing prompt.
+  /// surfaced by a `deviceFound` event.
+  ///
+  /// First-time pairing emits a `pairingRequired` event, and the returned
+  /// future stays pending until the user completes it — by accepting a prompt
+  /// on the TV, or by entering a code via [submitPairingCode].
   ///
   /// Throws [ConnectionFailure] if the connection or pairing fails.
   Future<void> connectToDevice(String deviceId);
+
+  /// Submits a pairing [code] the user read off the TV, in response to a
+  /// `pairingRequired` event of kind `enterCode` (Android TV); lets the
+  /// in-flight [connectToDevice] continue.
+  ///
+  /// Throws [ConnectionFailure] if no code-based pairing is in progress.
+  Future<void> submitPairingCode(String code);
 
   /// Disconnects from the currently connected device. A no-op when not
   /// connected.

@@ -221,6 +221,36 @@ void main() {
       await expectLater(composite.deviceEvents, emitsDone);
     });
   });
+  group('pairing', () {
+    test('submitPairingCode routes to the channel currently pairing', () async {
+      final roku = _FakeRemoteChannel();
+      final lg = _FakeRemoteChannel()..connectGate = Completer<void>();
+      final composite = CompositeRemoteChannel([roku, lg]);
+      addTearDown(composite.dispose);
+
+      lg.emitDeviceFound('lg-1');
+      await _settle();
+      final connecting = composite.connectToDevice('lg-1');
+      await _settle();
+
+      await composite.submitPairingCode('123456');
+      expect(lg.submittedCodes, ['123456']);
+      expect(roku.submittedCodes, isEmpty);
+
+      lg.connectGate!.complete();
+      await connecting;
+    });
+
+    test('submitPairingCode throws when no pairing is in progress', () async {
+      final composite = CompositeRemoteChannel([_FakeRemoteChannel()]);
+      addTearDown(composite.dispose);
+
+      await expectLater(
+        composite.submitPairingCode('123'),
+        throwsA(isA<ConnectFailure>()),
+      );
+    });
+  });
 }
 
 /// A scriptable [RemoteChannel] that records calls and lets the test feed its
@@ -240,6 +270,13 @@ class _FakeRemoteChannel implements RemoteChannel {
   /// When set, [startDiscovery] throws it instead of succeeding.
   ConnectFailure? startFailure;
 
+  /// When set, [connectToDevice] awaits it — keeping a connect in flight so
+  /// the composite still has a pairing channel.
+  Completer<void>? connectGate;
+
+  /// Every code passed to [submitPairingCode].
+  final List<String> submittedCodes = [];
+
   void emitDeviceFound(String id) =>
       _events.add({'type': 'deviceFound', 'device': _device(id)});
 
@@ -258,7 +295,11 @@ class _FakeRemoteChannel implements RemoteChannel {
   @override
   Future<void> connectToDevice(String deviceId) async {
     connectedDeviceId = deviceId;
+    if (connectGate != null) await connectGate!.future;
   }
+
+  @override
+  Future<void> submitPairingCode(String code) async => submittedCodes.add(code);
 
   @override
   Future<void> disconnect() async {

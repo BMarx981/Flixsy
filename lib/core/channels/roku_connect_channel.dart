@@ -204,6 +204,11 @@ class RokuConnectChannel implements RemoteChannel {
   }
 
   @override
+  Future<void> submitPairingCode(String code) async {
+    throw const ConnectionFailure('Roku devices do not require pairing');
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> getDiscoveredDevices() async =>
       _devices.values.map((device) => device.toMap()).toList(growable: false);
 

@@ -72,6 +72,11 @@ class FakeConnectChannel implements RemoteChannel {
   }
 
   @override
+  Future<void> submitPairingCode(String code) async {
+    debugPrint('[FakeConnectChannel] submitPairingCode $code');
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> getDiscoveredDevices() async {
     return _fakeDevices.map(Map<String, dynamic>.from).toList();
   }

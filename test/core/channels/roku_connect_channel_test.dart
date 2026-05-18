@@ -332,6 +332,20 @@ void main() {
       await expectLater(channel.deviceEvents, emitsDone);
     });
   });
+  group('pairing', () {
+    test('submitPairingCode throws — Roku needs no pairing', () async {
+      final channel = RokuConnectChannel(
+        httpClient: _okHttp(),
+        discovery: _FakeSsdpDiscoverer(),
+      );
+      addTearDown(channel.dispose);
+
+      await expectLater(
+        channel.submitPairingCode('123'),
+        throwsA(isA<ConnectFailure>()),
+      );
+    });
+  });
 }
 
 /// [RokuHttpClient] whose every request is answered by an injected handler.

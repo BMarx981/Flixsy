@@ -130,6 +130,10 @@ class WebosConnectChannel implements RemoteChannel {
   WebSocketConnection? _pointerSocket;
   StreamSubscription<String>? _pointerSub;
   String? _connectedDeviceId;
+
+  /// The device a `connectToDevice` is currently pairing with — used to tag
+  /// the `pairingRequired` event surfaced while the TV shows its prompt.
+  String? _pairingDeviceId;
   int _requestCounter = 0;
 
   @override
@@ -148,33 +152,37 @@ class WebosConnectChannel implements RemoteChannel {
       throw ConnectionFailure('Unknown webOS device: $deviceId');
     }
     _teardownConnection();
-
-    final WebSocketConnection socket;
+    _pairingDeviceId = deviceId;
     try {
-      socket = await _connector('ws://${device.host}:$_webosPort');
-    } on Object catch (error) {
-      throw ConnectionFailure('webOS connection failed: $error');
-    }
-    _socket = socket;
-    _socketSub = socket.messages.listen(
-      _handleMessage,
-      onError: (Object _) {},
-      onDone: _onSocketClosed,
-    );
+      final WebSocketConnection socket;
+      try {
+        socket = await _connector('ws://${device.host}:$_webosPort');
+      } on Object catch (error) {
+        throw ConnectionFailure('webOS connection failed: $error');
+      }
+      _socket = socket;
+      _socketSub = socket.messages.listen(
+        _handleMessage,
+        onError: (Object _) {},
+        onDone: _onSocketClosed,
+      );
 
-    try {
-      await _register(deviceId);
-      await _openPointerSocket();
-    } on ConnectFailure {
-      _teardownConnection();
-      rethrow;
-    } on Object catch (error) {
-      _teardownConnection();
-      throw ConnectionFailure('webOS handshake failed: $error');
-    }
+      try {
+        await _register(deviceId);
+        await _openPointerSocket();
+      } on ConnectFailure {
+        _teardownConnection();
+        rethrow;
+      } on Object catch (error) {
+        _teardownConnection();
+        throw ConnectionFailure('webOS handshake failed: $error');
+      }
 
-    _connectedDeviceId = deviceId;
-    _emit({'type': 'connectionStateChanged', 'state': 'connected'});
+      _connectedDeviceId = deviceId;
+      _emit({'type': 'connectionStateChanged', 'state': 'connected'});
+    } finally {
+      _pairingDeviceId = null;
+    }
   }
 
   @override
@@ -202,6 +210,13 @@ class WebosConnectChannel implements RemoteChannel {
     }
     // The pointer input socket takes plain-text `field:value` frames.
     pointer.send('type:button\nname:$button\n\n');
+  }
+
+  @override
+  Future<void> submitPairingCode(String code) async {
+    throw const ConnectionFailure(
+      'webOS pairing is confirmed on the TV, not by code',
+    );
   }
 
   @override
@@ -310,9 +325,20 @@ class WebosConnectChannel implements RemoteChannel {
     final type = message['type'];
 
     // The register handshake emits an interim `response` (the TV is showing
-    // its prompt) before the final `registered`. Ignore the interim — the
-    // register completer resolves only on `registered` or `error`.
-    if (id == _registerRequestId && type == 'response') return;
+    // its on-screen prompt) before the final `registered`. Surface it as a
+    // pairing cue; the register completer resolves only on `registered` or
+    // `error`.
+    if (id == _registerRequestId && type == 'response') {
+      final pairingDeviceId = _pairingDeviceId;
+      if (pairingDeviceId != null) {
+        _emit({
+          'type': 'pairingRequired',
+          'deviceId': pairingDeviceId,
+          'kind': 'confirmOnTv',
+        });
+      }
+      return;
+    }
 
     if (id is! String) return;
     final completer = _pendingRequests.remove(id);

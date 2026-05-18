@@ -144,6 +144,15 @@ class SamsungConnectChannel implements RemoteChannel {
       onDone: _onSocketClosed,
     );
 
+    // With no stored token the TV shows an Allow/Deny prompt — cue the user.
+    if (token == null || token.isEmpty) {
+      _emit({
+        'type': 'pairingRequired',
+        'deviceId': deviceId,
+        'kind': 'confirmOnTv',
+      });
+    }
+
     final String? newToken;
     try {
       newToken = await _awaitChannelReady();
@@ -195,6 +204,13 @@ class SamsungConnectChannel implements RemoteChannel {
           'TypeOfRemote': 'SendRemoteKey',
         },
       }),
+    );
+  }
+
+  @override
+  Future<void> submitPairingCode(String code) async {
+    throw const ConnectionFailure(
+      'Samsung pairing is confirmed on the TV, not by code',
     );
   }
 

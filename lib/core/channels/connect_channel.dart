@@ -46,6 +46,10 @@ class ConnectChannel implements RemoteChannel {
       _invoke('sendKeyCommand', {'key': key});
 
   @override
+  Future<void> submitPairingCode(String code) =>
+      _invoke('submitPairingCode', {'code': code});
+
+  @override
   Future<List<Map<String, dynamic>>> getDiscoveredDevices() async {
     try {
       final result = await _methodChannel.invokeMethod<List<dynamic>>(

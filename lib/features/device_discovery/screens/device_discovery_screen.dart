@@ -42,13 +42,21 @@ class DeviceDiscoveryScreen extends ConsumerWidget {
               const SizedBox(height: 56),
               _Header(isScanning: state.status == DiscoveryStatus.scanning),
               const SizedBox(height: 40),
+              if (state.pairing != null) ...[
+                _PairingBanner(
+                  request: state.pairing!,
+                  deviceName: _deviceNameFor(state, state.pairing!.deviceId),
+                  onSubmitCode: notifier.submitPairingCode,
+                ),
+                const SizedBox(height: 24),
+              ],
               Expanded(
                 child: state.devices.isEmpty
-                    ? _EmptyBody(
-                        status: state.status,
-                        onRetry: notifier.retry,
-                      )
-                    : _DeviceList(state: state, onConnect: notifier.connectToDevice),
+                    ? _EmptyBody(status: state.status, onRetry: notifier.retry)
+                    : _DeviceList(
+                        state: state,
+                        onConnect: notifier.connectToDevice,
+                      ),
               ),
             ],
           ),
@@ -116,12 +124,14 @@ class _PulsingTvIconState extends State<_PulsingTvIcon>
       vsync: this,
       duration: const Duration(milliseconds: 1600),
     );
-    _scale = Tween<double>(begin: 0.8, end: 1.6).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-    _opacity = Tween<double>(begin: 0.5, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
+    _scale = Tween<double>(
+      begin: 0.8,
+      end: 1.6,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _opacity = Tween<double>(
+      begin: 0.5,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
     if (widget.animate) _controller.repeat();
   }
 
@@ -192,7 +202,11 @@ class _EmptyBody extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.wifi_off_rounded, size: 48, color: theme.colorScheme.error),
+            Icon(
+              Icons.wifi_off_rounded,
+              size: 48,
+              color: theme.colorScheme.error,
+            ),
             const SizedBox(height: 16),
             Text(
               'Could not start search',
@@ -257,9 +271,9 @@ class _DeviceList extends StatelessWidget {
             Text(
               '${state.devices.length} device${state.devices.length == 1 ? '' : 's'} found',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    letterSpacing: 0.8,
-                  ),
+                color: Theme.of(context).colorScheme.primary,
+                letterSpacing: 0.8,
+              ),
             ),
             if (state.status == DiscoveryStatus.scanning) ...[
               const SizedBox(width: 10),
@@ -281,8 +295,8 @@ class _DeviceList extends StatelessWidget {
               return _DeviceTile(
                 device: device,
                 isConnecting: state.connectingDeviceId == device.id,
-                isDisabled: state.isConnecting &&
-                    state.connectingDeviceId != device.id,
+                isDisabled:
+                    state.isConnecting && state.connectingDeviceId != device.id,
                 onTap: () => onConnect(device),
               );
             },
@@ -357,8 +371,9 @@ class _DeviceTile extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           device.modelName,
-                          style: theme.textTheme.bodySmall
-                              ?.copyWith(color: Colors.white38),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.white38,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -382,6 +397,120 @@ class _DeviceTile extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Pairing banner ──────────────────────────────────────────────────────────
+
+/// The display name of the device with [deviceId], or a gentle fallback.
+String _deviceNameFor(DiscoveryState state, String deviceId) {
+  for (final device in state.devices) {
+    if (device.id == deviceId) return device.name;
+  }
+  return 'your TV';
+}
+
+/// Guidance shown while a TV is waiting on the user to finish pairing — either
+/// accepting a prompt on the TV, or typing a code the TV displays.
+class _PairingBanner extends StatefulWidget {
+  const _PairingBanner({
+    required this.request,
+    required this.deviceName,
+    required this.onSubmitCode,
+  });
+
+  final PairingRequest request;
+  final String deviceName;
+  final void Function(String code) onSubmitCode;
+
+  @override
+  State<_PairingBanner> createState() => _PairingBannerState();
+}
+
+class _PairingBannerState extends State<_PairingBanner> {
+  final TextEditingController _codeController = TextEditingController();
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final code = _codeController.text.trim();
+    if (code.isNotEmpty) widget.onSubmitCode(code);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isCode = widget.request.kind == PairingKind.enterCode;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                isCode ? Icons.dialpad_rounded : Icons.tv_rounded,
+                color: colorScheme.onPrimaryContainer,
+                size: 22,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                isCode ? 'Enter the code' : 'Check your TV',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colorScheme.onPrimaryContainer,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            isCode
+                ? '${widget.deviceName} is showing a 6-digit code. '
+                      'Type it below to finish pairing.'
+                : 'Accept the connection request on ${widget.deviceName} '
+                      'using its remote.',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onPrimaryContainer.withAlpha(210),
+              height: 1.4,
+            ),
+          ),
+          if (isCode) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _codeController,
+                    keyboardType: TextInputType.number,
+                    autofocus: true,
+                    onSubmitted: (_) => _submit(),
+                    decoration: const InputDecoration(
+                      hintText: '000000',
+                      isDense: true,
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                FilledButton(onPressed: _submit, child: const Text('Pair')),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }

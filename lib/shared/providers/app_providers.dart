@@ -5,6 +5,7 @@ import '../../analytics/analytics_service.dart';
 import '../../core/channels/composite_remote_channel.dart';
 import '../../core/channels/remote_channel.dart';
 import '../../core/channels/roku_connect_channel.dart';
+import '../../core/channels/webos_connect_channel.dart';
 import '../../data/database/app_database.dart';
 import '../../data/repositories/preferences_repository.dart';
 import '../../domain/repositories/i_preferences_repository.dart';
@@ -36,11 +37,18 @@ final adServiceProvider = Provider<AdService>((ref) {
 });
 
 /// App-wide [RemoteChannel] — the pure-Dart [CompositeRemoteChannel] fanning
-/// across the per-vendor channels (Roku today; webOS, Samsung, and Android TV
-/// as later phases register them). Always obtain the channel through this
+/// across the per-vendor channels (Roku and webOS today; Samsung and Android
+/// TV as later phases register them). Always obtain the channel through this
 /// provider; never instantiate one elsewhere.
 final connectChannelProvider = Provider<RemoteChannel>((ref) {
-  final channel = CompositeRemoteChannel([RokuConnectChannel()]);
+  final preferences = ref.watch(preferencesRepositoryProvider);
+  final channel = CompositeRemoteChannel([
+    RokuConnectChannel(),
+    WebosConnectChannel(
+      loadCredential: preferences.getDeviceCredential,
+      saveCredential: preferences.setDeviceCredential,
+    ),
+  ]);
   ref.onDispose(channel.dispose);
   return channel;
 });

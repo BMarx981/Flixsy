@@ -40,6 +40,7 @@ dependencies:
   multicast_dns: ^0.3.3       # Android TV discovery (mDNS)
   protobuf: ^6.0.0            # Android TV Remote v2 framing
   xml: ^6.6.1                 # device-description / REST parsing
+  basic_utils: ^5.8.2
 
 dev_dependencies:
   flutter_test:

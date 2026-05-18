@@ -2,6 +2,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../analytics/analytics_service.dart';
+import '../../core/channels/android_tv_connect_channel.dart';
 import '../../core/channels/composite_remote_channel.dart';
 import '../../core/channels/remote_channel.dart';
 import '../../core/channels/roku_connect_channel.dart';
@@ -38,9 +39,9 @@ final adServiceProvider = Provider<AdService>((ref) {
 });
 
 /// App-wide [RemoteChannel] — the pure-Dart [CompositeRemoteChannel] fanning
-/// across the per-vendor channels (Roku, webOS, and Samsung today; Android TV
-/// as a later phase registers it). Always obtain the channel through this
-/// provider; never instantiate one elsewhere.
+/// across the per-vendor channels (Roku, webOS, Samsung, and Android TV).
+/// Always obtain the channel through this provider; never instantiate one
+/// elsewhere.
 final connectChannelProvider = Provider<RemoteChannel>((ref) {
   final preferences = ref.watch(preferencesRepositoryProvider);
   final channel = CompositeRemoteChannel([
@@ -50,6 +51,10 @@ final connectChannelProvider = Provider<RemoteChannel>((ref) {
       saveCredential: preferences.setDeviceCredential,
     ),
     SamsungConnectChannel(
+      loadCredential: preferences.getDeviceCredential,
+      saveCredential: preferences.setDeviceCredential,
+    ),
+    AndroidTvConnectChannel(
       loadCredential: preferences.getDeviceCredential,
       saveCredential: preferences.setDeviceCredential,
     ),

@@ -43,7 +43,12 @@
       "Bash(cat values/colors.xml)",
       "Bash(cat values-night/colors.xml)",
       "Bash(ls -d values-v31 values-night-v31)",
-      "Bash(xargs ls -la)"
+      "Bash(xargs ls -la)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(//Users/brianmarx/.pub-cache/hosted/pub.dev/**)",
+      "Bash(flutter pub *)"
     ]
   }
 }

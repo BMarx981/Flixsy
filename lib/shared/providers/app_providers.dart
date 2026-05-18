@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../analytics/analytics_service.dart';
 import '../../core/channels/android_tv_connect_channel.dart';
 import '../../core/channels/composite_remote_channel.dart';
+import '../../core/channels/multicast_lock.dart';
 import '../../core/channels/remote_channel.dart';
 import '../../core/channels/roku_connect_channel.dart';
 import '../../core/channels/samsung_connect_channel.dart';
@@ -58,7 +59,7 @@ final connectChannelProvider = Provider<RemoteChannel>((ref) {
       loadCredential: preferences.getDeviceCredential,
       saveCredential: preferences.setDeviceCredential,
     ),
-  ]);
+  ], multicastLock: PlatformMulticastLock());
   ref.onDispose(channel.dispose);
   return channel;
 });

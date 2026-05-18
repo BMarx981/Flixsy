@@ -11,8 +11,9 @@ void main() {
     for (final skin in AppSkin.values) {
       test('${skin.name} skin forwards its onKeyPressed callback', () {
         void callback(String key) {}
-        final widget =
-            skinRegistry[skin]!.buildRemoteSkin(onKeyPressed: callback);
+        final widget = skinRegistry[skin]!.buildRemoteSkin(
+          onKeyPressed: callback,
+        );
 
         expect(widget, isA<RemoteSkin>());
         expect((widget as RemoteSkin).onKeyPressed, same(callback));
@@ -48,8 +49,9 @@ void main() {
       return keys;
     }
 
-    testWidgets('each star point sends its directional key code',
-        (tester) async {
+    testWidgets('each star point sends its directional key code', (
+      tester,
+    ) async {
       final keys = await pumpSkin(tester);
       final center = tester.getCenter(find.byType(MainRemoteSkin));
 
@@ -75,8 +77,9 @@ void main() {
       expect(keys, isEmpty);
     });
 
-    testWidgets('the ring between centre and arms is a dead zone',
-        (tester) async {
+    testWidgets('the ring between centre and arms is a dead zone', (
+      tester,
+    ) async {
       final keys = await pumpSkin(tester);
       final center = tester.getCenter(find.byType(MainRemoteSkin));
 
@@ -87,8 +90,7 @@ void main() {
       expect(keys, isEmpty);
     });
 
-    testWidgets('taps beyond the outer arm radius are ignored',
-        (tester) async {
+    testWidgets('taps beyond the outer arm radius are ignored', (tester) async {
       final keys = await pumpSkin(tester);
       final center = tester.getCenter(find.byType(MainRemoteSkin));
 

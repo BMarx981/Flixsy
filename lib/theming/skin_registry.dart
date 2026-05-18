@@ -9,10 +9,7 @@ import 'skins/main/main_theme.dart';
 enum AppSkin { classic, main }
 
 class SkinConfig {
-  const SkinConfig({
-    required this.themeData,
-    required this.buildRemoteSkin,
-  });
+  const SkinConfig({required this.themeData, required this.buildRemoteSkin});
 
   final ThemeData themeData;
   final RemoteSkinBuilder buildRemoteSkin;

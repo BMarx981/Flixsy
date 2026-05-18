@@ -32,5 +32,6 @@ class SkinController {
   }
 }
 
-final skinControllerProvider =
-    Provider<SkinController>((ref) => SkinController(ref));
+final skinControllerProvider = Provider<SkinController>(
+  (ref) => SkinController(ref),
+);

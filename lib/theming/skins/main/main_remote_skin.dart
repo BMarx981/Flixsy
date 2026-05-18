@@ -40,10 +40,7 @@ const double _guardDegrees = 9.0;
 
 /// Logo-shaped remote skin: the Flixsy sparkle star *is* the control surface.
 class MainRemoteSkin extends StatefulWidget implements RemoteSkin {
-  const MainRemoteSkin({
-    super.key,
-    required this.onKeyPressed,
-  });
+  const MainRemoteSkin({super.key, required this.onKeyPressed});
 
   @override
   final void Function(String key) onKeyPressed;
@@ -97,8 +94,10 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
     return Center(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final available =
-              math.min(constraints.maxWidth, constraints.maxHeight);
+          final available = math.min(
+            constraints.maxWidth,
+            constraints.maxHeight,
+          );
           final side = (available.isFinite ? available : 360.0) * 0.9;
           return SizedBox(
             width: side,
@@ -138,10 +137,7 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
 
 /// Paints a translucent overlay over the region currently pressed.
 class _HighlightPainter extends CustomPainter {
-  const _HighlightPainter({
-    required this.region,
-    required this.color,
-  });
+  const _HighlightPainter({required this.region, required this.color});
 
   final _LogoRegion? region;
   final Color color;
@@ -171,10 +167,14 @@ class _HighlightPainter extends CustomPainter {
     const halfWedge = 45 - _guardDegrees;
     final startRad = (axisDeg - halfWedge) * math.pi / 180;
     final sweepRad = 2 * halfWedge * math.pi / 180;
-    final innerRect =
-        Rect.fromCircle(center: center, radius: _armInnerRadius * side);
-    final outerRect =
-        Rect.fromCircle(center: center, radius: _armOuterRadius * side);
+    final innerRect = Rect.fromCircle(
+      center: center,
+      radius: _armInnerRadius * side,
+    );
+    final outerRect = Rect.fromCircle(
+      center: center,
+      radius: _armOuterRadius * side,
+    );
 
     // A donut sector: out along the wedge, then back along the inner radius.
     final path = Path()

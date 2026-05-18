@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flixsy/core/channels/composite_remote_channel.dart';
+import 'package:flixsy/core/channels/multicast_lock.dart';
 import 'package:flixsy/core/channels/remote_channel.dart';
 import 'package:flixsy/core/errors/connect_failure.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -251,6 +252,79 @@ void main() {
       );
     });
   });
+
+  group('multicast lock', () {
+    test('startDiscovery acquires the lock', () async {
+      final lock = _FakeMulticastLock();
+      final composite = CompositeRemoteChannel([
+        _FakeRemoteChannel(),
+      ], multicastLock: lock);
+      addTearDown(composite.dispose);
+
+      await composite.startDiscovery();
+
+      expect(lock.acquireCount, 1);
+      expect(lock.releaseCount, 0);
+    });
+
+    test('stopDiscovery releases the lock', () async {
+      final lock = _FakeMulticastLock();
+      final composite = CompositeRemoteChannel([
+        _FakeRemoteChannel(),
+      ], multicastLock: lock);
+      addTearDown(composite.dispose);
+
+      await composite.startDiscovery();
+      await composite.stopDiscovery();
+
+      expect(lock.acquireCount, 1);
+      expect(lock.releaseCount, 1);
+    });
+
+    test('a repeated startDiscovery does not stack a second hold', () async {
+      final lock = _FakeMulticastLock();
+      final composite = CompositeRemoteChannel([
+        _FakeRemoteChannel(),
+      ], multicastLock: lock);
+      addTearDown(composite.dispose);
+
+      await composite.startDiscovery();
+      await composite.startDiscovery();
+
+      expect(lock.acquireCount, 1);
+    });
+
+    test(
+      'the lock is released when every sub-channel fails to start',
+      () async {
+        final lock = _FakeMulticastLock();
+        final composite = CompositeRemoteChannel([
+          _FakeRemoteChannel()..startFailure = const DiscoveryFailure('down'),
+        ], multicastLock: lock);
+        addTearDown(composite.dispose);
+
+        await expectLater(
+          composite.startDiscovery(),
+          throwsA(isA<DiscoveryFailure>()),
+        );
+
+        expect(lock.acquireCount, 1);
+        expect(lock.releaseCount, 1);
+      },
+    );
+
+    test('dispose releases a still-held lock', () async {
+      final lock = _FakeMulticastLock();
+      final composite = CompositeRemoteChannel([
+        _FakeRemoteChannel(),
+      ], multicastLock: lock);
+
+      await composite.startDiscovery();
+      composite.dispose();
+
+      expect(lock.releaseCount, 1);
+    });
+  });
 }
 
 /// A scriptable [RemoteChannel] that records calls and lets the test feed its
@@ -318,4 +392,16 @@ class _FakeRemoteChannel implements RemoteChannel {
     disposed = true;
     _events.close();
   }
+}
+
+/// A [MulticastLock] that just counts balanced acquire / release calls.
+class _FakeMulticastLock implements MulticastLock {
+  int acquireCount = 0;
+  int releaseCount = 0;
+
+  @override
+  Future<void> acquire() async => acquireCount++;
+
+  @override
+  Future<void> release() async => releaseCount++;
 }

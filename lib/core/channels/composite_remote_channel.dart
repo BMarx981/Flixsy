@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../errors/connect_failure.dart';
+import 'multicast_lock.dart';
 import 'remote_channel.dart';
 
 /// A [RemoteChannel] that fans across several per-vendor channels at once.
@@ -11,9 +12,15 @@ import 'remote_channel.dart';
 /// [sendKeyCommand], and [disconnect] route to the right transport.
 ///
 /// The composite owns its sub-channels — [dispose] disposes them all.
+///
+/// While discovery is running the composite holds the platform [MulticastLock]
+/// so the sub-channels' mDNS / SSDP traffic is not dropped by the OS.
 class CompositeRemoteChannel implements RemoteChannel {
-  CompositeRemoteChannel(List<RemoteChannel> channels)
-    : _channels = List.unmodifiable(channels) {
+  CompositeRemoteChannel(
+    List<RemoteChannel> channels, {
+    MulticastLock multicastLock = const NoopMulticastLock(),
+  }) : _channels = List.unmodifiable(channels),
+       _multicastLock = multicastLock {
     for (final channel in _channels) {
       _subscriptions.add(
         channel.deviceEvents.listen(
@@ -28,6 +35,10 @@ class CompositeRemoteChannel implements RemoteChannel {
 
   final List<RemoteChannel> _channels;
   final List<StreamSubscription<Map<String, dynamic>>> _subscriptions = [];
+
+  /// Held only while discovery is active. See [_acquireMulticastLock].
+  final MulticastLock _multicastLock;
+  bool _multicastLockHeld = false;
 
   final StreamController<Map<String, dynamic>> _events =
       StreamController<Map<String, dynamic>>.broadcast();
@@ -48,6 +59,7 @@ class CompositeRemoteChannel implements RemoteChannel {
   @override
   Future<void> startDiscovery() async {
     if (_channels.isEmpty) return;
+    await _acquireMulticastLock();
     final failures = <ConnectFailure>[];
     await Future.wait(
       _channels.map((channel) async {
@@ -62,6 +74,7 @@ class CompositeRemoteChannel implements RemoteChannel {
     // Surface a hard failure only when no channel could start at all — a
     // partial failure still leaves discovery running on the others.
     if (failures.length == _channels.length) {
+      await _releaseMulticastLock();
       throw DiscoveryFailure(
         'No discovery channel could start: '
         '${failures.map((f) => f.message).join('; ')}',
@@ -72,6 +85,7 @@ class CompositeRemoteChannel implements RemoteChannel {
   @override
   Future<void> stopDiscovery() async {
     await Future.wait(_channels.map((channel) => channel.stopDiscovery()));
+    await _releaseMulticastLock();
   }
 
   @override
@@ -129,6 +143,11 @@ class CompositeRemoteChannel implements RemoteChannel {
 
   @override
   void dispose() {
+    // dispose() is synchronous; fire the release without awaiting it.
+    if (_multicastLockHeld) {
+      _multicastLockHeld = false;
+      _multicastLock.release();
+    }
     for (final subscription in _subscriptions) {
       subscription.cancel();
     }
@@ -136,6 +155,21 @@ class CompositeRemoteChannel implements RemoteChannel {
       channel.dispose();
     }
     _events.close();
+  }
+
+  /// Acquires the multicast lock once for an active discovery session.
+  /// Idempotent — a second [startDiscovery] does not stack a second hold.
+  Future<void> _acquireMulticastLock() async {
+    if (_multicastLockHeld) return;
+    await _multicastLock.acquire();
+    _multicastLockHeld = true;
+  }
+
+  /// Releases the lock if held. Safe to call when discovery never started.
+  Future<void> _releaseMulticastLock() async {
+    if (!_multicastLockHeld) return;
+    _multicastLockHeld = false;
+    await _multicastLock.release();
   }
 
   /// Records device ownership from a sub-channel's event, then re-emits it on

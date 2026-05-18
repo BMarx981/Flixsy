@@ -31,10 +31,7 @@ class AnalyticsService {
   }
 
   Future<void> logKeySent(String key) {
-    return _analytics.logEvent(
-      name: _keySent,
-      parameters: {'key': key},
-    );
+    return _analytics.logEvent(name: _keySent, parameters: {'key': key});
   }
 
   Future<void> logAdViewed(String adUnitId) {

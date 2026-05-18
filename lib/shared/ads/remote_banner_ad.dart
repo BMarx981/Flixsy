@@ -19,7 +19,9 @@ class _RemoteBannerAdState extends ConsumerState<RemoteBannerAd> {
   @override
   void initState() {
     super.initState();
-    ref.read(adServiceProvider).loadBannerAd(
+    ref
+        .read(adServiceProvider)
+        .loadBannerAd(
           onLoaded: () {
             if (mounted) setState(() => _isLoaded = true);
           },

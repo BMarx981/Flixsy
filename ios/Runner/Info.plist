@@ -73,6 +73,7 @@
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_ssdp._udp</string>
+		<string>_androidtvremote2._tcp</string>
 		<string>_airplay._tcp</string>
 		<string>_raop._tcp</string>
 		<string>_googlecast._tcp</string>

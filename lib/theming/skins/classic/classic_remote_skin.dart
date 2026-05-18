@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import '../../remote_skin.dart';
 
 class ClassicRemoteSkin extends StatelessWidget implements RemoteSkin {
-  const ClassicRemoteSkin({
-    super.key,
-    required this.onKeyPressed,
-  });
+  const ClassicRemoteSkin({super.key, required this.onKeyPressed});
 
   @override
   final void Function(String key) onKeyPressed;
@@ -21,9 +18,21 @@ class ClassicRemoteSkin extends StatelessWidget implements RemoteSkin {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _RemoteButton(label: '◀', keyCode: 'LEFT', onPressed: onKeyPressed),
-              _RemoteButton(label: 'OK', keyCode: 'OK', onPressed: onKeyPressed),
-              _RemoteButton(label: '▶', keyCode: 'RIGHT', onPressed: onKeyPressed),
+              _RemoteButton(
+                label: '◀',
+                keyCode: 'LEFT',
+                onPressed: onKeyPressed,
+              ),
+              _RemoteButton(
+                label: 'OK',
+                keyCode: 'OK',
+                onPressed: onKeyPressed,
+              ),
+              _RemoteButton(
+                label: '▶',
+                keyCode: 'RIGHT',
+                onPressed: onKeyPressed,
+              ),
             ],
           ),
           _RemoteButton(label: '▼', keyCode: 'DOWN', onPressed: onKeyPressed),
@@ -31,9 +40,21 @@ class ClassicRemoteSkin extends StatelessWidget implements RemoteSkin {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _RemoteButton(label: '⏪', keyCode: 'REWIND', onPressed: onKeyPressed),
-              _RemoteButton(label: '⏯', keyCode: 'PLAY_PAUSE', onPressed: onKeyPressed),
-              _RemoteButton(label: '⏩', keyCode: 'FAST_FORWARD', onPressed: onKeyPressed),
+              _RemoteButton(
+                label: '⏪',
+                keyCode: 'REWIND',
+                onPressed: onKeyPressed,
+              ),
+              _RemoteButton(
+                label: '⏯',
+                keyCode: 'PLAY_PAUSE',
+                onPressed: onKeyPressed,
+              ),
+              _RemoteButton(
+                label: '⏩',
+                keyCode: 'FAST_FORWARD',
+                onPressed: onKeyPressed,
+              ),
             ],
           ),
         ],

@@ -16,9 +16,7 @@ class FlixsyApp extends ConsumerWidget {
       title: 'Flixsy',
       theme: skinConfig.themeData,
       routerConfig: appRouter.config(
-        navigatorObservers: () => [
-          ref.read(analyticsServiceProvider).observer,
-        ],
+        navigatorObservers: () => [ref.read(analyticsServiceProvider).observer],
       ),
     );
   }

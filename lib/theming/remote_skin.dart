@@ -8,6 +8,5 @@ abstract interface class RemoteSkin {
 }
 
 /// Convenience typedef for the factory function stored in [SkinConfig].
-typedef RemoteSkinBuilder = Widget Function({
-  required void Function(String key) onKeyPressed,
-});
+typedef RemoteSkinBuilder =
+    Widget Function({required void Function(String key) onKeyPressed});

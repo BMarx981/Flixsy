@@ -26,5 +26,5 @@ class RemoteControlNotifier extends Notifier<ConnectFailure?> {
 
 final remoteControlProvider =
     NotifierProvider<RemoteControlNotifier, ConnectFailure?>(
-  RemoteControlNotifier.new,
-);
+      RemoteControlNotifier.new,
+    );

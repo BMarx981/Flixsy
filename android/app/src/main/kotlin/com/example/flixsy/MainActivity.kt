@@ -18,5 +18,9 @@ class MainActivity : FlutterActivity() {
 
         EventChannel(messenger, ConnectSdkPlugin.EVENT_CHANNEL)
             .setStreamHandler(plugin)
+
+        // Wi-Fi multicast lock for the pure-Dart discovery channels (mDNS / SSDP).
+        MethodChannel(messenger, MulticastLockPlugin.METHOD_CHANNEL)
+            .setMethodCallHandler(MulticastLockPlugin(this))
     }
 }

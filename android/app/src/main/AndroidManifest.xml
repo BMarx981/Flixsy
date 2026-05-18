@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- LAN device discovery + control for the pure-Dart remote channels.
+         CHANGE_WIFI_MULTICAST_STATE is required to hold a MulticastLock so
+         mDNS (Android TV) and SSDP discovery replies reach the app. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
     <application
         android:label="flixsy"
         android:name="${applicationName}"

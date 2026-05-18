@@ -42,7 +42,8 @@
       "Bash(sips -g pixelWidth -g pixelHeight -g hasAlpha /tmp/qltest/*.png)",
       "Bash(cat values/colors.xml)",
       "Bash(cat values-night/colors.xml)",
-      "Bash(ls -d values-v31 values-night-v31)"
+      "Bash(ls -d values-v31 values-night-v31)",
+      "Bash(xargs ls -la)"
     ]
   }
 }

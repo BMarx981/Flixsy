@@ -23,6 +23,14 @@ class PreferencesRepository implements IPreferencesRepository {
     return _db.preferencesDao.setActiveSkin(skin.name);
   }
 
+  @override
+  Future<String?> getDeviceCredential(String deviceId) =>
+      _db.preferencesDao.getDeviceCredential(deviceId);
+
+  @override
+  Future<void> setDeviceCredential(String deviceId, String credential) =>
+      _db.preferencesDao.setDeviceCredential(deviceId, credential);
+
   AppSkin _parseSkin(String? value) {
     if (value == null) return AppSkin.classic;
     return AppSkin.values.firstWhere(

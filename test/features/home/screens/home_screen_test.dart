@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flixsy/analytics/analytics_service.dart';
+import 'package:flixsy/core/channels/remote_channel.dart';
 import 'package:flixsy/domain/repositories/i_preferences_repository.dart';
 import 'package:flixsy/features/home/screens/home_screen.dart';
 import 'package:flixsy/shared/providers/app_providers.dart';
@@ -9,35 +10,25 @@ import 'package:flixsy/theming/skin_registry.dart';
 import 'package:flixsy/theming/skins/classic/classic_remote_skin.dart';
 import 'package:flixsy/theming/skins/main/main_remote_skin.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const connectChannel = MethodChannel('com.flixsy.app/connect_sdk');
-
   late _FakePreferencesRepository preferences;
   late _FakeAnalyticsService analytics;
-  late List<MethodCall> nativeCalls;
+  late _FakeRemoteChannel channel;
 
   setUp(() {
     preferences = _FakePreferencesRepository();
     analytics = _FakeAnalyticsService();
-    nativeCalls = [];
-    // Mock the ConnectSDK MethodChannel — no real platform channel in tests.
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(connectChannel, (call) async {
-      nativeCalls.add(call);
-      return null;
-    });
+    channel = _FakeRemoteChannel();
   });
 
   tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(connectChannel, null);
     preferences.dispose();
+    channel.dispose();
   });
 
   Future<void> pumpHome(WidgetTester tester) async {
@@ -46,6 +37,7 @@ void main() {
         overrides: [
           preferencesRepositoryProvider.overrideWithValue(preferences),
           analyticsServiceProvider.overrideWithValue(analytics),
+          connectChannelProvider.overrideWithValue(channel),
         ],
         child: const MaterialApp(home: HomeScreen()),
       ),
@@ -60,8 +52,9 @@ void main() {
     expect(find.byType(MainRemoteSkin), findsNothing);
   });
 
-  testWidgets('skin menu swaps the rendered remote and logs the change',
-      (tester) async {
+  testWidgets('skin menu swaps the rendered remote and logs the change', (
+    tester,
+  ) async {
     await pumpHome(tester);
 
     await tester.tap(find.byIcon(Icons.palette_outlined));
@@ -74,16 +67,16 @@ void main() {
     expect(analytics.skinsChanged, contains('main'));
   });
 
-  testWidgets('pressing a remote key sends the command and logs it',
-      (tester) async {
+  testWidgets('pressing a remote key sends the command and logs it', (
+    tester,
+  ) async {
     await pumpHome(tester);
 
     // The default classic skin renders a labelled 'OK' button.
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
-    final sent = nativeCalls.singleWhere((c) => c.method == 'sendKeyCommand');
-    expect((sent.arguments as Map)['key'], 'OK');
+    expect(channel.sentKeys, ['OK']);
     expect(analytics.keysSent, ['OK']);
   });
 }
@@ -99,6 +92,7 @@ class _FakePreferencesRepository implements IPreferencesRepository {
 
   AppSkin _active = AppSkin.classic;
   final StreamController<AppSkin> _controller = StreamController<AppSkin>();
+  final Map<String, String> _credentials = {};
 
   @override
   Stream<AppSkin> watchActiveSkin() => _controller.stream;
@@ -110,6 +104,15 @@ class _FakePreferencesRepository implements IPreferencesRepository {
   Future<void> setActiveSkin(AppSkin skin) async {
     _active = skin;
     _controller.add(skin);
+  }
+
+  @override
+  Future<String?> getDeviceCredential(String deviceId) async =>
+      _credentials[deviceId];
+
+  @override
+  Future<void> setDeviceCredential(String deviceId, String credential) async {
+    _credentials[deviceId] = credential;
   }
 
   void dispose() => _controller.close();
@@ -138,4 +141,38 @@ class _FakeAnalyticsService implements AnalyticsService {
 
   @override
   FirebaseAnalyticsObserver get observer => throw UnimplementedError();
+}
+
+/// In-memory [RemoteChannel] that records every key sent, so the home
+/// screen's key-press wiring can be verified without a real transport.
+class _FakeRemoteChannel implements RemoteChannel {
+  final StreamController<Map<String, dynamic>> _events =
+      StreamController<Map<String, dynamic>>.broadcast();
+
+  /// Every key passed to [sendKeyCommand], in order.
+  final List<String> sentKeys = [];
+
+  @override
+  Stream<Map<String, dynamic>> get deviceEvents => _events.stream;
+
+  @override
+  Future<void> sendKeyCommand(String key) async => sentKeys.add(key);
+
+  @override
+  Future<void> startDiscovery() async {}
+
+  @override
+  Future<void> stopDiscovery() async {}
+
+  @override
+  Future<void> connectToDevice(String deviceId) async {}
+
+  @override
+  Future<void> disconnect() async {}
+
+  @override
+  Future<List<Map<String, dynamic>>> getDiscoveredDevices() async => [];
+
+  @override
+  void dispose() => _events.close();
 }

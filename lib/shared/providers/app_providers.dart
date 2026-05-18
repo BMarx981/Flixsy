@@ -2,8 +2,9 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../analytics/analytics_service.dart';
-import '../../core/channels/connect_channel.dart';
+import '../../core/channels/composite_remote_channel.dart';
 import '../../core/channels/remote_channel.dart';
+import '../../core/channels/roku_connect_channel.dart';
 import '../../data/database/app_database.dart';
 import '../../data/repositories/preferences_repository.dart';
 import '../../domain/repositories/i_preferences_repository.dart';
@@ -34,10 +35,12 @@ final adServiceProvider = Provider<AdService>((ref) {
   return AdService(analytics);
 });
 
-/// App-wide [RemoteChannel]. Phase 0 keeps the native [ConnectChannel] as the
-/// implementation; Phase 3 replaces it with the pure-Dart
-/// `CompositeRemoteChannel`. Always go through this provider — never
-/// instantiate a channel elsewhere.
+/// App-wide [RemoteChannel] — the pure-Dart [CompositeRemoteChannel] fanning
+/// across the per-vendor channels (Roku today; webOS, Samsung, and Android TV
+/// as later phases register them). Always obtain the channel through this
+/// provider; never instantiate one elsewhere.
 final connectChannelProvider = Provider<RemoteChannel>((ref) {
-  return ConnectChannel();
+  final channel = CompositeRemoteChannel([RokuConnectChannel()]);
+  ref.onDispose(channel.dispose);
+  return channel;
 });

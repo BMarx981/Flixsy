@@ -19,9 +19,21 @@ class PreferencesDao extends DatabaseAccessor<AppDatabase>
 
   Stream<String?> watchActiveSkin() => _watchValue(_activeSkinKey);
 
+  static const _deviceCredentialPrefix = 'device_cred:';
+
+  /// Returns the stored pairing credential for [deviceId] — a webOS
+  /// client-key, Samsung token, or Android TV cert bundle — or `null` if the
+  /// device has never been paired.
+  Future<String?> getDeviceCredential(String deviceId) =>
+      _getValue('$_deviceCredentialPrefix$deviceId');
+
+  /// Persists the pairing [credential] for [deviceId] so future connections
+  /// can skip the on-screen pairing prompt.
+  Future<void> setDeviceCredential(String deviceId, String credential) =>
+      _setValue('$_deviceCredentialPrefix$deviceId', credential);
+
   Future<String?> _getValue(String key) async {
-    final query = select(preferencesTable)
-      ..where((t) => t.key.equals(key));
+    final query = select(preferencesTable)..where((t) => t.key.equals(key));
     final row = await query.getSingleOrNull();
     return row?.value;
   }
@@ -33,8 +45,7 @@ class PreferencesDao extends DatabaseAccessor<AppDatabase>
   }
 
   Stream<String?> _watchValue(String key) {
-    final query = select(preferencesTable)
-      ..where((t) => t.key.equals(key));
+    final query = select(preferencesTable)..where((t) => t.key.equals(key));
     return query.watchSingleOrNull().map((row) => row?.value);
   }
 }

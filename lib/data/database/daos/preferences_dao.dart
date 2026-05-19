@@ -19,6 +19,17 @@ class PreferencesDao extends DatabaseAccessor<AppDatabase>
 
   Stream<String?> watchActiveSkin() => _watchValue(_activeSkinKey);
 
+  static const _activeLayoutKey = 'active_layout';
+
+  /// The id of the layout the user has selected — a `builtin:` template id or
+  /// a custom layout's uuid. `null` until the user picks one.
+  Future<String?> getActiveLayoutId() => _getValue(_activeLayoutKey);
+
+  Future<void> setActiveLayoutId(String layoutId) =>
+      _setValue(_activeLayoutKey, layoutId);
+
+  Stream<String?> watchActiveLayoutId() => _watchValue(_activeLayoutKey);
+
   static const _deviceCredentialPrefix = 'device_cred:';
 
   /// Returns the stored pairing credential for [deviceId] — a webOS

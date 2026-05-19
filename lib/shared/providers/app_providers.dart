@@ -10,7 +10,9 @@ import '../../core/channels/roku_connect_channel.dart';
 import '../../core/channels/samsung_connect_channel.dart';
 import '../../core/channels/webos_connect_channel.dart';
 import '../../data/database/app_database.dart';
+import '../../data/repositories/layout_repository.dart';
 import '../../data/repositories/preferences_repository.dart';
+import '../../domain/repositories/i_layout_repository.dart';
 import '../../domain/repositories/i_preferences_repository.dart';
 import '../../router/app_router.dart';
 import '../ads/ad_service.dart';
@@ -24,6 +26,11 @@ final appDatabaseProvider = Provider<AppDatabase>((ref) {
 final preferencesRepositoryProvider = Provider<IPreferencesRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   return PreferencesRepository(db);
+});
+
+final layoutRepositoryProvider = Provider<ILayoutRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return LayoutRepository(db);
 });
 
 /// Singleton router — never instantiate [AppRouter] more than once.

@@ -4,22 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../remote_key.dart';
 import '../../remote_skin.dart';
 
 /// The five interactive regions of the Flixsy logo remote.
 ///
 /// The logo's 4-point sparkle star points exactly N/S/E/W; the points
-/// converge at the centre. Each region carries the key code it sends.
+/// converge at the centre. Each region carries the [RemoteKey] it sends.
 enum _LogoRegion {
-  up('UP'), // North point
-  down('DOWN'), // South point
-  next('NEXT'), // East point
-  previous('PREVIOUS'), // West point
-  ok('OK'); // Centre
+  up(RemoteKey.up), // North point
+  down(RemoteKey.down), // South point
+  next(RemoteKey.next), // East point
+  previous(RemoteKey.previous), // West point
+  ok(RemoteKey.ok); // Centre
 
-  const _LogoRegion(this.keyCode);
+  const _LogoRegion(this.action);
 
-  final String keyCode;
+  final RemoteKey action;
 }
 
 // Hit-test geometry, expressed as a fraction of the (square) widget side so
@@ -57,7 +58,7 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
     final region = _hitTest(details.localPosition, side);
     if (region == null) return; // dead zone — ignore
     HapticFeedback.selectionClick();
-    widget.onKeyPressed(region.keyCode);
+    widget.onKeyPressed(region.action.code);
     setState(() => _active = region);
   }
 
@@ -103,25 +104,25 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
             _ControlButton(
               icon: Icons.fast_rewind_outlined,
               label: 'Rewind',
-              keyCode: 'REWIND',
+              action: RemoteKey.rewind,
               onKeyPressed: widget.onKeyPressed,
             ),
             _ControlButton(
               icon: Icons.arrow_back_rounded,
               label: 'Back',
-              keyCode: 'BACK',
+              action: RemoteKey.back,
               onKeyPressed: widget.onKeyPressed,
             ),
             _ControlButton(
               icon: Icons.home_outlined,
               label: 'Home',
-              keyCode: 'HOME',
+              action: RemoteKey.home,
               onKeyPressed: widget.onKeyPressed,
             ),
             _ControlButton(
               icon: Icons.fast_forward_outlined,
               label: 'Forward',
-              keyCode: 'FAST_FORWARD',
+              action: RemoteKey.fastForward,
               onKeyPressed: widget.onKeyPressed,
             ),
           ],
@@ -179,24 +180,24 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
 }
 
 /// A circular control button in the bar beneath the logo star. Sends its
-/// [keyCode] through [onKeyPressed] — the same callback the star uses — so
+/// [action] through [onKeyPressed] — the same callback the star uses — so
 /// it routes to the connected TV exactly like a directional key.
 class _ControlButton extends StatelessWidget {
   const _ControlButton({
     required this.icon,
     required this.label,
-    required this.keyCode,
+    required this.action,
     required this.onKeyPressed,
   });
 
   final IconData icon;
   final String label;
-  final String keyCode;
+  final RemoteKey action;
   final void Function(String key) onKeyPressed;
 
   void _handleTap() {
     HapticFeedback.selectionClick();
-    onKeyPressed(keyCode);
+    onKeyPressed(action.code);
   }
 
   @override

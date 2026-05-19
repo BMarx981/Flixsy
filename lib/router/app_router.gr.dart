@@ -41,3 +41,19 @@ class HomeRoute extends PageRouteInfo<void> {
     },
   );
 }
+
+/// generated route for
+/// [LayoutPickerScreen]
+class LayoutPickerRoute extends PageRouteInfo<void> {
+  const LayoutPickerRoute({List<PageRouteInfo>? children})
+    : super(LayoutPickerRoute.name, initialChildren: children);
+
+  static const String name = 'LayoutPickerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const LayoutPickerScreen();
+    },
+  );
+}

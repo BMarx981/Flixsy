@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flixsy/analytics/analytics_service.dart';
 import 'package:flixsy/core/channels/remote_channel.dart';
+import 'package:flixsy/data/models/layout/built_in_layouts.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/domain/repositories/i_layout_repository.dart';
 import 'package:flixsy/domain/repositories/i_preferences_repository.dart';
 import 'package:flixsy/features/home/screens/home_screen.dart';
 import 'package:flixsy/shared/providers/app_providers.dart';
 import 'package:flixsy/theming/skin_registry.dart';
-import 'package:flixsy/theming/skins/classic/classic_remote_skin.dart';
 import 'package:flixsy/theming/skins/main/main_remote_skin.dart';
+import 'package:flixsy/theming/standard/standard_remote.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,11 +22,13 @@ void main() {
   late _FakePreferencesRepository preferences;
   late _FakeAnalyticsService analytics;
   late _FakeRemoteChannel channel;
+  late _FakeLayoutRepository layouts;
 
   setUp(() {
     preferences = _FakePreferencesRepository();
     analytics = _FakeAnalyticsService();
     channel = _FakeRemoteChannel();
+    layouts = _FakeLayoutRepository();
   });
 
   tearDown(() {
@@ -38,6 +43,7 @@ void main() {
           preferencesRepositoryProvider.overrideWithValue(preferences),
           analyticsServiceProvider.overrideWithValue(analytics),
           remoteChannelProvider.overrideWithValue(channel),
+          layoutRepositoryProvider.overrideWithValue(layouts),
         ],
         child: const MaterialApp(home: HomeScreen()),
       ),
@@ -48,7 +54,8 @@ void main() {
   testWidgets('renders the active skin — classic by default', (tester) async {
     await pumpHome(tester);
 
-    expect(find.byType(ClassicRemoteSkin), findsOneWidget);
+    // The classic skin is now a standard skin: StandardRemote + a renderer.
+    expect(find.byType(StandardRemote), findsOneWidget);
     expect(find.byType(MainRemoteSkin), findsNothing);
   });
 
@@ -63,7 +70,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(MainRemoteSkin), findsOneWidget);
-    expect(find.byType(ClassicRemoteSkin), findsNothing);
+    expect(find.byType(StandardRemote), findsNothing);
     expect(analytics.skinsChanged, contains('main'));
   });
 
@@ -92,7 +99,7 @@ void main() {
 
     // The Back/Home/transport buttons added to the main skin must reach the
     // channel exactly like the directional keys do.
-    await tester.tap(find.byIcon(Icons.home_rounded));
+    await tester.tap(find.byIcon(Icons.home_outlined));
     await tester.tap(find.byIcon(Icons.arrow_back_rounded));
     await tester.pumpAndSettle();
 
@@ -108,10 +115,14 @@ void main() {
 class _FakePreferencesRepository implements IPreferencesRepository {
   _FakePreferencesRepository() {
     _controller.add(_active);
+    _layoutController.add(_activeLayoutId);
   }
 
   AppSkin _active = AppSkin.classic;
   final StreamController<AppSkin> _controller = StreamController<AppSkin>();
+  String? _activeLayoutId;
+  final StreamController<String?> _layoutController =
+      StreamController<String?>();
   final Map<String, String> _credentials = {};
 
   @override
@@ -127,6 +138,18 @@ class _FakePreferencesRepository implements IPreferencesRepository {
   }
 
   @override
+  Stream<String?> watchActiveLayoutId() => _layoutController.stream;
+
+  @override
+  Future<String?> getActiveLayoutId() async => _activeLayoutId;
+
+  @override
+  Future<void> setActiveLayoutId(String layoutId) async {
+    _activeLayoutId = layoutId;
+    _layoutController.add(layoutId);
+  }
+
+  @override
   Future<String?> getDeviceCredential(String deviceId) async =>
       _credentials[deviceId];
 
@@ -135,7 +158,32 @@ class _FakePreferencesRepository implements IPreferencesRepository {
     _credentials[deviceId] = credential;
   }
 
-  void dispose() => _controller.close();
+  void dispose() {
+    _controller.close();
+    _layoutController.close();
+  }
+}
+
+/// In-memory [ILayoutRepository] — the home screen only needs the built-in
+/// layouts streamed back so the active layout resolves to the classic one.
+class _FakeLayoutRepository implements ILayoutRepository {
+  @override
+  Stream<List<RemoteLayout>> watchAllLayouts() =>
+      Stream.value(builtInLayouts);
+
+  @override
+  Future<RemoteLayout?> getLayout(String id) async {
+    for (final layout in builtInLayouts) {
+      if (layout.id == id) return layout;
+    }
+    return null;
+  }
+
+  @override
+  Future<void> saveLayout(RemoteLayout layout) async {}
+
+  @override
+  Future<void> deleteLayout(String id) async {}
 }
 
 /// Records analytics calls instead of forwarding them to Firebase.
@@ -158,6 +206,15 @@ class _FakeAnalyticsService implements AnalyticsService {
 
   @override
   Future<void> logAdViewed(String adUnitId) async {}
+
+  @override
+  Future<void> logLayoutSelected(String layoutId) async {}
+
+  @override
+  Future<void> logLayoutCreated(String layoutId) async {}
+
+  @override
+  Future<void> logLayoutDeleted(String layoutId) async {}
 
   @override
   FirebaseAnalyticsObserver get observer => throw UnimplementedError();

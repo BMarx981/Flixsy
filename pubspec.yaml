@@ -41,6 +41,7 @@ dependencies:
   protobuf: ^6.0.0            # Android TV Remote v2 framing
   xml: ^6.6.1                 # device-description / REST parsing
   basic_utils: ^5.8.2
+  uuid: ^4.5.3
 
 dev_dependencies:
   flutter_test:

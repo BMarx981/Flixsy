@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/connect_failure.dart';
+import '../../../router/app_router.dart';
+import '../../../theming/layout_provider.dart';
 import '../../../theming/skin_provider.dart';
 import '../../../theming/skin_registry.dart';
 import '../providers/remote_control_provider.dart';
@@ -14,6 +16,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final skinConfig = ref.watch(skinConfigProvider);
+    final layout = ref.watch(activeLayoutProvider);
 
     // Surface failed key commands as a snackbar.
     ref.listen<ConnectFailure?>(remoteControlProvider, (prev, next) {
@@ -31,12 +34,20 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Remote'),
-        actions: const [_SkinMenuButton()],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.dashboard_customize_outlined),
+            tooltip: 'Layouts',
+            onPressed: () => context.router.push(const LayoutPickerRoute()),
+          ),
+          const _SkinMenuButton(),
+        ],
       ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: skinConfig.buildRemoteSkin(
+            layout: layout,
             onKeyPressed: (key) =>
                 ref.read(remoteControlProvider.notifier).sendKey(key),
           ),

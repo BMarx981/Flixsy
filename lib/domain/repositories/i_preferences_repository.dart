@@ -5,6 +5,12 @@ abstract interface class IPreferencesRepository {
   Future<AppSkin> getActiveSkin();
   Future<void> setActiveSkin(AppSkin skin);
 
+  /// The id of the layout the user has selected, or `null` if none is stored.
+  /// Callers apply their own default (the classic built-in).
+  Stream<String?> watchActiveLayoutId();
+  Future<String?> getActiveLayoutId();
+  Future<void> setActiveLayoutId(String layoutId);
+
   /// Returns the stored pairing credential for [deviceId], or `null` if the
   /// device has never been paired.
   Future<String?> getDeviceCredential(String deviceId);

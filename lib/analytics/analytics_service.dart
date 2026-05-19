@@ -11,6 +11,9 @@ class AnalyticsService {
   static const _deviceDisconnected = 'device_disconnected';
   static const _keySent = 'key_sent';
   static const _adViewed = 'ad_viewed';
+  static const _layoutSelected = 'layout_selected';
+  static const _layoutCreated = 'layout_created';
+  static const _layoutDeleted = 'layout_deleted';
 
   Future<void> logSkinChanged(String skinName) {
     return _analytics.logEvent(
@@ -38,6 +41,28 @@ class AnalyticsService {
     return _analytics.logEvent(
       name: _adViewed,
       parameters: {'ad_unit_id': adUnitId},
+    );
+  }
+
+  /// Logs the layout *id* — never the user-entered name — to avoid PII.
+  Future<void> logLayoutSelected(String layoutId) {
+    return _analytics.logEvent(
+      name: _layoutSelected,
+      parameters: {'layout_id': layoutId},
+    );
+  }
+
+  Future<void> logLayoutCreated(String layoutId) {
+    return _analytics.logEvent(
+      name: _layoutCreated,
+      parameters: {'layout_id': layoutId},
+    );
+  }
+
+  Future<void> logLayoutDeleted(String layoutId) {
+    return _analytics.logEvent(
+      name: _layoutDeleted,
+      parameters: {'layout_id': layoutId},
     );
   }
 

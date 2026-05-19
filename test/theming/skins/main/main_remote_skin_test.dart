@@ -1,3 +1,4 @@
+import 'package:flixsy/data/models/layout/built_in_layouts.dart';
 import 'package:flixsy/theming/remote_skin.dart';
 import 'package:flixsy/theming/skin_registry.dart';
 import 'package:flixsy/theming/skins/main/main_remote_skin.dart';
@@ -13,6 +14,7 @@ void main() {
         void callback(String key) {}
         final widget = skinRegistry[skin]!.buildRemoteSkin(
           onKeyPressed: callback,
+          layout: classicLayout,
         );
 
         expect(widget, isA<RemoteSkin>());
@@ -132,18 +134,18 @@ void main() {
       await pumpSkin(tester);
 
       expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.home_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.fast_rewind_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.fast_forward_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.home_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.fast_rewind_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.fast_forward_outlined), findsOneWidget);
     });
 
     testWidgets('each control button sends its key code', (tester) async {
       final keys = await pumpSkin(tester);
 
-      await tester.tap(find.byIcon(Icons.fast_rewind_rounded));
+      await tester.tap(find.byIcon(Icons.fast_rewind_outlined));
       await tester.tap(find.byIcon(Icons.arrow_back_rounded));
-      await tester.tap(find.byIcon(Icons.home_rounded));
-      await tester.tap(find.byIcon(Icons.fast_forward_rounded));
+      await tester.tap(find.byIcon(Icons.home_outlined));
+      await tester.tap(find.byIcon(Icons.fast_forward_outlined));
       await tester.pumpAndSettle();
 
       expect(keys, ['REWIND', 'BACK', 'HOME', 'FAST_FORWARD']);

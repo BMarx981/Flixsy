@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../skin_tokens.dart';
+
 abstract final class ClassicTheme {
   static ThemeData get themeData => ThemeData(
     colorScheme: ColorScheme.fromSeed(
@@ -22,5 +24,6 @@ abstract final class ClassicTheme {
         ),
       ),
     ),
+    extensions: const [SkinTokens(buttonGap: 8)],
   );
 }

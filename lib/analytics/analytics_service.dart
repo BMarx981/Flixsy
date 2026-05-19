@@ -13,6 +13,7 @@ class AnalyticsService {
   static const _adViewed = 'ad_viewed';
   static const _layoutSelected = 'layout_selected';
   static const _layoutCreated = 'layout_created';
+  static const _layoutEdited = 'layout_edited';
   static const _layoutDeleted = 'layout_deleted';
 
   Future<void> logSkinChanged(String skinName) {
@@ -55,6 +56,13 @@ class AnalyticsService {
   Future<void> logLayoutCreated(String layoutId) {
     return _analytics.logEvent(
       name: _layoutCreated,
+      parameters: {'layout_id': layoutId},
+    );
+  }
+
+  Future<void> logLayoutEdited(String layoutId) {
+    return _analytics.logEvent(
+      name: _layoutEdited,
       parameters: {'layout_id': layoutId},
     );
   }

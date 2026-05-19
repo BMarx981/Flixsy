@@ -214,6 +214,9 @@ class _FakeAnalyticsService implements AnalyticsService {
   Future<void> logLayoutCreated(String layoutId) async {}
 
   @override
+  Future<void> logLayoutEdited(String layoutId) async {}
+
+  @override
   Future<void> logLayoutDeleted(String layoutId) async {}
 
   @override

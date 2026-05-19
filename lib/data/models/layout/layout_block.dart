@@ -12,6 +12,15 @@ sealed class LayoutBlock {
 
   Map<String, Object?> toJson();
 
+  /// The block's buttons, in canonical order. A `null` entry is an empty
+  /// slot — only [GridBlock] has them; [SpacerBlock] has none.
+  List<RemoteButton?> get buttons;
+
+  /// A copy of this block with the button at [index] replaced. An
+  /// out-of-range [index] (or a [SpacerBlock], which has no buttons) returns
+  /// the block unchanged.
+  LayoutBlock withButtonAt(int index, RemoteButton button);
+
   /// Parses a block, or `null` for an unrecognised `type`.
   ///
   /// Dropping unknown blocks (rather than throwing) lets a layout written by
@@ -62,12 +71,30 @@ final class DpadBlock extends LayoutBlock {
     right: _slot(json['right'], RemoteKey.right),
     ok: _slot(json['ok'], RemoteKey.ok),
   );
+
+  @override
+  List<RemoteButton?> get buttons => [up, down, left, right, ok];
+
+  @override
+  DpadBlock withButtonAt(int index, RemoteButton button) {
+    if (index < 0 || index > 4) return this;
+    final next = <RemoteButton>[up, down, left, right, ok];
+    next[index] = button;
+    return DpadBlock(
+      up: next[0],
+      down: next[1],
+      left: next[2],
+      right: next[3],
+      ok: next[4],
+    );
+  }
 }
 
 /// An evenly spaced row of 1–5 buttons.
 final class ButtonRowBlock extends LayoutBlock {
   const ButtonRowBlock({required this.buttons});
 
+  @override
   final List<RemoteButton> buttons;
 
   @override
@@ -78,6 +105,14 @@ final class ButtonRowBlock extends LayoutBlock {
 
   factory ButtonRowBlock.fromJson(Map<String, Object?> json) =>
       ButtonRowBlock(buttons: _buttonList(json['buttons']));
+
+  @override
+  ButtonRowBlock withButtonAt(int index, RemoteButton button) {
+    if (index < 0 || index >= buttons.length) return this;
+    final next = [...buttons];
+    next[index] = button;
+    return ButtonRowBlock(buttons: next);
+  }
 }
 
 /// A volume rocker: volume-down / mute / volume-up.
@@ -105,6 +140,17 @@ final class VolumeBlock extends LayoutBlock {
     mute: _slot(json['mute'], RemoteKey.mute),
     volumeUp: _slot(json['volumeUp'], RemoteKey.volumeUp),
   );
+
+  @override
+  List<RemoteButton?> get buttons => [volumeDown, mute, volumeUp];
+
+  @override
+  VolumeBlock withButtonAt(int index, RemoteButton button) {
+    if (index < 0 || index > 2) return this;
+    final next = <RemoteButton>[volumeDown, mute, volumeUp];
+    next[index] = button;
+    return VolumeBlock(volumeDown: next[0], mute: next[1], volumeUp: next[2]);
+  }
 }
 
 /// A fixed-column grid of buttons. A `null` cell is an intentional empty slot.
@@ -139,6 +185,17 @@ final class GridBlock extends LayoutBlock {
       cells: cells,
     );
   }
+
+  @override
+  List<RemoteButton?> get buttons => cells;
+
+  @override
+  GridBlock withButtonAt(int index, RemoteButton button) {
+    if (index < 0 || index >= cells.length) return this;
+    final next = [...cells];
+    next[index] = button;
+    return GridBlock(columns: columns, cells: next);
+  }
 }
 
 /// Vertical breathing room between blocks.
@@ -155,6 +212,12 @@ final class SpacerBlock extends LayoutBlock {
     final height = rawHeight is num ? rawHeight.toDouble() : 0.0;
     return SpacerBlock(height: height < 0 ? 0 : height);
   }
+
+  @override
+  List<RemoteButton?> get buttons => const [];
+
+  @override
+  SpacerBlock withButtonAt(int index, RemoteButton button) => this;
 }
 
 /// Reads one fixed-slot button, falling back to a default button for

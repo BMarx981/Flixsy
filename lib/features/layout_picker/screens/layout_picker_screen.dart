@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/layout/remote_layout.dart';
+import '../../../router/app_router.dart';
 import '../../../theming/layout_provider.dart';
 
 /// Lists the built-in templates and the user's custom layouts, and lets the
@@ -70,10 +71,10 @@ class _LayoutTile extends ConsumerWidget {
   }
 }
 
-enum _LayoutAction { duplicate, delete }
+enum _LayoutAction { duplicate, edit, delete }
 
-/// Overflow menu for a layout row: duplicate always, delete for custom
-/// layouts only — built-in templates are read-only.
+/// Overflow menu for a layout row: duplicate always; edit and delete for
+/// custom layouts only — built-in templates are read-only.
 class _LayoutMenu extends ConsumerWidget {
   const _LayoutMenu({required this.layout});
 
@@ -92,11 +93,16 @@ class _LayoutMenu extends ConsumerWidget {
           value: _LayoutAction.duplicate,
           child: Text('Duplicate'),
         ),
-        if (!layout.isTemplate)
+        if (!layout.isTemplate) ...[
+          const PopupMenuItem(
+            value: _LayoutAction.edit,
+            child: Text('Edit'),
+          ),
           const PopupMenuItem(
             value: _LayoutAction.delete,
             child: Text('Delete'),
           ),
+        ],
       ],
     );
   }
@@ -110,6 +116,8 @@ class _LayoutMenu extends ConsumerWidget {
     switch (action) {
       case _LayoutAction.duplicate:
         await controller.duplicateLayout(layout);
+      case _LayoutAction.edit:
+        context.router.push(LayoutEditorRoute(layout: layout));
       case _LayoutAction.delete:
         if (await _confirmDelete(context)) {
           await controller.deleteLayout(layout);

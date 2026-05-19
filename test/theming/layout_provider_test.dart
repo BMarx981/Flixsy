@@ -35,6 +35,19 @@ void main() {
       expect(await PreferencesRepository(db).getActiveLayoutId(), 'builtin:x');
     });
 
+    test('updateLayout persists edits to a custom layout', () async {
+      const custom = RemoteLayout(id: 'c1', name: 'Mine', blocks: []);
+      await container.read(layoutRepositoryProvider).saveLayout(custom);
+
+      await container.read(layoutControllerProvider).updateLayout(
+        const RemoteLayout(id: 'c1', name: 'Renamed', blocks: []),
+      );
+
+      final loaded =
+          await container.read(layoutRepositoryProvider).getLayout('c1');
+      expect(loaded?.name, 'Renamed');
+    });
+
     test('duplicateLayout saves an editable copy', () async {
       final copy = await container
           .read(layoutControllerProvider)
@@ -96,6 +109,8 @@ class _NoopAnalytics implements AnalyticsService {
   Future<void> logLayoutSelected(String layoutId) async {}
   @override
   Future<void> logLayoutCreated(String layoutId) async {}
+  @override
+  Future<void> logLayoutEdited(String layoutId) async {}
   @override
   Future<void> logLayoutDeleted(String layoutId) async {}
   @override

@@ -83,14 +83,29 @@ void main() {
     expect(find.text('Classic copy'), findsOneWidget);
   });
 
-  testWidgets('built-in templates have no delete action', (tester) async {
+  testWidgets('built-in templates expose only Duplicate', (tester) async {
     await pumpPicker(tester);
 
     await tester.tap(menuFor('Classic'));
     await tester.pumpAndSettle();
 
     expect(find.text('Duplicate'), findsOneWidget);
+    expect(find.text('Edit'), findsNothing);
     expect(find.text('Delete'), findsNothing);
+  });
+
+  testWidgets('custom layouts expose Duplicate, Edit and Delete', (
+    tester,
+  ) async {
+    layouts.seed(const RemoteLayout(id: 'mine', name: 'Den Remote', blocks: []));
+    await pumpPicker(tester);
+
+    await tester.tap(menuFor('Den Remote'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Duplicate'), findsOneWidget);
+    expect(find.text('Edit'), findsOneWidget);
+    expect(find.text('Delete'), findsOneWidget);
   });
 
   testWidgets('deleting a custom layout removes it after confirmation', (
@@ -231,6 +246,8 @@ class _NoopAnalytics implements AnalyticsService {
   Future<void> logLayoutSelected(String layoutId) async {}
   @override
   Future<void> logLayoutCreated(String layoutId) async {}
+  @override
+  Future<void> logLayoutEdited(String layoutId) async {}
   @override
   Future<void> logLayoutDeleted(String layoutId) async {}
   @override

@@ -26,6 +26,22 @@ class RemoteLayout {
   /// The ordered sections of the remote.
   final List<LayoutBlock> blocks;
 
+  /// Returns a copy with the given fields replaced. Used by the layout
+  /// editor to apply edits to its immutable draft.
+  RemoteLayout copyWith({
+    String? id,
+    String? name,
+    bool? isTemplate,
+    List<LayoutBlock>? blocks,
+  }) {
+    return RemoteLayout(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      isTemplate: isTemplate ?? this.isTemplate,
+      blocks: blocks ?? this.blocks,
+    );
+  }
+
   Map<String, Object?> toJson() => {
     'id': id,
     'name': name,

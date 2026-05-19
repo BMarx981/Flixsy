@@ -61,6 +61,12 @@ class LayoutController {
     return copy;
   }
 
+  /// Persists edits made in the layout editor to an existing custom layout.
+  Future<void> updateLayout(RemoteLayout layout) async {
+    await _ref.read(layoutRepositoryProvider).saveLayout(layout);
+    await _ref.read(analyticsServiceProvider).logLayoutEdited(layout.id);
+  }
+
   /// Deletes a custom layout. If it was the active layout, the classic
   /// built-in becomes active so the remote always has something to render.
   Future<void> deleteLayout(RemoteLayout layout) async {

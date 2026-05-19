@@ -65,6 +65,9 @@ class LayoutController {
   Future<void> updateLayout(RemoteLayout layout) async {
     await _ref.read(layoutRepositoryProvider).saveLayout(layout);
     await _ref.read(analyticsServiceProvider).logLayoutEdited(layout.id);
+    // An edit can drop an image-backed button — sweep any newly orphaned
+    // images. The save above runs first, so the layout's own images survive.
+    await _sweepOrphanImages();
   }
 
   /// Deletes a custom layout. If it was the active layout, the classic
@@ -76,6 +79,25 @@ class LayoutController {
       await preferences.setActiveLayoutId(classicLayout.id);
     }
     await _ref.read(analyticsServiceProvider).logLayoutDeleted(layout.id);
+    await _sweepOrphanImages();
+  }
+
+  /// Deletes images no surviving layout references — the orphan sweep
+  /// (design doc §6.2).
+  ///
+  /// Best-effort: housekeeping must never make the edit or delete that
+  /// triggered it appear to fail, so any error is swallowed.
+  Future<void> _sweepOrphanImages() async {
+    try {
+      final layouts =
+          await _ref.read(layoutRepositoryProvider).watchAllLayouts().first;
+      final referenced = <String>{
+        for (final layout in layouts) ...layout.referencedImageIds,
+      };
+      await _ref.read(customImageRepositoryProvider).sweepOrphans(referenced);
+    } on Object {
+      // Swallowed — the layout change itself already succeeded.
+    }
   }
 }
 

@@ -251,5 +251,7 @@ class _NoopAnalytics implements AnalyticsService {
   @override
   Future<void> logLayoutDeleted(String layoutId) async {}
   @override
+  Future<void> logCustomImageAdded(String imageId) async {}
+  @override
   FirebaseAnalyticsObserver get observer => throw UnimplementedError();
 }

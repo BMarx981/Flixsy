@@ -1,3 +1,4 @@
+import 'button_appearance.dart';
 import 'layout_block.dart';
 
 /// A complete remote layout — the *user-authored* axis of the three-axis
@@ -25,6 +26,19 @@ class RemoteLayout {
 
   /// The ordered sections of the remote.
   final List<LayoutBlock> blocks;
+
+  /// The ids of every custom image this layout's buttons reference.
+  ///
+  /// Drives the orphan sweep (design doc §6.2): an image referenced by no
+  /// layout is unreachable and can be deleted.
+  Iterable<String> get referencedImageIds sync* {
+    for (final block in blocks) {
+      for (final button in block.buttons) {
+        final appearance = button?.appearance;
+        if (appearance is CustomImage) yield appearance.imageId;
+      }
+    }
+  }
 
   /// Returns a copy with the given fields replaced. Used by the layout
   /// editor to apply edits to its immutable draft.

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/connect_failure.dart';
 import '../../../router/app_router.dart';
+import '../../../theming/custom_image_provider.dart';
 import '../../../theming/layout_provider.dart';
 import '../../../theming/skin_provider.dart';
 import '../../../theming/skin_registry.dart';
@@ -17,6 +18,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final skinConfig = ref.watch(skinConfigProvider);
     final layout = ref.watch(activeLayoutProvider);
+    final imagePaths = ref.watch(customImagePathsProvider);
 
     // Surface failed key commands as a snackbar.
     ref.listen<ConnectFailure?>(remoteControlProvider, (prev, next) {
@@ -48,6 +50,7 @@ class HomeScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(24),
           child: skinConfig.buildRemoteSkin(
             layout: layout,
+            imagePaths: imagePaths,
             onKeyPressed: (key) =>
                 ref.read(remoteControlProvider.notifier).sendKey(key),
           ),

@@ -21,18 +21,19 @@ final Map<AppSkin, SkinConfig> skinRegistry = {
   // defers each block to ClassicSectionRenderer.
   AppSkin.classic: SkinConfig(
     themeData: ClassicTheme.themeData,
-    buildRemoteSkin: ({required onKeyPressed, required layout}) =>
+    buildRemoteSkin: ({required onKeyPressed, required layout, required imagePaths}) =>
         StandardRemote(
           layout: layout,
           renderer: const ClassicSectionRenderer(),
           onKeyPressed: onKeyPressed,
+          imagePaths: imagePaths,
         ),
   ),
   // A bespoke skin: hand-coded hit-testing, implements RemoteSkin directly.
-  // Its arrangement is fixed, so it ignores the layout argument.
+  // Its arrangement is fixed, so it ignores the layout and image arguments.
   AppSkin.main: SkinConfig(
     themeData: MainTheme.themeData,
-    buildRemoteSkin: ({required onKeyPressed, required layout}) =>
+    buildRemoteSkin: ({required onKeyPressed, required layout, required imagePaths}) =>
         MainRemoteSkin(onKeyPressed: onKeyPressed),
   ),
 };

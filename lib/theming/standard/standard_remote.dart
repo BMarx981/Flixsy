@@ -4,6 +4,7 @@ import '../../data/models/layout/layout_block.dart';
 import '../../data/models/layout/remote_layout.dart';
 import '../remote_key.dart';
 import '../remote_skin.dart';
+import 'remote_image_scope.dart';
 import 'section_renderer.dart';
 
 /// Renders a [RemoteLayout] by walking its blocks and handing each to the
@@ -18,6 +19,7 @@ class StandardRemote extends StatelessWidget implements RemoteSkin {
     required this.layout,
     required this.renderer,
     required this.onKeyPressed,
+    this.imagePaths = const {},
   });
 
   /// The layout to render — its ordered blocks become the on-screen sections.
@@ -26,6 +28,10 @@ class StandardRemote extends StatelessWidget implements RemoteSkin {
   /// The active skin's renderer, which draws each block's chrome.
   final SectionRenderer renderer;
 
+  /// Custom-image id → file-path map, made available to the renderer through
+  /// a [RemoteImageScope] so `CustomImage` buttons resolve to their files.
+  final Map<String, String> imagePaths;
+
   @override
   final void Function(String key) onKeyPressed;
 
@@ -33,23 +39,26 @@ class StandardRemote extends StatelessWidget implements RemoteSkin {
   Widget build(BuildContext context) {
     void onKey(RemoteKey key) => onKeyPressed(key.code);
 
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final block in layout.blocks)
-            switch (block) {
-              DpadBlock() => renderer.buildDpad(context, block, onKey),
-              ButtonRowBlock() => renderer.buildButtonRow(
-                context,
-                block,
-                onKey,
-              ),
-              VolumeBlock() => renderer.buildVolume(context, block, onKey),
-              GridBlock() => renderer.buildGrid(context, block, onKey),
-              SpacerBlock() => renderer.buildSpacer(context, block),
-            },
-        ],
+    return RemoteImageScope(
+      imagePaths: imagePaths,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final block in layout.blocks)
+              switch (block) {
+                DpadBlock() => renderer.buildDpad(context, block, onKey),
+                ButtonRowBlock() => renderer.buildButtonRow(
+                  context,
+                  block,
+                  onKey,
+                ),
+                VolumeBlock() => renderer.buildVolume(context, block, onKey),
+                GridBlock() => renderer.buildGrid(context, block, onKey),
+                SpacerBlock() => renderer.buildSpacer(context, block),
+              },
+          ],
+        ),
       ),
     );
   }

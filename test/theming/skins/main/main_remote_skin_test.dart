@@ -15,6 +15,7 @@ void main() {
         final widget = skinRegistry[skin]!.buildRemoteSkin(
           onKeyPressed: callback,
           layout: classicLayout,
+          imagePaths: const {},
         );
 
         expect(widget, isA<RemoteSkin>());

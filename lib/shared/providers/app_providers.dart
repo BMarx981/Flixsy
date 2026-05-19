@@ -10,8 +10,10 @@ import '../../core/channels/roku_connect_channel.dart';
 import '../../core/channels/samsung_connect_channel.dart';
 import '../../core/channels/webos_connect_channel.dart';
 import '../../data/database/app_database.dart';
+import '../../data/repositories/custom_image_repository.dart';
 import '../../data/repositories/layout_repository.dart';
 import '../../data/repositories/preferences_repository.dart';
+import '../../domain/repositories/i_custom_image_repository.dart';
 import '../../domain/repositories/i_layout_repository.dart';
 import '../../domain/repositories/i_preferences_repository.dart';
 import '../../router/app_router.dart';
@@ -31,6 +33,11 @@ final preferencesRepositoryProvider = Provider<IPreferencesRepository>((ref) {
 final layoutRepositoryProvider = Provider<ILayoutRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   return LayoutRepository(db);
+});
+
+final customImageRepositoryProvider = Provider<ICustomImageRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return CustomImageRepository(db);
 });
 
 /// Singleton router — never instantiate [AppRouter] more than once.

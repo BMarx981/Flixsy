@@ -55,7 +55,20 @@ void main() {
       expect(iconOf(p), defaultIconFor(RemoteKey.power));
     });
 
-    test('a CustomImage degrades to the default icon (Phase 6 pending)', () {
+    test('a CustomImage resolves to an ImageGlyph when its file is known', () {
+      final p = resolveButton(
+        const RemoteButton(
+          action: RemoteKey.home,
+          appearance: CustomImage(imageId: 'img-1'),
+        ),
+        imagePaths: const {'img-1': '/images/img-1.png'},
+      );
+
+      expect(p.glyph, isA<ImageGlyph>());
+      expect((p.glyph as ImageGlyph).path, '/images/img-1.png');
+    });
+
+    test('a CustomImage degrades to the default icon without a path', () {
       final p = resolveButton(
         const RemoteButton(
           action: RemoteKey.home,
@@ -64,6 +77,18 @@ void main() {
       );
 
       expect(iconOf(p), defaultIconFor(RemoteKey.home));
+    });
+
+    test('a CustomImage degrades when its id is absent from the map', () {
+      final p = resolveButton(
+        const RemoteButton(
+          action: RemoteKey.power,
+          appearance: CustomImage(imageId: 'missing'),
+        ),
+        imagePaths: const {'other': '/images/other.png'},
+      );
+
+      expect(iconOf(p), defaultIconFor(RemoteKey.power));
     });
 
     test('TextOnly uses its override as the glyph, with no caption', () {

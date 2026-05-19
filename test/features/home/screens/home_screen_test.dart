@@ -5,6 +5,8 @@ import 'package:flixsy/analytics/analytics_service.dart';
 import 'package:flixsy/core/channels/remote_channel.dart';
 import 'package:flixsy/data/models/layout/built_in_layouts.dart';
 import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/data/models/stored_image.dart';
+import 'package:flixsy/domain/repositories/i_custom_image_repository.dart';
 import 'package:flixsy/domain/repositories/i_layout_repository.dart';
 import 'package:flixsy/domain/repositories/i_preferences_repository.dart';
 import 'package:flixsy/features/home/screens/home_screen.dart';
@@ -44,6 +46,9 @@ void main() {
           analyticsServiceProvider.overrideWithValue(analytics),
           remoteChannelProvider.overrideWithValue(channel),
           layoutRepositoryProvider.overrideWithValue(layouts),
+          customImageRepositoryProvider.overrideWithValue(
+            _FakeCustomImageRepository(),
+          ),
         ],
         child: const MaterialApp(home: HomeScreen()),
       ),
@@ -186,6 +191,19 @@ class _FakeLayoutRepository implements ILayoutRepository {
   Future<void> deleteLayout(String id) async {}
 }
 
+/// In-memory [ICustomImageRepository] — the home screen only needs an empty
+/// image set so `CustomImage` buttons resolve to their default icons.
+class _FakeCustomImageRepository implements ICustomImageRepository {
+  @override
+  Stream<List<StoredImage>> watchImages() => Stream.value(const []);
+
+  @override
+  Future<StoredImage?> importImage() async => null;
+
+  @override
+  Future<void> sweepOrphans(Set<String> referencedIds) async {}
+}
+
 /// Records analytics calls instead of forwarding them to Firebase.
 class _FakeAnalyticsService implements AnalyticsService {
   final List<String> keysSent = [];
@@ -218,6 +236,9 @@ class _FakeAnalyticsService implements AnalyticsService {
 
   @override
   Future<void> logLayoutDeleted(String layoutId) async {}
+
+  @override
+  Future<void> logCustomImageAdded(String imageId) async {}
 
   @override
   FirebaseAnalyticsObserver get observer => throw UnimplementedError();

@@ -70,6 +70,8 @@
 	<true/>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Flixsy needs access to your local network to discover and control TVs.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Flixsy needs access to your photos so you can use your own images on remote buttons.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_ssdp._udp</string>

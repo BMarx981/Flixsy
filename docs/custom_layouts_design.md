@@ -172,6 +172,12 @@ StandardRemote (widget)
 - **Lifecycle:** a `custom_images` table tracks each image; deleting a button
   or layout schedules an orphan sweep that removes unreferenced files.
 
+*Implemented (Phase 6):* import downscaling is `image_picker`'s own
+`maxWidth/maxHeight` (256) — no separate decode/re-encode step. The orphan
+sweep runs from `LayoutController` after every `updateLayout` / `deleteLayout`
+(an edit is how a button is removed) and is **best-effort** — a failure never
+fails the layout change that triggered it.
+
 ## 7. Persistence (Drift)
 
 New tables under `lib/data/database/tables/`:

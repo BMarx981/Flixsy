@@ -33,6 +33,9 @@ dependencies:
   # SVG rendering
   flutter_svg: ^2.0.10
 
+  # Custom remote-button images
+  image_picker: ^1.1.2
+
   cupertino_icons: ^1.0.8
 
   # Pure-Dart TV channels — networking & protocols

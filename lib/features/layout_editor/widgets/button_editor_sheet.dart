@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/layout/button_appearance.dart';
 import '../../../data/models/layout/remote_button.dart';
+import '../../../theming/custom_image_provider.dart';
 import '../../../theming/icons/icon_catalog.dart';
 import '../../../theming/remote_key.dart';
 import '../../../theming/standard/button_presentation.dart';
@@ -26,16 +30,16 @@ Future<RemoteButton?> showButtonEditorSheet(
   );
 }
 
-class _ButtonEditorSheet extends StatefulWidget {
+class _ButtonEditorSheet extends ConsumerStatefulWidget {
   const _ButtonEditorSheet({required this.button});
 
   final RemoteButton button;
 
   @override
-  State<_ButtonEditorSheet> createState() => _ButtonEditorSheetState();
+  ConsumerState<_ButtonEditorSheet> createState() => _ButtonEditorSheetState();
 }
 
-class _ButtonEditorSheetState extends State<_ButtonEditorSheet> {
+class _ButtonEditorSheetState extends ConsumerState<_ButtonEditorSheet> {
   late RemoteKey _action = widget.button.action;
   late ButtonAppearance _appearance = widget.button.appearance;
   late bool _showLabel;
@@ -91,9 +95,20 @@ class _ButtonEditorSheetState extends State<_ButtonEditorSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final glyph = resolveButton(_button).glyph;
+    final imagePaths = ref.watch(customImagePathsProvider);
+    final glyph = resolveButton(_button, imagePaths: imagePaths).glyph;
     final iconLeading = switch (glyph) {
       IconGlyph(:final icon) => Icon(icon),
+      ImageGlyph(:final path) => SizedBox(
+        width: 40,
+        height: 40,
+        child: Image.file(
+          File(path),
+          fit: BoxFit.contain,
+          errorBuilder: (_, _, _) =>
+              const Icon(Icons.broken_image_outlined),
+        ),
+      ),
       TextGlyph() => const Icon(Icons.text_fields),
     };
 

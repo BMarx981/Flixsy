@@ -580,6 +580,275 @@ class CustomLayoutsTableCompanion
   }
 }
 
+class $CustomImagesTableTable extends CustomImagesTable
+    with TableInfo<$CustomImagesTableTable, CustomImagesTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CustomImagesTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fileNameMeta = const VerificationMeta(
+    'fileName',
+  );
+  @override
+  late final GeneratedColumn<String> fileName = GeneratedColumn<String>(
+    'file_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, fileName, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'custom_images_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CustomImagesTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('file_name')) {
+      context.handle(
+        _fileNameMeta,
+        fileName.isAcceptableOrUnknown(data['file_name']!, _fileNameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fileNameMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CustomImagesTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CustomImagesTableData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      fileName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}file_name'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CustomImagesTableTable createAlias(String alias) {
+    return $CustomImagesTableTable(attachedDatabase, alias);
+  }
+}
+
+class CustomImagesTableData extends DataClass
+    implements Insertable<CustomImagesTableData> {
+  /// Stable image id (a uuid). Referenced by `CustomImage` button appearances.
+  final String id;
+
+  /// Name of the backing file inside the `remote_images/` directory.
+  final String fileName;
+  final DateTime createdAt;
+  const CustomImagesTableData({
+    required this.id,
+    required this.fileName,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['file_name'] = Variable<String>(fileName);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  CustomImagesTableCompanion toCompanion(bool nullToAbsent) {
+    return CustomImagesTableCompanion(
+      id: Value(id),
+      fileName: Value(fileName),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory CustomImagesTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CustomImagesTableData(
+      id: serializer.fromJson<String>(json['id']),
+      fileName: serializer.fromJson<String>(json['fileName']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'fileName': serializer.toJson<String>(fileName),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  CustomImagesTableData copyWith({
+    String? id,
+    String? fileName,
+    DateTime? createdAt,
+  }) => CustomImagesTableData(
+    id: id ?? this.id,
+    fileName: fileName ?? this.fileName,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  CustomImagesTableData copyWithCompanion(CustomImagesTableCompanion data) {
+    return CustomImagesTableData(
+      id: data.id.present ? data.id.value : this.id,
+      fileName: data.fileName.present ? data.fileName.value : this.fileName,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CustomImagesTableData(')
+          ..write('id: $id, ')
+          ..write('fileName: $fileName, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, fileName, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CustomImagesTableData &&
+          other.id == this.id &&
+          other.fileName == this.fileName &&
+          other.createdAt == this.createdAt);
+}
+
+class CustomImagesTableCompanion
+    extends UpdateCompanion<CustomImagesTableData> {
+  final Value<String> id;
+  final Value<String> fileName;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const CustomImagesTableCompanion({
+    this.id = const Value.absent(),
+    this.fileName = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CustomImagesTableCompanion.insert({
+    required String id,
+    required String fileName,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       fileName = Value(fileName),
+       createdAt = Value(createdAt);
+  static Insertable<CustomImagesTableData> custom({
+    Expression<String>? id,
+    Expression<String>? fileName,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (fileName != null) 'file_name': fileName,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CustomImagesTableCompanion copyWith({
+    Value<String>? id,
+    Value<String>? fileName,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return CustomImagesTableCompanion(
+      id: id ?? this.id,
+      fileName: fileName ?? this.fileName,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (fileName.present) {
+      map['file_name'] = Variable<String>(fileName.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CustomImagesTableCompanion(')
+          ..write('id: $id, ')
+          ..write('fileName: $fileName, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -588,10 +857,15 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $CustomLayoutsTableTable customLayoutsTable =
       $CustomLayoutsTableTable(this);
+  late final $CustomImagesTableTable customImagesTable =
+      $CustomImagesTableTable(this);
   late final PreferencesDao preferencesDao = PreferencesDao(
     this as AppDatabase,
   );
   late final LayoutsDao layoutsDao = LayoutsDao(this as AppDatabase);
+  late final CustomImagesDao customImagesDao = CustomImagesDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -599,6 +873,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     preferencesTable,
     customLayoutsTable,
+    customImagesTable,
   ];
 }
 
@@ -970,6 +1245,181 @@ typedef $$CustomLayoutsTableTableProcessedTableManager =
       CustomLayoutsTableData,
       PrefetchHooks Function()
     >;
+typedef $$CustomImagesTableTableCreateCompanionBuilder =
+    CustomImagesTableCompanion Function({
+      required String id,
+      required String fileName,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$CustomImagesTableTableUpdateCompanionBuilder =
+    CustomImagesTableCompanion Function({
+      Value<String> id,
+      Value<String> fileName,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$CustomImagesTableTableFilterComposer
+    extends Composer<_$AppDatabase, $CustomImagesTableTable> {
+  $$CustomImagesTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fileName => $composableBuilder(
+    column: $table.fileName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CustomImagesTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $CustomImagesTableTable> {
+  $$CustomImagesTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fileName => $composableBuilder(
+    column: $table.fileName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CustomImagesTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CustomImagesTableTable> {
+  $$CustomImagesTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get fileName =>
+      $composableBuilder(column: $table.fileName, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$CustomImagesTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CustomImagesTableTable,
+          CustomImagesTableData,
+          $$CustomImagesTableTableFilterComposer,
+          $$CustomImagesTableTableOrderingComposer,
+          $$CustomImagesTableTableAnnotationComposer,
+          $$CustomImagesTableTableCreateCompanionBuilder,
+          $$CustomImagesTableTableUpdateCompanionBuilder,
+          (
+            CustomImagesTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $CustomImagesTableTable,
+              CustomImagesTableData
+            >,
+          ),
+          CustomImagesTableData,
+          PrefetchHooks Function()
+        > {
+  $$CustomImagesTableTableTableManager(
+    _$AppDatabase db,
+    $CustomImagesTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CustomImagesTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CustomImagesTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CustomImagesTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> fileName = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CustomImagesTableCompanion(
+                id: id,
+                fileName: fileName,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String fileName,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CustomImagesTableCompanion.insert(
+                id: id,
+                fileName: fileName,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CustomImagesTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CustomImagesTableTable,
+      CustomImagesTableData,
+      $$CustomImagesTableTableFilterComposer,
+      $$CustomImagesTableTableOrderingComposer,
+      $$CustomImagesTableTableAnnotationComposer,
+      $$CustomImagesTableTableCreateCompanionBuilder,
+      $$CustomImagesTableTableUpdateCompanionBuilder,
+      (
+        CustomImagesTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $CustomImagesTableTable,
+          CustomImagesTableData
+        >,
+      ),
+      CustomImagesTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -978,4 +1428,6 @@ class $AppDatabaseManager {
       $$PreferencesTableTableTableManager(_db, _db.preferencesTable);
   $$CustomLayoutsTableTableTableManager get customLayoutsTable =>
       $$CustomLayoutsTableTableTableManager(_db, _db.customLayoutsTable);
+  $$CustomImagesTableTableTableManager get customImagesTable =>
+      $$CustomImagesTableTableTableManager(_db, _db.customImagesTable);
 }

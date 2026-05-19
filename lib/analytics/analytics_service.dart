@@ -15,6 +15,7 @@ class AnalyticsService {
   static const _layoutCreated = 'layout_created';
   static const _layoutEdited = 'layout_edited';
   static const _layoutDeleted = 'layout_deleted';
+  static const _customImageAdded = 'custom_image_added';
 
   Future<void> logSkinChanged(String skinName) {
     return _analytics.logEvent(
@@ -71,6 +72,14 @@ class AnalyticsService {
     return _analytics.logEvent(
       name: _layoutDeleted,
       parameters: {'layout_id': layoutId},
+    );
+  }
+
+  /// Logs the image *id* only — never a file name or path — to avoid PII.
+  Future<void> logCustomImageAdded(String imageId) {
+    return _analytics.logEvent(
+      name: _customImageAdded,
+      parameters: {'image_id': imageId},
     );
   }
 

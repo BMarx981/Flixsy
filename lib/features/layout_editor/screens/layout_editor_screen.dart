@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/layout/layout_block.dart';
 import '../../../data/models/layout/remote_button.dart';
 import '../../../data/models/layout/remote_layout.dart';
+import '../../../theming/custom_image_provider.dart';
 import '../../../theming/layout_provider.dart';
 import '../../../theming/skins/classic/classic_section_renderer.dart';
 import '../../../theming/standard/button_presentation.dart';
@@ -173,14 +176,15 @@ class _NameFieldState extends ConsumerState<_NameField> {
 }
 
 /// A read-only render of the draft, so edits are visible immediately.
-class _PreviewBox extends StatelessWidget {
+class _PreviewBox extends ConsumerWidget {
   const _PreviewBox({required this.layout});
 
   final RemoteLayout layout;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
+    final imagePaths = ref.watch(customImagePathsProvider);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -198,6 +202,7 @@ class _PreviewBox extends StatelessWidget {
                 layout: layout,
                 renderer: const ClassicSectionRenderer(),
                 onKeyPressed: (_) {},
+                imagePaths: imagePaths,
               ),
             ),
     );
@@ -274,19 +279,30 @@ class _BlockCard extends StatelessWidget {
   }
 }
 
-/// A tappable chip for one button — shows its resolved icon and label;
+/// A tappable chip for one button — shows its resolved icon/image and label;
 /// tapping it opens the button editor.
-class _ButtonChip extends StatelessWidget {
+class _ButtonChip extends ConsumerWidget {
   const _ButtonChip({required this.button, required this.onTap});
 
   final RemoteButton button;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
-    final presentation = resolveButton(button);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final imagePaths = ref.watch(customImagePathsProvider);
+    final presentation = resolveButton(button, imagePaths: imagePaths);
     final avatar = switch (presentation.glyph) {
       IconGlyph(:final icon) => Icon(icon, size: 18),
+      ImageGlyph(:final path) => SizedBox(
+        width: 18,
+        height: 18,
+        child: Image.file(
+          File(path),
+          fit: BoxFit.contain,
+          errorBuilder: (_, _, _) =>
+              const Icon(Icons.broken_image_outlined, size: 18),
+        ),
+      ),
       TextGlyph() => const Icon(Icons.text_fields, size: 18),
     };
     return ActionChip(

@@ -2,9 +2,9 @@
 /// paints.
 ///
 /// Resolution is **total** (`docs/custom_layouts_design.md` §4.4): any
-/// unresolvable icon — unknown id, missing pack, or a Phase-6 [CustomImage]
-/// with no image store yet — degrades to the action's catalogue default. A
-/// custom layout can therefore be ugly but never broken.
+/// unresolvable mark — unknown icon id, missing pack, or a custom image whose
+/// file is not (yet) available — degrades to the action's catalogue default.
+/// A custom layout can therefore be ugly but never broken.
 library;
 
 import 'package:flutter/widgets.dart';
@@ -18,7 +18,7 @@ sealed class ButtonGlyph {
   const ButtonGlyph();
 }
 
-/// A catalogue icon — the mark for every appearance except [TextOnly].
+/// A catalogue icon — the mark for a default or icon-pack appearance.
 final class IconGlyph extends ButtonGlyph {
   const IconGlyph(this.icon);
 
@@ -32,6 +32,13 @@ final class TextGlyph extends ButtonGlyph {
   final String text;
 }
 
+/// A user-uploaded image, identified by its resolved absolute file [path].
+final class ImageGlyph extends ButtonGlyph {
+  const ImageGlyph(this.path);
+
+  final String path;
+}
+
 /// A button's appearance resolved into the parts a renderer paints.
 @immutable
 class ButtonPresentation {
@@ -41,8 +48,8 @@ class ButtonPresentation {
     required this.semanticLabel,
   });
 
-  /// The primary mark — an [IconGlyph], or a [TextGlyph] for a text-only
-  /// button.
+  /// The primary mark — an [IconGlyph], an [ImageGlyph], or a [TextGlyph] for
+  /// a text-only button.
   final ButtonGlyph glyph;
 
   /// The label shown beneath the glyph, or `null` to show none — either the
@@ -53,8 +60,15 @@ class ButtonPresentation {
   final String semanticLabel;
 }
 
-/// Resolves [button] into the icon/text + caption a standard renderer paints.
-ButtonPresentation resolveButton(RemoteButton button) {
+/// Resolves [button] into the icon/image/text + caption a renderer paints.
+///
+/// [imagePaths] maps a custom-image id to its absolute file path; pass it
+/// (typically from `customImagePathsProvider`) so [CustomImage] appearances
+/// resolve. An id absent from the map degrades to the action's default icon.
+ButtonPresentation resolveButton(
+  RemoteButton button, {
+  Map<String, String>? imagePaths,
+}) {
   final appearance = button.appearance;
   final keyLabel = defaultLabel(button.action);
   final override = appearance.labelOverride;
@@ -75,6 +89,18 @@ ButtonPresentation resolveButton(RemoteButton button) {
     );
   }
 
+  if (appearance is CustomImage) {
+    final path = imagePaths?[appearance.imageId];
+    if (path != null) {
+      return ButtonPresentation(
+        glyph: ImageGlyph(path),
+        caption: caption,
+        semanticLabel: semanticLabel,
+      );
+    }
+    // No file for this id — fall through to the default-icon degrade below.
+  }
+
   final icon = _resolveIcon(button) ?? defaultIconFor(button.action);
   return ButtonPresentation(
     glyph: IconGlyph(icon),
@@ -90,7 +116,7 @@ IconData? _resolveIcon(RemoteButton button) {
     DefaultLook() => defaultIconFor(button.action),
     BuiltInIcon(:final iconId) => resolvePackIcon(standardPack.id, iconId),
     PackIcon(:final packId, :final iconId) => resolvePackIcon(packId, iconId),
-    // Phase 6 introduces the image store; until then a custom image degrades.
+    // A custom image with no resolvable file degrades here.
     CustomImage() => null,
     // Handled before this switch — listed so the switch stays exhaustive.
     TextOnly() => null,

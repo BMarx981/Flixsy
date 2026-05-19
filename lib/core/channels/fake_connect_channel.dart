@@ -8,7 +8,7 @@ import 'remote_channel.dart';
 /// app can be run in a simulator/emulator with no native side and no real
 /// device.
 ///
-/// Wire it in by overriding `connectChannelProvider` (see `main.dart`, gated
+/// Wire it in by overriding `remoteChannelProvider` (see `main.dart`, gated
 /// behind the `FAKE_TV` dart-define).
 class FakeConnectChannel implements RemoteChannel {
   final _eventController = StreamController<Map<String, dynamic>>.broadcast();

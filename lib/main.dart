@@ -9,8 +9,8 @@ import 'app.dart';
 import 'core/channels/fake_connect_channel.dart';
 import 'shared/providers/app_providers.dart';
 
-/// When true, the app runs against simulated TVs instead of the native
-/// ConnectSDK bridge — useful for running in a simulator/emulator.
+/// When true, the app runs against simulated TVs instead of the real LAN
+/// remote channels — useful for running in a simulator/emulator.
 ///
 /// Enable it at launch with:
 ///   flutter run --dart-define=FAKE_TV=true
@@ -35,7 +35,7 @@ void main() async {
     ProviderScope(
       overrides: [
         if (_useFakeTv)
-          connectChannelProvider.overrideWith((ref) {
+          remoteChannelProvider.overrideWith((ref) {
             final fake = FakeConnectChannel();
             ref.onDispose(fake.dispose);
             return fake;

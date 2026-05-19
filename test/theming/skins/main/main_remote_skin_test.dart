@@ -22,44 +22,51 @@ void main() {
   });
 
   group('MainRemoteSkin hit testing', () {
-    // Pumped inside a 400px box so the skin resolves to a fixed 360px side
-    // (min(400,400) * 0.9), making tap offsets from the centre deterministic.
-    //
-    // Geometry for side = 360:
-    //   centre 'OK' circle : r <= 0.166 * 360 ≈ 60
-    //   dead ring          : 60 < r < 0.190 * 360 ≈ 68
-    //   directional arms   : 68 <= r <= 0.440 * 360 ≈ 158
-    //   off-logo dead zone : r > 158
+    // The logo star is its own keyed square ('flixsyLogoPad'); tap offsets
+    // are derived from its measured side as fractions of the hit-test radii:
+    //   centre 'OK' circle : r <= 0.166 * side
+    //   dead ring          : 0.166 * side < r < 0.190 * side
+    //   directional arms   : 0.190 * side <= r <= 0.440 * side
+    //   off-logo dead zone : r > 0.440 * side
+    final padFinder = find.byKey(const ValueKey('flixsyLogoPad'));
+
     Future<List<String>> pumpSkin(WidgetTester tester) async {
       final keys = <String>[];
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: SizedBox(
-                width: 400,
-                height: 400,
-                child: MainRemoteSkin(onKeyPressed: keys.add),
-              ),
+            body: SizedBox(
+              width: 400,
+              height: 640,
+              child: MainRemoteSkin(onKeyPressed: keys.add),
             ),
           ),
         ),
       );
-      await tester.pump();
+      await tester.pumpAndSettle();
       return keys;
     }
+
+    /// The centre of the logo star and its side length, measured live so the
+    /// tests stay correct regardless of how tall the control bar grows.
+    ({Offset center, double side}) padGeometry(WidgetTester tester) => (
+      center: tester.getCenter(padFinder),
+      side: tester.getSize(padFinder).width,
+    );
 
     testWidgets('each star point sends its directional key code', (
       tester,
     ) async {
       final keys = await pumpSkin(tester);
-      final center = tester.getCenter(find.byType(MainRemoteSkin));
+      final pad = padGeometry(tester);
+      // r ≈ 0.30 * side: squarely inside the directional arms.
+      final r = pad.side * 0.30;
 
-      await tester.tapAt(center + const Offset(0, -100)); // North
-      await tester.tapAt(center + const Offset(0, 100)); // South
-      await tester.tapAt(center + const Offset(100, 0)); // East
-      await tester.tapAt(center + const Offset(-100, 0)); // West
-      await tester.tapAt(center); // Centre
+      await tester.tapAt(pad.center + Offset(0, -r)); // North
+      await tester.tapAt(pad.center + Offset(0, r)); // South
+      await tester.tapAt(pad.center + Offset(r, 0)); // East
+      await tester.tapAt(pad.center + Offset(-r, 0)); // West
+      await tester.tapAt(pad.center); // Centre
       await tester.pumpAndSettle();
 
       expect(keys, ['UP', 'DOWN', 'NEXT', 'PREVIOUS', 'OK']);
@@ -67,11 +74,12 @@ void main() {
 
     testWidgets('diagonal gaps between arms are dead zones', (tester) async {
       final keys = await pumpSkin(tester);
-      final center = tester.getCenter(find.byType(MainRemoteSkin));
+      final pad = padGeometry(tester);
+      // A 45° tap at arm radius: d on each axis gives r = d * √2 ≈ 0.30 side.
+      final d = pad.side * 0.212;
 
-      // 45° taps land squarely on the guarded diagonal dead band.
-      await tester.tapAt(center + const Offset(70, -70));
-      await tester.tapAt(center + const Offset(-70, 70));
+      await tester.tapAt(pad.center + Offset(d, -d));
+      await tester.tapAt(pad.center + Offset(-d, d));
       await tester.pumpAndSettle();
 
       expect(keys, isEmpty);
@@ -81,10 +89,9 @@ void main() {
       tester,
     ) async {
       final keys = await pumpSkin(tester);
-      final center = tester.getCenter(find.byType(MainRemoteSkin));
-
-      // r ≈ 65 px: outside the centre circle, inside the arm inner edge.
-      await tester.tapAt(center + const Offset(0, -65));
+      final pad = padGeometry(tester);
+      // r ≈ 0.178 * side: outside the centre circle, inside the arm edge.
+      await tester.tapAt(pad.center + Offset(0, -pad.side * 0.178));
       await tester.pumpAndSettle();
 
       expect(keys, isEmpty);
@@ -92,13 +99,54 @@ void main() {
 
     testWidgets('taps beyond the outer arm radius are ignored', (tester) async {
       final keys = await pumpSkin(tester);
-      final center = tester.getCenter(find.byType(MainRemoteSkin));
-
-      // r = 170 px: past the outer arm radius (≈158).
-      await tester.tapAt(center + const Offset(0, -170));
+      final pad = padGeometry(tester);
+      // r ≈ 0.49 * side: past the outer arm radius (0.440).
+      await tester.tapAt(pad.center + Offset(0, -pad.side * 0.49));
       await tester.pumpAndSettle();
 
       expect(keys, isEmpty);
+    });
+  });
+
+  group('MainRemoteSkin control bar', () {
+    Future<List<String>> pumpSkin(WidgetTester tester) async {
+      final keys = <String>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 400,
+              height: 640,
+              child: MainRemoteSkin(onKeyPressed: keys.add),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      return keys;
+    }
+
+    testWidgets('renders Back, Home, Rewind and Fast Forward buttons', (
+      tester,
+    ) async {
+      await pumpSkin(tester);
+
+      expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.home_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.fast_rewind_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.fast_forward_rounded), findsOneWidget);
+    });
+
+    testWidgets('each control button sends its key code', (tester) async {
+      final keys = await pumpSkin(tester);
+
+      await tester.tap(find.byIcon(Icons.fast_rewind_rounded));
+      await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+      await tester.tap(find.byIcon(Icons.home_rounded));
+      await tester.tap(find.byIcon(Icons.fast_forward_rounded));
+      await tester.pumpAndSettle();
+
+      expect(keys, ['REWIND', 'BACK', 'HOME', 'FAST_FORWARD']);
     });
   });
 }

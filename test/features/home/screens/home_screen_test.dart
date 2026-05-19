@@ -37,7 +37,7 @@ void main() {
         overrides: [
           preferencesRepositoryProvider.overrideWithValue(preferences),
           analyticsServiceProvider.overrideWithValue(analytics),
-          connectChannelProvider.overrideWithValue(channel),
+          remoteChannelProvider.overrideWithValue(channel),
         ],
         child: const MaterialApp(home: HomeScreen()),
       ),
@@ -78,6 +78,26 @@ void main() {
 
     expect(channel.sentKeys, ['OK']);
     expect(analytics.keysSent, ['OK']);
+  });
+
+  testWidgets('main skin control buttons route through the remote channel', (
+    tester,
+  ) async {
+    await pumpHome(tester);
+
+    await tester.tap(find.byIcon(Icons.palette_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Main'));
+    await tester.pumpAndSettle();
+
+    // The Back/Home/transport buttons added to the main skin must reach the
+    // channel exactly like the directional keys do.
+    await tester.tap(find.byIcon(Icons.home_rounded));
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    await tester.pumpAndSettle();
+
+    expect(channel.sentKeys, ['HOME', 'BACK']);
+    expect(analytics.keysSent, ['HOME', 'BACK']);
   });
 }
 

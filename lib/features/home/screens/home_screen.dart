@@ -54,27 +54,31 @@ class _SkinMenuButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final activeSkin =
         ref.watch(activeSkinProvider).valueOrNull ?? AppSkin.classic;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return PopupMenuButton<AppSkin>(
       icon: const Icon(Icons.palette_outlined),
       tooltip: 'Change skin',
       initialValue: activeSkin,
       onSelected: (skin) => ref.read(skinControllerProvider).selectSkin(skin),
+      // Slick rounded popup with a theme-colored outline that makes it pop.
+      color: colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      elevation: 12,
+      shadowColor: colorScheme.primary.withAlpha(140),
+      menuPadding: const EdgeInsets.symmetric(vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: colorScheme.primary, width: 1.5),
+      ),
       itemBuilder: (context) => [
         for (final skin in AppSkin.values)
           PopupMenuItem<AppSkin>(
             value: skin,
-            child: Row(
-              children: [
-                Icon(
-                  skin == activeSkin
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_unchecked,
-                  size: 18,
-                ),
-                const SizedBox(width: 12),
-                Text(_skinLabel(skin)),
-              ],
+            child: _SkinMenuRow(
+              label: _skinLabel(skin),
+              isActive: skin == activeSkin,
+              colorScheme: colorScheme,
             ),
           ),
       ],
@@ -84,5 +88,43 @@ class _SkinMenuButton extends ConsumerWidget {
   static String _skinLabel(AppSkin skin) {
     final name = skin.name;
     return '${name[0].toUpperCase()}${name.substring(1)}';
+  }
+}
+
+/// A single row inside the skin popup — the active skin is tinted and bolded
+/// so the current selection reads clearly.
+class _SkinMenuRow extends StatelessWidget {
+  const _SkinMenuRow({
+    required this.label,
+    required this.isActive,
+    required this.colorScheme,
+  });
+
+  final String label;
+  final bool isActive;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = colorScheme.primary;
+    return Row(
+      children: [
+        Icon(
+          isActive
+              ? Icons.radio_button_checked
+              : Icons.radio_button_unchecked,
+          size: 18,
+          color: isActive ? accent : colorScheme.onSurface.withAlpha(120),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          label,
+          style: TextStyle(
+            color: isActive ? accent : colorScheme.onSurface,
+            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ],
+    );
   }
 }

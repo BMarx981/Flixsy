@@ -43,7 +43,7 @@ final adServiceProvider = Provider<AdService>((ref) {
 /// across the per-vendor channels (Roku, webOS, Samsung, and Android TV).
 /// Always obtain the channel through this provider; never instantiate one
 /// elsewhere.
-final connectChannelProvider = Provider<RemoteChannel>((ref) {
+final remoteChannelProvider = Provider<RemoteChannel>((ref) {
   final preferences = ref.watch(preferencesRepositoryProvider);
   final channel = CompositeRemoteChannel([
     RokuConnectChannel(),

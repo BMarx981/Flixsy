@@ -91,6 +91,48 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
 
   @override
   Widget build(BuildContext context) {
+    // The sparkle star carries the directional + OK keys; navigation and
+    // transport keys live in the control bar below it.
+    return Column(
+      children: [
+        Expanded(child: _buildLogoPad()),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _ControlButton(
+              icon: Icons.fast_rewind_outlined,
+              label: 'Rewind',
+              keyCode: 'REWIND',
+              onKeyPressed: widget.onKeyPressed,
+            ),
+            _ControlButton(
+              icon: Icons.arrow_back_rounded,
+              label: 'Back',
+              keyCode: 'BACK',
+              onKeyPressed: widget.onKeyPressed,
+            ),
+            _ControlButton(
+              icon: Icons.home_outlined,
+              label: 'Home',
+              keyCode: 'HOME',
+              onKeyPressed: widget.onKeyPressed,
+            ),
+            _ControlButton(
+              icon: Icons.fast_forward_outlined,
+              label: 'Forward',
+              keyCode: 'FAST_FORWARD',
+              onKeyPressed: widget.onKeyPressed,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// The logo star control surface — kept self-contained so its hit-test
+  /// geometry doesn't depend on the control bar's height.
+  Widget _buildLogoPad() {
     return Center(
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -100,6 +142,7 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
           );
           final side = (available.isFinite ? available : 360.0) * 0.9;
           return SizedBox(
+            key: const ValueKey('flixsyLogoPad'),
             width: side,
             height: side,
             child: GestureDetector(
@@ -131,6 +174,64 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
           );
         },
       ),
+    );
+  }
+}
+
+/// A circular control button in the bar beneath the logo star. Sends its
+/// [keyCode] through [onKeyPressed] — the same callback the star uses — so
+/// it routes to the connected TV exactly like a directional key.
+class _ControlButton extends StatelessWidget {
+  const _ControlButton({
+    required this.icon,
+    required this.label,
+    required this.keyCode,
+    required this.onKeyPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final String keyCode;
+  final void Function(String key) onKeyPressed;
+
+  void _handleTap() {
+    HapticFeedback.selectionClick();
+    onKeyPressed(keyCode);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Tooltip(
+          message: label,
+          child: Material(
+            color: scheme.surfaceContainerHigh,
+            shape: CircleBorder(
+              side: BorderSide(color: scheme.primary.withValues(alpha: 0.45)),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: _handleTap,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Icon(icon, size: 24, color: scheme.onSurface),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            letterSpacing: 0.4,
+            color: scheme.onSurface.withValues(alpha: 0.7),
+          ),
+        ),
+      ],
     );
   }
 }

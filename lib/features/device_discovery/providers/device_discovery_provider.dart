@@ -86,7 +86,7 @@ class DiscoveryState {
 class DeviceDiscoveryNotifier extends Notifier<DiscoveryState> {
   @override
   DiscoveryState build() {
-    final channel = ref.read(connectChannelProvider);
+    final channel = ref.read(remoteChannelProvider);
 
     // Listen to device events (found / updated / lost / pairing).
     final sub = channel.deviceEvents.listen(
@@ -107,7 +107,7 @@ class DeviceDiscoveryNotifier extends Notifier<DiscoveryState> {
   Future<void> _startDiscovery() async {
     debugPrint('[DeviceDiscovery] starting discovery...');
     try {
-      await ref.read(connectChannelProvider).startDiscovery();
+      await ref.read(remoteChannelProvider).startDiscovery();
       debugPrint('[DeviceDiscovery] startDiscovery call returned');
     } on ConnectFailure catch (e) {
       debugPrint('[DeviceDiscovery] startDiscovery failed: $e');
@@ -170,7 +170,7 @@ class DeviceDiscoveryNotifier extends Notifier<DiscoveryState> {
       clearPairing: true,
     );
     try {
-      await ref.read(connectChannelProvider).connectToDevice(device.id);
+      await ref.read(remoteChannelProvider).connectToDevice(device.id);
       state = state.copyWith(
         clearConnecting: true,
         clearPairing: true,
@@ -190,7 +190,7 @@ class DeviceDiscoveryNotifier extends Notifier<DiscoveryState> {
   /// once the code is accepted.
   Future<void> submitPairingCode(String code) async {
     try {
-      await ref.read(connectChannelProvider).submitPairingCode(code);
+      await ref.read(remoteChannelProvider).submitPairingCode(code);
     } on ConnectFailure catch (e) {
       state = state.copyWith(failure: e);
     }

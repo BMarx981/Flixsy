@@ -15,7 +15,7 @@ class RemoteControlNotifier extends Notifier<ConnectFailure?> {
   /// `onKeyPressed` callback — they never touch the channel directly.
   Future<void> sendKey(String key) async {
     try {
-      await ref.read(connectChannelProvider).sendKeyCommand(key);
+      await ref.read(remoteChannelProvider).sendKeyCommand(key);
       await ref.read(analyticsServiceProvider).logKeySent(key);
       if (state != null) state = null;
     } on ConnectFailure catch (failure) {

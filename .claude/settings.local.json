@@ -48,7 +48,8 @@
       "WebSearch",
       "WebFetch(domain:raw.githubusercontent.com)",
       "Read(//Users/brianmarx/.pub-cache/hosted/pub.dev/**)",
-      "Bash(flutter pub *)"
+      "Bash(flutter pub *)",
+      "Bash(flutter devices *)"
     ]
   }
 }

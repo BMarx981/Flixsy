@@ -12,7 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 Future<void> _settle() => Future<void>.delayed(Duration.zero);
 
 ProviderContainer _container(_FakeChannel channel) => ProviderContainer(
-  overrides: [connectChannelProvider.overrideWithValue(channel)],
+  overrides: [remoteChannelProvider.overrideWithValue(channel)],
 );
 
 void main() {

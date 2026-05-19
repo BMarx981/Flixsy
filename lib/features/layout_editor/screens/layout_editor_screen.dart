@@ -7,11 +7,11 @@ import '../../../data/models/layout/remote_button.dart';
 import '../../../data/models/layout/remote_layout.dart';
 import '../../../theming/layout_provider.dart';
 import '../../../theming/skins/classic/classic_section_renderer.dart';
-import '../../../theming/standard/default_glyphs.dart';
+import '../../../theming/standard/button_presentation.dart';
 import '../../../theming/standard/standard_remote.dart';
 import '../providers/layout_editor_provider.dart';
-import '../widgets/action_picker_sheet.dart';
 import '../widgets/block_type_sheet.dart';
+import '../widgets/button_editor_sheet.dart';
 
 /// Edits one custom layout: rename it, add / remove / reorder blocks, and
 /// reassign each button's action, with a live preview (design doc §8).
@@ -54,8 +54,8 @@ class LayoutEditorScreen extends ConsumerWidget {
                 index: index,
                 block: block,
                 onDelete: () => notifier.removeBlock(index),
-                onButtonTap: (buttonIndex) =>
-                    _editAction(context, notifier, index, buttonIndex),
+                onButtonTap: (buttonIndex, button) =>
+                    _editButton(context, notifier, index, buttonIndex, button),
               ),
           ],
         ),
@@ -71,14 +71,15 @@ class LayoutEditorScreen extends ConsumerWidget {
     if (kind != null) notifier.addBlock(kind);
   }
 
-  Future<void> _editAction(
+  Future<void> _editButton(
     BuildContext context,
     LayoutEditorNotifier notifier,
     int blockIndex,
     int buttonIndex,
+    RemoteButton button,
   ) async {
-    final key = await showActionPickerSheet(context);
-    if (key != null) notifier.setAction(blockIndex, buttonIndex, key);
+    final edited = await showButtonEditorSheet(context, button: button);
+    if (edited != null) notifier.setButton(blockIndex, buttonIndex, edited);
   }
 
   Future<void> _save(BuildContext context, WidgetRef ref) async {
@@ -217,7 +218,7 @@ class _BlockCard extends StatelessWidget {
   final int index;
   final LayoutBlock block;
   final VoidCallback onDelete;
-  final void Function(int buttonIndex) onButtonTap;
+  final void Function(int buttonIndex, RemoteButton button) onButtonTap;
 
   @override
   Widget build(BuildContext context) {
@@ -260,7 +261,7 @@ class _BlockCard extends StatelessWidget {
                     if (button != null)
                       _ButtonChip(
                         button: button,
-                        onTap: () => onButtonTap(i),
+                        onTap: () => onButtonTap(i, button),
                       )
                     else
                       const _EmptyCellChip(),
@@ -273,8 +274,8 @@ class _BlockCard extends StatelessWidget {
   }
 }
 
-/// A tappable chip for one button — shows the current action; tapping it
-/// opens the action picker.
+/// A tappable chip for one button — shows its resolved icon and label;
+/// tapping it opens the button editor.
 class _ButtonChip extends StatelessWidget {
   const _ButtonChip({required this.button, required this.onTap});
 
@@ -283,9 +284,14 @@ class _ButtonChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final presentation = resolveButton(button);
+    final avatar = switch (presentation.glyph) {
+      IconGlyph(:final icon) => Icon(icon, size: 18),
+      TextGlyph() => const Icon(Icons.text_fields, size: 18),
+    };
     return ActionChip(
-      avatar: Text(defaultGlyph(button.action)),
-      label: Text(defaultLabel(button.action)),
+      avatar: avatar,
+      label: Text(presentation.semanticLabel),
       onPressed: onTap,
     );
   }

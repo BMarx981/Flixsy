@@ -56,21 +56,30 @@ class LayoutEditorNotifier
     state = state.copyWith(blocks: blocks);
   }
 
+  /// Replaces one button outright — its action *and* appearance.
+  void setButton(int blockIndex, int buttonIndex, RemoteButton button) {
+    if (blockIndex < 0 || blockIndex >= state.blocks.length) return;
+    final block = state.blocks[blockIndex];
+    if (buttonIndex < 0 || buttonIndex >= block.buttons.length) return;
+    final blocks = [...state.blocks];
+    blocks[blockIndex] = block.withButtonAt(buttonIndex, button);
+    state = state.copyWith(blocks: blocks);
+  }
+
   /// Reassigns the action of one button, keeping its appearance intact.
   void setAction(int blockIndex, int buttonIndex, RemoteKey action) {
     if (blockIndex < 0 || blockIndex >= state.blocks.length) return;
     final block = state.blocks[blockIndex];
     if (buttonIndex < 0 || buttonIndex >= block.buttons.length) return;
     final existing = block.buttons[buttonIndex];
-    final blocks = [...state.blocks];
-    blocks[blockIndex] = block.withButtonAt(
+    setButton(
+      blockIndex,
       buttonIndex,
       RemoteButton(
         action: action,
         appearance: existing?.appearance ?? const DefaultLook(),
       ),
     );
-    state = state.copyWith(blocks: blocks);
   }
 
   /// A sensible starting block for [kind]; the user reassigns from here.

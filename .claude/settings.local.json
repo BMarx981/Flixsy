@@ -94,7 +94,13 @@
       "Bash(git stash list *)",
       "Bash(dart run *)",
       "Bash(dart *)",
-      "Bash(python3 -c \"import json; json.load\\(open\\('/Users/brianmarx/Desktop/flixsy/.claude/settings.local.json'\\)\\); print\\('valid JSON'\\)\")"
+      "Bash(python3 -c \"import json; json.load\\(open\\('/Users/brianmarx/Desktop/flixsy/.claude/settings.local.json'\\)\\); print\\('valid JSON'\\)\")",
+      "Bash(sed *)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/brianmarx/Desktop/flixsy/.claude/settings.local.json'\\)\\); print\\('valid JSON; ask=', d['permissions']['ask']\\)\")"
+    ],
+    "ask": [
+      "Bash(sed -i*)",
+      "Bash(sed --in-place*)"
     ]
   }
 }

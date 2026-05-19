@@ -82,20 +82,54 @@ void main() {
     expect(find.text('D-pad'), findsNothing);
   });
 
-  testWidgets('tapping a button reassigns its action', (tester) async {
+  testWidgets('editing a button reassigns its action', (tester) async {
     await pumpEditor(tester, _rowLayout);
     expect(find.widgetWithText(ActionChip, 'Home'), findsOneWidget);
 
+    // Tapping the chip opens the button editor sheet.
     await tester.tap(find.widgetWithText(ActionChip, 'Home'));
     await tester.pumpAndSettle();
-    // 'Up' is in the first group of the action-picker sheet.
+    expect(find.text('Edit button'), findsOneWidget);
+
+    // The Action row opens the action picker.
+    await tester.tap(find.widgetWithText(ListTile, 'Action'));
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Up'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Up'));
     await tester.pumpAndSettle();
 
+    // Confirm the edit back in the button editor.
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+
     expect(find.widgetWithText(ActionChip, 'Up'), findsOneWidget);
     expect(find.widgetWithText(ActionChip, 'Home'), findsNothing);
+  });
+
+  testWidgets('editing a button switches it to text-only', (tester) async {
+    await pumpEditor(tester, _rowLayout);
+
+    await tester.tap(find.widgetWithText(ActionChip, 'Home'));
+    await tester.pumpAndSettle();
+
+    // The Icon row opens the icon picker; choose "Text only".
+    await tester.tap(find.widgetWithText(ListTile, 'Icon'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Text only'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+
+    // The chip now carries the text-only marker icon.
+    expect(
+      find.descendant(
+        of: find.byType(ActionChip),
+        matching: find.byIcon(Icons.text_fields),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('saving an empty layout shows a validation message', (

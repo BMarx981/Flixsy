@@ -1,6 +1,6 @@
 # Design — User-editable remote layouts & skins
 
-Status: **proposed** · Owner: Brian Marx · Last updated: 2026-05-18
+Status: **proposed** · Owner: Brian Marx · Last updated: 2026-05-19
 
 ## 1. Goal
 
@@ -153,7 +153,9 @@ StandardRemote (widget)
 
 - An **icon pack** is a named collection of named icons. Ship one built-in
   `Standard` pack (the usual suspects: play, pause, stop, ⏪, ⏩, ⌂, back,
-  power, number glyphs…) bundled under `assets/icons/standard/`.
+  power…). *Implemented (Phase 5):* the `Standard` pack is backed by Material
+  `IconData` — no bundled assets — so every icon resolves synchronously and
+  type-safely. Partner packs (Phase 7) may still ship bundled image assets.
 - The pack model is **entitlement-aware** from day one — each pack carries an
   `isUnlocked` check — so partner packs (e.g. a Nickelodeon pack with a
   SpongeBob play button) slot in later behind a paywall. Partner packs are

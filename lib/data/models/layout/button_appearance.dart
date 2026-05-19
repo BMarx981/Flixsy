@@ -17,6 +17,13 @@ sealed class ButtonAppearance {
 
   Map<String, Object?> toJson();
 
+  /// A copy of this appearance with [labelOverride] replaced, keeping the
+  /// appearance *kind* (and any icon/image id) intact.
+  ///
+  /// Lets the button editor change an action's label without disturbing the
+  /// chosen icon — the two are independent (design doc §3).
+  ButtonAppearance withLabelOverride(String? labelOverride);
+
   factory ButtonAppearance.fromJson(Map<String, Object?> json) {
     final rawLabel = json['labelOverride'];
     final labelOverride = rawLabel is String ? rawLabel : null;
@@ -59,6 +66,10 @@ final class DefaultLook extends ButtonAppearance {
 
   @override
   Map<String, Object?> toJson() => _baseJson('default', labelOverride);
+
+  @override
+  DefaultLook withLabelOverride(String? labelOverride) =>
+      DefaultLook(labelOverride: labelOverride);
 }
 
 /// An icon from the curated built-in `Standard` pack.
@@ -75,6 +86,10 @@ final class BuiltInIcon extends ButtonAppearance {
     ..._baseJson('builtInIcon', labelOverride),
     'iconId': iconId,
   };
+
+  @override
+  BuiltInIcon withLabelOverride(String? labelOverride) =>
+      BuiltInIcon(iconId: iconId, labelOverride: labelOverride);
 }
 
 /// An icon from a branded/partner pack (Phase 7).
@@ -94,6 +109,10 @@ final class PackIcon extends ButtonAppearance {
     'packId': packId,
     'iconId': iconId,
   };
+
+  @override
+  PackIcon withLabelOverride(String? labelOverride) =>
+      PackIcon(packId: packId, iconId: iconId, labelOverride: labelOverride);
 }
 
 /// A user-uploaded image, referenced by id into the custom-image store
@@ -108,6 +127,10 @@ final class CustomImage extends ButtonAppearance {
     ..._baseJson('customImage', labelOverride),
     'imageId': imageId,
   };
+
+  @override
+  CustomImage withLabelOverride(String? labelOverride) =>
+      CustomImage(imageId: imageId, labelOverride: labelOverride);
 }
 
 /// A button with no glyph — just its label text.
@@ -116,4 +139,8 @@ final class TextOnly extends ButtonAppearance {
 
   @override
   Map<String, Object?> toJson() => _baseJson('textOnly', labelOverride);
+
+  @override
+  TextOnly withLabelOverride(String? labelOverride) =>
+      TextOnly(labelOverride: labelOverride);
 }

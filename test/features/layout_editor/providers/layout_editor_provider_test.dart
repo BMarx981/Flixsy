@@ -65,4 +65,23 @@ void main() {
     notifier().setAction(9, 0, RemoteKey.home);
     expect(draft().blocks, hasLength(2));
   });
+
+  test('setButton replaces a button outright — action and appearance', () {
+    notifier().setButton(
+      0,
+      0,
+      const RemoteButton(
+        action: RemoteKey.power,
+        appearance: TextOnly(labelOverride: 'Off'),
+      ),
+    );
+    final block = draft().blocks.first as ButtonRowBlock;
+    expect(block.buttons.single.action, RemoteKey.power);
+    expect(block.buttons.single.appearance, isA<TextOnly>());
+  });
+
+  test('setButton ignores an out-of-range index without throwing', () {
+    notifier().setButton(9, 0, const RemoteButton(action: RemoteKey.home));
+    expect(draft().blocks, hasLength(2));
+  });
 }

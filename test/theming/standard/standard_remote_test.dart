@@ -1,5 +1,4 @@
 import 'package:flixsy/data/models/layout/built_in_layouts.dart';
-import 'package:flixsy/data/models/layout/button_appearance.dart';
 import 'package:flixsy/data/models/layout/layout_block.dart';
 import 'package:flixsy/data/models/layout/remote_button.dart';
 import 'package:flixsy/data/models/layout/remote_layout.dart';
@@ -7,12 +6,11 @@ import 'package:flixsy/theming/remote_key.dart';
 import 'package:flixsy/theming/remote_skin.dart';
 import 'package:flixsy/theming/skins/classic/classic_section_renderer.dart';
 import 'package:flixsy/theming/skins/classic/classic_theme.dart';
-import 'package:flixsy/theming/standard/default_glyphs.dart';
 import 'package:flixsy/theming/standard/standard_remote.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// A layout exercising all five block types with distinct glyphs.
+/// A layout exercising all five block types with distinct keys.
 const _everyBlockLayout = RemoteLayout(
   id: 'test:every-block',
   name: 'Every block',
@@ -80,12 +78,22 @@ void main() {
     ) async {
       final keys = await pump(tester, classicLayout);
 
-      for (final glyph in ['▲', '◀', 'OK', '▶', '▼', '⏪', '⏯', '⏩']) {
-        expect(find.text(glyph), findsOneWidget);
-      }
+      // Buttons paint catalogue icons with a caption beneath each.
+      expect(find.byIcon(Icons.keyboard_arrow_up), findsOneWidget);
+      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
 
-      for (final glyph in ['▲', '◀', 'OK', '▶', '▼', '⏪', '⏯', '⏩']) {
-        await tester.tap(find.text(glyph));
+      const captions = [
+        'Up',
+        'Left',
+        'OK',
+        'Right',
+        'Down',
+        'Rewind',
+        'Play/Pause',
+        'Fast Forward',
+      ];
+      for (final caption in captions) {
+        await tester.tap(find.text(caption));
       }
       await tester.pumpAndSettle();
 
@@ -107,61 +115,16 @@ void main() {
       final keys = await pump(tester, _everyBlockLayout);
 
       // The d-pad and button-row blocks rendered alongside the rest.
-      expect(find.text('▲'), findsOneWidget);
-      expect(find.text('⌂'), findsOneWidget);
+      expect(find.text('Up'), findsOneWidget);
+      expect(find.text('Home'), findsOneWidget);
 
-      await tester.tap(find.text('－')); // volume down
-      await tester.tap(find.text('🔇')); // mute
-      await tester.tap(find.text('＋')); // volume up
-      await tester.tap(find.text('⏻')); // power, in the grid
+      await tester.tap(find.text('Volume Down'));
+      await tester.tap(find.text('Mute'));
+      await tester.tap(find.text('Volume Up'));
+      await tester.tap(find.text('Power')); // in the grid
       await tester.pumpAndSettle();
 
       expect(keys, ['VOLUME_DOWN', 'MUTE', 'VOLUME_UP', 'POWER']);
-    });
-  });
-
-  group('buttonGlyph', () {
-    test('DefaultLook resolves to the action default glyph', () {
-      expect(
-        buttonGlyph(const RemoteButton(action: RemoteKey.playPause)),
-        '⏯',
-      );
-    });
-
-    test('TextOnly resolves to its label override', () {
-      expect(
-        buttonGlyph(
-          const RemoteButton(
-            action: RemoteKey.home,
-            appearance: TextOnly(labelOverride: 'Menu'),
-          ),
-        ),
-        'Menu',
-      );
-    });
-
-    test('TextOnly with no override uses the action default label', () {
-      expect(
-        buttonGlyph(
-          const RemoteButton(
-            action: RemoteKey.home,
-            appearance: TextOnly(),
-          ),
-        ),
-        'Home',
-      );
-    });
-
-    test('an unresolvable icon appearance falls back to the glyph', () {
-      expect(
-        buttonGlyph(
-          const RemoteButton(
-            action: RemoteKey.power,
-            appearance: BuiltInIcon(iconId: 'nonexistent'),
-          ),
-        ),
-        '⏻',
-      );
     });
   });
 }

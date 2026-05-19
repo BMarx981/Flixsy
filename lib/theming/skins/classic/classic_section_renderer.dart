@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../data/models/layout/layout_block.dart';
 import '../../../data/models/layout/remote_button.dart';
 import '../../skin_tokens.dart';
-import '../../standard/default_glyphs.dart';
+import '../../standard/button_presentation.dart';
 import '../../standard/section_renderer.dart';
 
 /// The `Classic` skin as a [SectionRenderer]: plain rounded [ElevatedButton]s
@@ -110,8 +110,43 @@ class ClassicSectionRenderer implements SectionRenderer {
       padding: EdgeInsets.all(gap / 2),
       child: ElevatedButton(
         onPressed: () => onKey(button.action),
-        child: Text(buttonGlyph(button)),
+        child: _ButtonContent(presentation: resolveButton(button)),
       ),
+    );
+  }
+}
+
+/// Paints a button's resolved [ButtonPresentation]: the glyph — an icon, or
+/// text for a text-only button — with the caption beneath it when shown.
+class _ButtonContent extends StatelessWidget {
+  const _ButtonContent({required this.presentation});
+
+  final ButtonPresentation presentation;
+
+  @override
+  Widget build(BuildContext context) {
+    final glyph = presentation.glyph;
+    final mark = switch (glyph) {
+      IconGlyph(:final icon) => Icon(icon, size: 24),
+      TextGlyph(:final text) => Text(text),
+    };
+    final caption = presentation.caption;
+
+    final content = caption == null
+        ? mark
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              mark,
+              const SizedBox(height: 2),
+              Text(caption, style: const TextStyle(fontSize: 11)),
+            ],
+          );
+
+    // The icon glyph carries no text, so name the button for screen readers.
+    return Semantics(
+      label: presentation.semanticLabel,
+      child: content,
     );
   }
 }

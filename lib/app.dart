@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/extensions/l10n_extensions.dart';
+import 'l10n/generated/app_localizations.dart';
 import 'shared/providers/app_providers.dart';
 import 'theming/skin_provider.dart';
 
@@ -13,7 +15,11 @@ class FlixsyApp extends ConsumerWidget {
     final appRouter = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'Flixsy',
+      // The window/task title follows the device language like the rest of
+      // the UI — see lib/l10n/app_en.arb and the other app_<locale>.arb files.
+      onGenerateTitle: (context) => context.l10n.appTitle,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: skinConfig.themeData,
       routerConfig: appRouter.config(
         navigatorObservers: () => [ref.read(analyticsServiceProvider).observer],

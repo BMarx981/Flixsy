@@ -38,7 +38,10 @@ const _fullLayout = RemoteLayout(
     ),
     GridBlock(
       columns: 2,
-      cells: [RemoteButton(action: RemoteKey.power), null],
+      cells: [
+        RemoteButton(action: RemoteKey.power),
+        null,
+      ],
     ),
   ],
 );
@@ -75,7 +78,11 @@ void main() {
     test('a null grid cell stays null after a round-trip', () {
       const grid = GridBlock(
         columns: 3,
-        cells: [RemoteButton(action: RemoteKey.ok), null, null],
+        cells: [
+          RemoteButton(action: RemoteKey.ok),
+          null,
+          null,
+        ],
       );
       final restored = GridBlock.fromJson(grid.toJson());
       expect(restored.cells, hasLength(3));
@@ -96,10 +103,7 @@ void main() {
     });
 
     test('a button with an unknown action code does not parse', () {
-      expect(
-        RemoteButton.fromJson({'action': 'WARP_DRIVE'}),
-        isNull,
-      );
+      expect(RemoteButton.fromJson({'action': 'WARP_DRIVE'}), isNull);
       expect(RemoteButton.fromJson({}), isNull);
     });
 

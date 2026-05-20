@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/extensions/l10n_extensions.dart';
 import '../../../data/models/tv_device.dart';
 import '../../../router/app_router.dart';
 import '../providers/device_discovery_provider.dart';
@@ -24,7 +25,7 @@ class DeviceDiscoveryScreen extends ConsumerWidget {
       if (next.failure != null && next.failure != prev?.failure) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(next.failure!.message),
+            content: Text(context.l10n.failureMessage(next.failure!)),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
@@ -45,7 +46,9 @@ class DeviceDiscoveryScreen extends ConsumerWidget {
               if (state.pairing != null) ...[
                 _PairingBanner(
                   request: state.pairing!,
-                  deviceName: _deviceNameFor(state, state.pairing!.deviceId),
+                  deviceName:
+                      _deviceNameFor(state, state.pairing!.deviceId) ??
+                      context.l10n.discoveryDeviceFallbackName,
                   onSubmitCode: notifier.submitPairingCode,
                 ),
                 const SizedBox(height: 24),
@@ -82,7 +85,7 @@ class _Header extends StatelessWidget {
         _PulsingTvIcon(animate: isScanning),
         const SizedBox(height: 24),
         Text(
-          'Find Your TV',
+          context.l10n.discoveryHeaderTitle,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: Colors.white,
             fontWeight: .bold,
@@ -90,7 +93,7 @@ class _Header extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Make sure your TV is on and connected\nto the same Wi-Fi network.',
+          context.l10n.discoveryHeaderSubtitle,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: Colors.white54,
             height: 1.5,
@@ -209,19 +212,19 @@ class _EmptyBody extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Could not start search',
+              context.l10n.discoveryErrorTitle,
               style: theme.textTheme.titleMedium?.copyWith(color: Colors.white),
             ),
             const SizedBox(height: 8),
             Text(
-              'Check your network connection and try again.',
+              context.l10n.discoveryErrorBody,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
             ),
             const SizedBox(height: 24),
             FilledButton.tonal(
               onPressed: onRetry,
-              child: const Text('Try Again'),
+              child: Text(context.l10n.discoveryRetryButton),
             ),
           ],
         ),
@@ -239,12 +242,12 @@ class _EmptyBody extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            'Searching your network…',
+            context.l10n.discoverySearching,
             style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
           ),
           const SizedBox(height: 8),
           Text(
-            'This can take a few seconds.',
+            context.l10n.discoverySearchingHint,
             style: theme.textTheme.bodySmall?.copyWith(color: Colors.white38),
           ),
         ],
@@ -269,7 +272,7 @@ class _DeviceList extends StatelessWidget {
         Row(
           children: [
             Text(
-              '${state.devices.length} device${state.devices.length == 1 ? '' : 's'} found',
+              context.l10n.discoveryDevicesFound(state.devices.length),
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: Theme.of(context).colorScheme.primary,
                 letterSpacing: 0.8,
@@ -404,12 +407,13 @@ class _DeviceTile extends StatelessWidget {
 
 // ─── Pairing banner ──────────────────────────────────────────────────────────
 
-/// The display name of the device with [deviceId], or a gentle fallback.
-String _deviceNameFor(DiscoveryState state, String deviceId) {
+/// The display name of the device with [deviceId], or `null` when it is not
+/// among the discovered devices — the caller supplies a localized fallback.
+String? _deviceNameFor(DiscoveryState state, String deviceId) {
   for (final device in state.devices) {
     if (device.id == deviceId) return device.name;
   }
-  return 'your TV';
+  return null;
 }
 
 /// Guidance shown while a TV is waiting on the user to finish pairing — either
@@ -468,7 +472,9 @@ class _PairingBannerState extends State<_PairingBanner> {
               ),
               const SizedBox(width: 10),
               Text(
-                isCode ? 'Enter the code' : 'Check your TV',
+                isCode
+                    ? context.l10n.discoveryPairingEnterCodeTitle
+                    : context.l10n.discoveryPairingCheckTvTitle,
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: colorScheme.onPrimaryContainer,
                   fontWeight: FontWeight.w700,
@@ -479,10 +485,8 @@ class _PairingBannerState extends State<_PairingBanner> {
           const SizedBox(height: 8),
           Text(
             isCode
-                ? '${widget.deviceName} is showing a 6-digit code. '
-                      'Type it below to finish pairing.'
-                : 'Accept the connection request on ${widget.deviceName} '
-                      'using its remote.',
+                ? context.l10n.discoveryPairingEnterCodeBody(widget.deviceName)
+                : context.l10n.discoveryPairingCheckTvBody(widget.deviceName),
             style: theme.textTheme.bodyMedium?.copyWith(
               color: colorScheme.onPrimaryContainer.withAlpha(210),
               height: 1.4,
@@ -498,15 +502,18 @@ class _PairingBannerState extends State<_PairingBanner> {
                     keyboardType: TextInputType.number,
                     autofocus: true,
                     onSubmitted: (_) => _submit(),
-                    decoration: const InputDecoration(
-                      hintText: '000000',
+                    decoration: InputDecoration(
+                      hintText: context.l10n.discoveryPairingCodeHint,
                       isDense: true,
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                FilledButton(onPressed: _submit, child: const Text('Pair')),
+                FilledButton(
+                  onPressed: _submit,
+                  child: Text(context.l10n.discoveryPairButton),
+                ),
               ],
             ),
           ],

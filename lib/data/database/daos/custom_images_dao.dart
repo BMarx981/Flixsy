@@ -15,25 +15,17 @@ class CustomImagesDao extends DatabaseAccessor<AppDatabase>
 
   /// Watches every stored image, most recently added first.
   Stream<List<CustomImagesTableData>> watchAll() {
-    return (select(customImagesTable)
-          ..orderBy([
-            (t) => OrderingTerm(
-              expression: t.createdAt,
-              mode: OrderingMode.desc,
-            ),
-          ]))
+    return (select(customImagesTable)..orderBy([
+          (t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc),
+        ]))
         .watch();
   }
 
   /// Every stored image, most recently added first.
   Future<List<CustomImagesTableData>> getAll() {
-    return (select(customImagesTable)
-          ..orderBy([
-            (t) => OrderingTerm(
-              expression: t.createdAt,
-              mode: OrderingMode.desc,
-            ),
-          ]))
+    return (select(customImagesTable)..orderBy([
+          (t) => OrderingTerm(expression: t.createdAt, mode: OrderingMode.desc),
+        ]))
         .get();
   }
 

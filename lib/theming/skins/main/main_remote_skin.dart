@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../core/extensions/l10n_extensions.dart';
+import '../../icons/remote_key_l10n.dart';
 import '../../remote_key.dart';
 import '../../remote_skin.dart';
 
@@ -94,40 +96,43 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
   Widget build(BuildContext context) {
     // The sparkle star carries the directional + OK keys; navigation and
     // transport keys live in the control bar below it.
-    return Column(
-      children: [
-        Expanded(child: _buildLogoPad()),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _ControlButton(
-              icon: Icons.fast_rewind_outlined,
-              label: 'Rewind',
-              action: RemoteKey.rewind,
-              onKeyPressed: widget.onKeyPressed,
-            ),
-            _ControlButton(
-              icon: Icons.arrow_back_rounded,
-              label: 'Back',
-              action: RemoteKey.back,
-              onKeyPressed: widget.onKeyPressed,
-            ),
-            _ControlButton(
-              icon: Icons.home_outlined,
-              label: 'Home',
-              action: RemoteKey.home,
-              onKeyPressed: widget.onKeyPressed,
-            ),
-            _ControlButton(
-              icon: Icons.fast_forward_outlined,
-              label: 'Forward',
-              action: RemoteKey.fastForward,
-              onKeyPressed: widget.onKeyPressed,
-            ),
-          ],
-        ),
-      ],
+    //
+    // The remote is a physical control surface: its geometry is fixed to LTR
+    // so the star's points and the control bar never mirror with an RTL UI
+    // language. The button labels themselves are still localized.
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Column(
+        children: [
+          Expanded(child: _buildLogoPad()),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _ControlButton(
+                icon: Icons.fast_rewind_outlined,
+                action: RemoteKey.rewind,
+                onKeyPressed: widget.onKeyPressed,
+              ),
+              _ControlButton(
+                icon: Icons.arrow_back_rounded,
+                action: RemoteKey.back,
+                onKeyPressed: widget.onKeyPressed,
+              ),
+              _ControlButton(
+                icon: Icons.home_outlined,
+                action: RemoteKey.home,
+                onKeyPressed: widget.onKeyPressed,
+              ),
+              _ControlButton(
+                icon: Icons.fast_forward_outlined,
+                action: RemoteKey.fastForward,
+                onKeyPressed: widget.onKeyPressed,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -160,7 +165,7 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
                   children: [
                     SvgPicture.asset(
                       'assets/images/flixsy_logo.svg',
-                      semanticsLabel: 'Flixsy remote',
+                      semanticsLabel: context.l10n.mainRemoteSemanticLabel,
                     ),
                     CustomPaint(
                       painter: _HighlightPainter(
@@ -185,13 +190,11 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
 class _ControlButton extends StatelessWidget {
   const _ControlButton({
     required this.icon,
-    required this.label,
     required this.action,
     required this.onKeyPressed,
   });
 
   final IconData icon;
-  final String label;
   final RemoteKey action;
   final void Function(String key) onKeyPressed;
 
@@ -203,6 +206,7 @@ class _ControlButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final label = context.l10n.remoteKeyLabel(action);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

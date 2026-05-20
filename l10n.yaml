@@ -1,0 +1,12 @@
+# Configuration for `flutter gen-l10n`.
+#
+# `lib/l10n/app_en.arb` is the source of truth — edit it, then run:
+#   flutter gen-l10n
+# Translations for the other locales live in `app_<locale>.arb` and are
+# round-tripped through a spreadsheet with `tool/l10n_csv.dart`.
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-dir: lib/l10n/generated
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+nullable-getter: false

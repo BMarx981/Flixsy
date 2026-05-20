@@ -4,7 +4,8 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../providers/app_providers.dart';
 
-/// Renders the loaded banner ad, or an empty [SizedBox] while it loads.
+/// Renders a banner ad, or an empty [SizedBox] while it loads. Owns its own
+/// [BannerAd] instance so multiple banners can coexist on different routes.
 /// Screens embed this widget in their layout; skins do not control ad placement.
 class RemoteBannerAd extends ConsumerStatefulWidget {
   const RemoteBannerAd({super.key});
@@ -14,38 +15,44 @@ class RemoteBannerAd extends ConsumerStatefulWidget {
 }
 
 class _RemoteBannerAdState extends ConsumerState<RemoteBannerAd> {
+  BannerAd? _ad;
   bool _isLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    ref
-        .read(adServiceProvider)
-        .loadBannerAd(
-          onLoaded: () {
-            if (mounted) setState(() => _isLoaded = true);
-          },
-        );
+    _loadAd();
+  }
+
+  Future<void> _loadAd() async {
+    final ad = await ref.read(adServiceProvider).createBannerAd(
+      onLoaded: () {
+        if (mounted) setState(() => _isLoaded = true);
+      },
+    );
+    if (!mounted) {
+      ad?.dispose();
+      return;
+    }
+    setState(() => _ad = ad);
   }
 
   @override
   void dispose() {
-    ref.read(adServiceProvider).disposeBannerAd();
+    _ad?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final adService = ref.watch(adServiceProvider);
-
-    if (!_isLoaded || adService.bannerAd == null) {
+    final ad = _ad;
+    if (!_isLoaded || ad == null) {
       return const SizedBox.shrink();
     }
-
     return SizedBox(
-      width: adService.bannerAd!.size.width.toDouble(),
-      height: adService.bannerAd!.size.height.toDouble(),
-      child: AdWidget(ad: adService.bannerAd!),
+      width: ad.size.width.toDouble(),
+      height: ad.size.height.toDouble(),
+      child: AdWidget(ad: ad),
     );
   }
 }

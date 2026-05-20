@@ -211,6 +211,79 @@ The app offers multiple visual skins. All skins share the same routes, screens, 
 
 ---
 
+## Localization (i18n)
+
+The app ships worldwide and is fully localized. The UI language follows the
+**device locale automatically** — there is no in-app language picker.
+
+### Toolchain
+
+- Flutter's built-in `gen_l10n`. `flutter_localizations` (SDK) + `intl` are
+  dependencies, and `generate: true` is set under `flutter:` in `pubspec.yaml`.
+- Configuration lives in `l10n.yaml` (project root).
+- `MaterialApp.router` in `app.dart` wires `AppLocalizations.localizationsDelegates`
+  and `AppLocalizations.supportedLocales`; the OS window title uses
+  `onGenerateTitle` so it is localized too.
+
+### ARB files — source of truth
+
+- Translations live in `lib/l10n/app_<locale>.arb`. **`app_en.arb` is the
+  single source of truth** — it holds every key, the English text, and a
+  `description` for each key (translator context). Edit it, never the others
+  by hand.
+- Generated localizations land in `lib/l10n/generated/` (the `AppLocalizations`
+  class). They are produced by `flutter gen-l10n` and on build — do not edit
+  them, and do not `.gitignore` them.
+- Supported locales: `en`, `es`, `fr`, `de`, `pt`, `ja`, `zh`, `hi`, `ar`,
+  `ru`, `it`, `ko`. A key missing from a non-English ARB falls back to English.
+
+### Translation workflow (CSV ↔ spreadsheet)
+
+`tool/l10n_csv.dart` round-trips the ARB files through one CSV so translators
+can work in Google Sheets:
+
+```bash
+dart run tool/l10n_csv.dart export   # ARB  -> l10n_strings.csv
+# ...translate the locale columns in Google Sheets, download as CSV...
+dart run tool/l10n_csv.dart import   # l10n_strings.csv -> app_<locale>.arb
+flutter gen-l10n                     # regenerate AppLocalizations
+```
+
+`export` always takes keys + English from `app_en.arb` and preserves existing
+translations. `import` rewrites every non-English ARB; a blank cell is omitted
+so that key falls back to English at runtime.
+
+### Rules
+
+- **No user-facing string literals in widgets.** Every visible string —
+  including tooltips, hints, `SnackBar`/dialog text, and `semanticsLabel`s —
+  comes from `AppLocalizations`, reached via `context.l10n` (the extension in
+  `lib/core/extensions/l10n_extensions.dart`).
+- To add a string: add the key + `@key` description to `app_en.arb`, run
+  `flutter gen-l10n`, then use `context.l10n.<key>`. Use ICU `plural`/`select`
+  and named placeholders for counts and interpolation — never concatenate or
+  pluralize strings in Dart.
+- Enum → string mappings are extensions on `AppLocalizations`: `RemoteKey`,
+  `RemoteKeyRole`, and icon-pack ids in `theming/icons/remote_key_l10n.dart`;
+  `ConnectFailure` in `l10n_extensions.dart`. Block-kind / appearance labels
+  are switched inline in the feature widget that owns the enum.
+- `ConnectFailure.message` stays English and technical — it is for logs only.
+  The UI shows `context.l10n.failureMessage(failure)`, mapped from the failure
+  *type*, so `core/` and `domain/` never depend on localization.
+
+### Right-to-left (RTL)
+
+- Arabic (`ar`) is supported; Material chrome (app bars, sheets, dialogs,
+  list tiles) mirrors automatically.
+- The **remote control surface is pinned to `TextDirection.ltr`** — a
+  `Directionality` wrapper in `StandardRemote` and `MainRemoteSkin`. A D-pad's
+  left/right and a grid's column order are physical geometry and must not
+  mirror with the UI language; the button captions inside are still localized.
+- Everywhere else, use direction-aware widgets (`EdgeInsetsDirectional`,
+  `AlignmentDirectional`) — never hardcode `left`/`right`.
+
+---
+
 ## Firebase Analytics
 
 - All analytics calls go through `lib/analytics/analytics_service.dart`. Never call `FirebaseAnalytics` directly from widgets or providers.
@@ -248,6 +321,9 @@ The app offers multiple visual skins. All skins share the same routes, screens, 
 
 ```yaml
 dependencies:
+  flutter_localizations:   # localization — see "Localization (i18n)"
+    sdk: flutter
+  intl: any
   flutter_riverpod: ^2.x.x
   drift: ^2.x.x
   sqlite3_flutter_libs: ^0.x.x
@@ -262,6 +338,7 @@ dev_dependencies:
   build_runner: ^2.x.x
   drift_dev: ^2.x.x
   auto_route_generator: ^9.x.x
+  csv: ^6.x.x              # ARB <-> CSV translation round-trip (tool/l10n_csv.dart)
   flutter_test:
     sdk: flutter
 ```

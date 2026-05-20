@@ -16,6 +16,9 @@ class AnalyticsService {
   static const _layoutEdited = 'layout_edited';
   static const _layoutDeleted = 'layout_deleted';
   static const _customImageAdded = 'custom_image_added';
+  static const _purchaseRemoveAds = 'purchase_remove_ads';
+  static const _restoreRemoveAds = 'restore_remove_ads';
+  static const _consentResolved = 'consent_resolved';
 
   Future<void> logSkinChanged(String skinName) {
     return _analytics.logEvent(
@@ -80,6 +83,23 @@ class AnalyticsService {
     return _analytics.logEvent(
       name: _customImageAdded,
       parameters: {'image_id': imageId},
+    );
+  }
+
+  Future<void> logPurchaseRemoveAds() {
+    return _analytics.logEvent(name: _purchaseRemoveAds);
+  }
+
+  Future<void> logRestoreRemoveAds() {
+    return _analytics.logEvent(name: _restoreRemoveAds);
+  }
+
+  /// Logs the outcome of the UMP consent flow. [canRequestAds] reflects
+  /// whether ads can be requested after the user resolved the form.
+  Future<void> logConsentResolved({required bool canRequestAds}) {
+    return _analytics.logEvent(
+      name: _consentResolved,
+      parameters: {'can_request_ads': canRequestAds ? 1 : 0},
     );
   }
 

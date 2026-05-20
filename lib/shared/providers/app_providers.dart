@@ -1,5 +1,6 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 
 import '../../analytics/analytics_service.dart';
 import '../../core/channels/android_tv_connect_channel.dart';
@@ -18,6 +19,8 @@ import '../../domain/repositories/i_layout_repository.dart';
 import '../../domain/repositories/i_preferences_repository.dart';
 import '../../router/app_router.dart';
 import '../ads/ad_service.dart';
+import '../ads/consent_service.dart';
+import '../iap/iap_service.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
@@ -48,9 +51,39 @@ final analyticsServiceProvider = Provider<AnalyticsService>((ref) {
   return AnalyticsService(FirebaseAnalytics.instance);
 });
 
+final consentServiceProvider = Provider<ConsentService>((ref) {
+  final analytics = ref.watch(analyticsServiceProvider);
+  return ConsentService(analytics);
+});
+
 final adServiceProvider = Provider<AdService>((ref) {
   final analytics = ref.watch(analyticsServiceProvider);
-  return AdService(analytics);
+  final consent = ref.watch(consentServiceProvider);
+  return AdService(analytics, consent);
+});
+
+/// Tracks whether the user has purchased the "Remove Ads" entitlement.
+/// Streams updates so widgets re-render the moment the entitlement flips.
+final adsRemovedProvider = StreamProvider<bool>((ref) {
+  final prefs = ref.watch(preferencesRepositoryProvider);
+  return prefs.watchAdsRemoved();
+});
+
+/// Long-lived [IapService] singleton. Initialization (subscribing to the
+/// platform purchase stream) is kicked off in `main.dart` after app start.
+final iapServiceProvider = Provider<IapService>((ref) {
+  final prefs = ref.watch(preferencesRepositoryProvider);
+  final analytics = ref.watch(analyticsServiceProvider);
+  final service = IapService(prefs, analytics);
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+/// Localized [ProductDetails] (title + price) for the "Remove Ads" IAP, or
+/// `null` if the store is unavailable / the product is not configured.
+final removeAdsProductProvider = FutureProvider<ProductDetails?>((ref) async {
+  final iap = ref.watch(iapServiceProvider);
+  return iap.queryProducts();
 });
 
 /// App-wide [RemoteChannel] — the pure-Dart [CompositeRemoteChannel] fanning

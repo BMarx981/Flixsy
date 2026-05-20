@@ -1,29 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!--
-  iOS entitlements for Flixsy.
-
-  com.apple.developer.networking.multicast lets the pure-Dart discovery
-  channels send/receive SSDP multicast (Roku, webOS, Samsung). It is a
-  RESTRICTED entitlement: Apple must approve a request before a provisioning
-  profile can carry it — https://developer.apple.com/contact/request/networking-multicast
-
-  THIS FILE IS NOT WIRED INTO THE BUILD YET. Adding it to code signing before
-  Apple grants the entitlement makes signing fail. Once Apple approves and the
-  provisioning profile is regenerated, wire it by setting, on every Runner
-  build configuration in ios/Runner.xcodeproj/project.pbxproj:
-
-      CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
-
-  (Or in Xcode: Runner target -> Signing & Capabilities -> + Capability ->
-  Multicast Networking, which sets the same build setting.)
-
-  mDNS for Android TV (_androidtvremote2._tcp) does NOT need this entitlement —
-  it works through NSBonjourServices in Info.plist alone.
--->
 <plist version="1.0">
 <dict>
 	<key>com.apple.developer.networking.multicast</key>
 	<true/>
+	<key>com.apple.developer.networking.slicing.appcategory</key>
+	<array/>
+	<key>com.apple.developer.networking.slicing.trafficcategory</key>
+	<array/>
 </dict>
 </plist>

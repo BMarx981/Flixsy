@@ -5,6 +5,7 @@ import 'package:flixsy/data/models/layout/remote_button.dart';
 import 'package:flixsy/data/models/layout/remote_layout.dart';
 import 'package:flixsy/domain/repositories/i_layout_repository.dart';
 import 'package:flixsy/features/layout_editor/screens/layout_editor_screen.dart';
+import 'package:flixsy/l10n/generated/app_localizations.dart';
 import 'package:flixsy/shared/providers/app_providers.dart';
 import 'package:flixsy/theming/remote_key.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,11 @@ void main() {
           layoutRepositoryProvider.overrideWithValue(repo),
           analyticsServiceProvider.overrideWithValue(_NoopAnalytics()),
         ],
-        child: MaterialApp(home: LayoutEditorScreen(layout: layout)),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: LayoutEditorScreen(layout: layout),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -140,10 +145,7 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Add at least one block before saving.'),
-      findsOneWidget,
-    );
+    expect(find.text('Add at least one block before saving.'), findsOneWidget);
     expect(repo.saved, isEmpty);
   });
 
@@ -200,6 +202,12 @@ class _NoopAnalytics implements AnalyticsService {
   Future<void> logLayoutDeleted(String layoutId) async {}
   @override
   Future<void> logCustomImageAdded(String imageId) async {}
+  @override
+  Future<void> logPurchaseRemoveAds() async {}
+  @override
+  Future<void> logRestoreRemoveAds() async {}
+  @override
+  Future<void> logConsentResolved({required bool canRequestAds}) async {}
   @override
   FirebaseAnalyticsObserver get observer => throw UnimplementedError();
 }

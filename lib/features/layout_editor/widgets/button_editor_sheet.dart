@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/extensions/l10n_extensions.dart';
 import '../../../data/models/layout/button_appearance.dart';
 import '../../../data/models/layout/remote_button.dart';
 import '../../../theming/custom_image_provider.dart';
 import '../../../theming/icons/icon_catalog.dart';
+import '../../../theming/icons/remote_key_l10n.dart';
 import '../../../theming/remote_key.dart';
 import '../../../theming/standard/button_presentation.dart';
 import 'action_picker_sheet.dart';
@@ -96,7 +98,11 @@ class _ButtonEditorSheetState extends ConsumerState<_ButtonEditorSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final imagePaths = ref.watch(customImagePathsProvider);
-    final glyph = resolveButton(_button, imagePaths: imagePaths).glyph;
+    final glyph = resolveButton(
+      _button,
+      imagePaths: imagePaths,
+      labelFor: context.l10n.remoteKeyLabel,
+    ).glyph;
     final iconLeading = switch (glyph) {
       IconGlyph(:final icon) => Icon(icon),
       ImageGlyph(:final path) => SizedBox(
@@ -105,8 +111,7 @@ class _ButtonEditorSheetState extends ConsumerState<_ButtonEditorSheet> {
         child: Image.file(
           File(path),
           fit: BoxFit.contain,
-          errorBuilder: (_, _, _) =>
-              const Icon(Icons.broken_image_outlined),
+          errorBuilder: (_, _, _) => const Icon(Icons.broken_image_outlined),
         ),
       ),
       TextGlyph() => const Icon(Icons.text_fields),
@@ -122,29 +127,32 @@ class _ButtonEditorSheetState extends ConsumerState<_ButtonEditorSheet> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-              child: Text('Edit button', style: theme.textTheme.titleMedium),
+              child: Text(
+                context.l10n.buttonEditorTitle,
+                style: theme.textTheme.titleMedium,
+              ),
             ),
             ListTile(
               leading: Icon(defaultIconFor(_action)),
-              title: const Text('Action'),
-              subtitle: Text(defaultLabel(_action)),
+              title: Text(context.l10n.buttonEditorActionLabel),
+              subtitle: Text(context.l10n.remoteKeyLabel(_action)),
               trailing: const Icon(Icons.chevron_right),
               onTap: _editAction,
             ),
             ListTile(
               leading: iconLeading,
-              title: const Text('Icon'),
-              subtitle: Text(_appearanceDescription),
+              title: Text(context.l10n.buttonEditorIconLabel),
+              subtitle: Text(_appearanceDescription(context)),
               trailing: const Icon(Icons.chevron_right),
               onTap: _editIcon,
             ),
             const Divider(height: 16),
             SwitchListTile(
-              title: const Text('Show label'),
+              title: Text(context.l10n.buttonEditorShowLabel),
               subtitle: Text(
                 _showLabel
-                    ? 'A caption is shown on the button'
-                    : 'The button shows no caption',
+                    ? context.l10n.buttonEditorShowLabelOn
+                    : context.l10n.buttonEditorShowLabelOff,
               ),
               value: _showLabel,
               onChanged: (value) => setState(() => _showLabel = value),
@@ -156,11 +164,13 @@ class _ButtonEditorSheetState extends ConsumerState<_ButtonEditorSheet> {
                 enabled: _showLabel,
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
-                  labelText: 'Label',
+                  labelText: context.l10n.buttonEditorLabelField,
                   border: const OutlineInputBorder(),
-                  hintText: defaultLabel(_action),
+                  hintText: context.l10n.remoteKeyLabel(_action),
                   helperText: _showLabel && _labelController.text.isEmpty
-                      ? 'Empty — using the default: ${defaultLabel(_action)}'
+                      ? context.l10n.buttonEditorLabelHelper(
+                          context.l10n.remoteKeyLabel(_action),
+                        )
                       : null,
                 ),
               ),
@@ -169,7 +179,7 @@ class _ButtonEditorSheetState extends ConsumerState<_ButtonEditorSheet> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: FilledButton(
                 onPressed: () => Navigator.of(context).pop(_button),
-                child: const Text('Done'),
+                child: Text(context.l10n.commonDone),
               ),
             ),
           ],
@@ -178,13 +188,13 @@ class _ButtonEditorSheetState extends ConsumerState<_ButtonEditorSheet> {
     );
   }
 
-  /// A short human-readable description of the chosen appearance kind.
-  String get _appearanceDescription => switch (_appearance) {
-    DefaultLook() => 'Default',
-    TextOnly() => 'Text only',
-    BuiltInIcon(:final iconId) =>
-      standardPack.resolve(iconId)?.name ?? 'Custom icon',
-    PackIcon() => 'Pack icon',
-    CustomImage() => 'Custom image',
+  /// A short, localized description of the chosen appearance kind.
+  String _appearanceDescription(BuildContext context) => switch (_appearance) {
+    DefaultLook() => context.l10n.appearanceDefault,
+    TextOnly() => context.l10n.appearanceTextOnly,
+    // iconName degrades an unknown id to 'Custom icon' on its own.
+    BuiltInIcon(:final iconId) => context.l10n.iconName(iconId),
+    PackIcon() => context.l10n.appearancePackIcon,
+    CustomImage() => context.l10n.appearanceCustomImage,
   };
 }

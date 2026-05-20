@@ -9,11 +9,20 @@ final activeSkinProvider = StreamProvider<AppSkin>((ref) {
   return repo.watchActiveSkin();
 });
 
-/// Synchronously resolves the [SkinConfig] for the current skin,
-/// falling back to [AppSkin.classic] while the stream is loading.
+/// Skin currently being previewed in the home-screen picker carousel.
+///
+/// `null` means the picker is closed and the app uses the saved active skin.
+/// When non-null, [skinConfigProvider] returns this skin instead so the whole
+/// app re-themes live as the user swipes — without persisting until Apply.
+final previewSkinProvider = StateProvider<AppSkin?>((ref) => null);
+
+/// Synchronously resolves the [SkinConfig] in effect right now — the preview
+/// skin if the picker is open, otherwise the saved active skin (falling back
+/// to [AppSkin.classic] while the stream is loading).
 final skinConfigProvider = Provider<SkinConfig>((ref) {
+  final preview = ref.watch(previewSkinProvider);
   final activeSkin =
-      ref.watch(activeSkinProvider).valueOrNull ?? AppSkin.classic;
+      preview ?? ref.watch(activeSkinProvider).valueOrNull ?? AppSkin.classic;
   return skinRegistry[activeSkin]!;
 });
 

@@ -28,12 +28,21 @@ class PreferencesRepository implements IPreferencesRepository {
       _db.preferencesDao.watchActiveLayoutId();
 
   @override
-  Future<String?> getActiveLayoutId() =>
-      _db.preferencesDao.getActiveLayoutId();
+  Future<String?> getActiveLayoutId() => _db.preferencesDao.getActiveLayoutId();
 
   @override
   Future<void> setActiveLayoutId(String layoutId) =>
       _db.preferencesDao.setActiveLayoutId(layoutId);
+
+  @override
+  Stream<bool> watchAdsRemoved() => _db.preferencesDao.watchAdsRemoved();
+
+  @override
+  Future<bool> getAdsRemoved() => _db.preferencesDao.getAdsRemoved();
+
+  @override
+  Future<void> setAdsRemoved(bool adsRemoved) =>
+      _db.preferencesDao.setAdsRemoved(adsRemoved);
 
   @override
   Future<String?> getDeviceCredential(String deviceId) =>

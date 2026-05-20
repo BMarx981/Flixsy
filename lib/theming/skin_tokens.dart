@@ -28,8 +28,6 @@ class SkinTokens extends ThemeExtension<SkinTokens> {
   @override
   SkinTokens lerp(ThemeExtension<SkinTokens>? other, double t) {
     if (other is! SkinTokens) return this;
-    return SkinTokens(
-      buttonGap: buttonGap + (other.buttonGap - buttonGap) * t,
-    );
+    return SkinTokens(buttonGap: buttonGap + (other.buttonGap - buttonGap) * t);
   }
 }

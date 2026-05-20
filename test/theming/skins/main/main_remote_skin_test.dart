@@ -1,4 +1,5 @@
 import 'package:flixsy/data/models/layout/built_in_layouts.dart';
+import 'package:flixsy/l10n/generated/app_localizations.dart';
 import 'package:flixsy/theming/remote_skin.dart';
 import 'package:flixsy/theming/skin_registry.dart';
 import 'package:flixsy/theming/skins/main/main_remote_skin.dart';
@@ -37,6 +38,8 @@ void main() {
       final keys = <String>[];
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: SizedBox(
               width: 400,
@@ -116,6 +119,8 @@ void main() {
       final keys = <String>[];
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: SizedBox(
               width: 400,

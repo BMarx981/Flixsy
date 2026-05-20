@@ -2,8 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/extensions/l10n_extensions.dart';
 import '../../../data/models/layout/remote_layout.dart';
 import '../../../router/app_router.dart';
+import '../../../shared/ads/remote_banner_ad.dart';
+import '../../../shared/providers/app_providers.dart';
 import '../../../theming/layout_provider.dart';
 
 /// Lists the built-in templates and the user's custom layouts, and lets the
@@ -16,27 +19,39 @@ class LayoutPickerScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final layoutsAsync = ref.watch(allLayoutsProvider);
     final activeId = ref.watch(activeLayoutIdProvider).valueOrNull;
+    final adsRemoved = ref.watch(adsRemovedProvider).valueOrNull ?? false;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Layouts')),
-      body: SafeArea(
-        child: layoutsAsync.when(
-          data: (layouts) => ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: layouts.length,
-            itemBuilder: (context, index) {
-              final layout = layouts[index];
-              return _LayoutTile(
-                layout: layout,
-                isActive: layout.id == activeId,
-              );
-            },
-          ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) =>
-              Center(child: Text('Could not load layouts.\n$error')),
+    final list = SafeArea(
+      bottom: adsRemoved,
+      child: layoutsAsync.when(
+        data: (layouts) => ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          itemCount: layouts.length,
+          itemBuilder: (context, index) {
+            final layout = layouts[index];
+            return _LayoutTile(
+              layout: layout,
+              isActive: layout.id == activeId,
+            );
+          },
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Center(
+          child: Text(context.l10n.layoutPickerLoadError(error.toString())),
         ),
       ),
+    );
+
+    return Scaffold(
+      appBar: AppBar(title: Text(context.l10n.layoutPickerTitle)),
+      body: adsRemoved
+          ? list
+          : Column(
+              children: [
+                Expanded(child: list),
+                const RemoteBannerAd(),
+              ],
+            ),
     );
   }
 }
@@ -62,7 +77,9 @@ class _LayoutTile extends ConsumerWidget {
         ),
         title: Text(layout.name),
         subtitle: Text(
-          layout.isTemplate ? 'Built-in template' : 'Custom layout',
+          layout.isTemplate
+              ? context.l10n.layoutTypeTemplate
+              : context.l10n.layoutTypeCustom,
         ),
         trailing: _LayoutMenu(layout: layout),
         onTap: () => ref.read(layoutControllerProvider).selectLayout(layout.id),
@@ -84,23 +101,23 @@ class _LayoutMenu extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return PopupMenuButton<_LayoutAction>(
       icon: const Icon(Icons.more_vert),
-      tooltip: 'Layout actions',
+      tooltip: context.l10n.layoutActionsTooltip,
       onSelected: (action) {
         _handle(context, ref, action);
       },
       itemBuilder: (context) => [
-        const PopupMenuItem(
+        PopupMenuItem(
           value: _LayoutAction.duplicate,
-          child: Text('Duplicate'),
+          child: Text(context.l10n.layoutActionDuplicate),
         ),
         if (!layout.isTemplate) ...[
-          const PopupMenuItem(
+          PopupMenuItem(
             value: _LayoutAction.edit,
-            child: Text('Edit'),
+            child: Text(context.l10n.layoutActionEdit),
           ),
-          const PopupMenuItem(
+          PopupMenuItem(
             value: _LayoutAction.delete,
-            child: Text('Delete'),
+            child: Text(context.l10n.commonDelete),
           ),
         ],
       ],
@@ -129,16 +146,16 @@ class _LayoutMenu extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete layout?'),
-        content: Text('"${layout.name}" will be permanently removed.'),
+        title: Text(dialogContext.l10n.layoutDeleteDialogTitle),
+        content: Text(dialogContext.l10n.layoutDeleteDialogBody(layout.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+            child: Text(dialogContext.l10n.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Delete'),
+            child: Text(dialogContext.l10n.commonDelete),
           ),
         ],
       ),

@@ -96,7 +96,17 @@
       "Bash(dart *)",
       "Bash(python3 -c \"import json; json.load\\(open\\('/Users/brianmarx/Desktop/flixsy/.claude/settings.local.json'\\)\\); print\\('valid JSON'\\)\")",
       "Bash(sed *)",
-      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/brianmarx/Desktop/flixsy/.claude/settings.local.json'\\)\\); print\\('valid JSON; ask=', d['permissions']['ask']\\)\")"
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/Users/brianmarx/Desktop/flixsy/.claude/settings.local.json'\\)\\); print\\('valid JSON; ask=', d['permissions']['ask']\\)\")",
+      "Bash(flutter gen-l10n *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(sips -g hasAlpha -g pixelWidth -g pixelHeight ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-AppStore-1024.png)",
+      "Bash(cp Icon-AppStore-1024.png Icon-AppStore-1024.png.bak)",
+      "Bash(/usr/bin/sips -s format png -s formatOptions normal Icon-AppStore-1024.png --out _tmp.png)",
+      "Bash(/usr/bin/sips --setProperty hasAlpha NO Icon-AppStore-1024.png --out _tmp2.png)",
+      "Bash(python3 -c \"from PIL import Image; print\\('ok'\\)\")",
+      "Bash(python3 -m pip install --quiet --user Pillow)",
+      "Bash(grep -r \"ConsentInformation\\\\|UserMessagingPlatform\" /Users/brianmarx/Desktop/flixsy/.dart_tool/package_config.json 2>/dev/null; find ~/.pub-cache -name \"consent_information.dart\" 2>/dev/null | head -5)",
+      "Read(//Users/brianmarx/.pub-cache/**)"
     ],
     "ask": [
       "Bash(sed -i*)",

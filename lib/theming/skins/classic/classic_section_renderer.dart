@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/layout/layout_block.dart';
 import '../../../data/models/layout/remote_button.dart';
+import '../../../core/extensions/l10n_extensions.dart';
+import '../../icons/remote_key_l10n.dart';
 import '../../skin_tokens.dart';
 import '../../standard/button_presentation.dart';
 import '../../standard/remote_image_scope.dart';
@@ -117,6 +119,7 @@ class ClassicSectionRenderer implements SectionRenderer {
     final presentation = resolveButton(
       button,
       imagePaths: RemoteImageScope.of(context),
+      labelFor: context.l10n.remoteKeyLabel,
     );
     return Padding(
       padding: EdgeInsets.all(gap / 2),
@@ -166,9 +169,6 @@ class _ButtonContent extends StatelessWidget {
           );
 
     // The icon/image glyph carries no text, so name the button for a11y.
-    return Semantics(
-      label: presentation.semanticLabel,
-      child: content,
-    );
+    return Semantics(label: presentation.semanticLabel, child: content);
   }
 }

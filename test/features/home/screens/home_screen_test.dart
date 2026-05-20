@@ -10,6 +10,11 @@ import 'package:flixsy/domain/repositories/i_custom_image_repository.dart';
 import 'package:flixsy/domain/repositories/i_layout_repository.dart';
 import 'package:flixsy/domain/repositories/i_preferences_repository.dart';
 import 'package:flixsy/features/home/screens/home_screen.dart';
+import 'package:flixsy/l10n/generated/app_localizations.dart';
+import 'package:flixsy/shared/ads/ad_service.dart';
+import 'package:flixsy/shared/ads/consent_service.dart';
+import 'package:flixsy/shared/ads/remote_banner_ad.dart';
+import 'package:flixsy/shared/iap/iap_service.dart';
 import 'package:flixsy/shared/providers/app_providers.dart';
 import 'package:flixsy/theming/skin_registry.dart';
 import 'package:flixsy/theming/skins/main/main_remote_skin.dart';
@@ -17,6 +22,7 @@ import 'package:flixsy/theming/standard/standard_remote.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +45,7 @@ void main() {
   });
 
   Future<void> pumpHome(WidgetTester tester) async {
+    final fakeConsent = _FakeConsentService(analytics);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -49,8 +56,19 @@ void main() {
           customImageRepositoryProvider.overrideWithValue(
             _FakeCustomImageRepository(),
           ),
+          consentServiceProvider.overrideWithValue(fakeConsent),
+          adServiceProvider.overrideWithValue(
+            AdService(analytics, fakeConsent),
+          ),
+          iapServiceProvider.overrideWithValue(
+            _FakeIapService(preferences, analytics),
+          ),
         ],
-        child: const MaterialApp(home: HomeScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: HomeScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -64,19 +82,42 @@ void main() {
     expect(find.byType(MainRemoteSkin), findsNothing);
   });
 
-  testWidgets('skin menu swaps the rendered remote and logs the change', (
-    tester,
-  ) async {
+  testWidgets('skin picker previews and applies a new skin', (tester) async {
     await pumpHome(tester);
 
+    // Enter selection mode — the picker carousel replaces the remote body.
     await tester.tap(find.byIcon(Icons.palette_outlined));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Main'));
+
+    // Step forward to the Main skin via the chevron arrow.
+    await tester.tap(find.byIcon(Icons.chevron_right));
+    await tester.pumpAndSettle();
+
+    // Preview only: nothing has been persisted yet.
+    expect(analytics.skinsChanged, isEmpty);
+
+    await tester.tap(find.text('Apply'));
     await tester.pumpAndSettle();
 
     expect(find.byType(MainRemoteSkin), findsOneWidget);
     expect(find.byType(StandardRemote), findsNothing);
     expect(analytics.skinsChanged, contains('main'));
+  });
+
+  testWidgets('skin picker cancel reverts to the saved skin', (tester) async {
+    await pumpHome(tester);
+
+    await tester.tap(find.byIcon(Icons.palette_outlined));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.chevron_right));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+
+    // Cancel discards the preview — classic is still active and nothing logged.
+    expect(find.byType(StandardRemote), findsOneWidget);
+    expect(find.byType(MainRemoteSkin), findsNothing);
+    expect(analytics.skinsChanged, isEmpty);
   });
 
   testWidgets('pressing a remote key sends the command and logs it', (
@@ -92,6 +133,19 @@ void main() {
     expect(analytics.keysSent, ['OK']);
   });
 
+  testWidgets('renders the banner ad when ads have not been removed', (
+    tester,
+  ) async {
+    await pumpHome(tester);
+    expect(find.byType(RemoteBannerAd), findsOneWidget);
+  });
+
+  testWidgets('hides the banner ad once ads have been removed', (tester) async {
+    preferences._adsRemoved = true;
+    await pumpHome(tester);
+    expect(find.byType(RemoteBannerAd), findsNothing);
+  });
+
   testWidgets('main skin control buttons route through the remote channel', (
     tester,
   ) async {
@@ -99,7 +153,9 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.palette_outlined));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Main'));
+    await tester.tap(find.byIcon(Icons.chevron_right));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Apply'));
     await tester.pumpAndSettle();
 
     // The Back/Home/transport buttons added to the main skin must reach the
@@ -154,6 +210,25 @@ class _FakePreferencesRepository implements IPreferencesRepository {
     _layoutController.add(layoutId);
   }
 
+  bool _adsRemoved = false;
+  final StreamController<bool> _adsRemovedController =
+      StreamController<bool>.broadcast();
+
+  @override
+  Stream<bool> watchAdsRemoved() async* {
+    yield _adsRemoved;
+    yield* _adsRemovedController.stream;
+  }
+
+  @override
+  Future<bool> getAdsRemoved() async => _adsRemoved;
+
+  @override
+  Future<void> setAdsRemoved(bool adsRemoved) async {
+    _adsRemoved = adsRemoved;
+    _adsRemovedController.add(adsRemoved);
+  }
+
   @override
   Future<String?> getDeviceCredential(String deviceId) async =>
       _credentials[deviceId];
@@ -166,6 +241,7 @@ class _FakePreferencesRepository implements IPreferencesRepository {
   void dispose() {
     _controller.close();
     _layoutController.close();
+    _adsRemovedController.close();
   }
 }
 
@@ -173,8 +249,7 @@ class _FakePreferencesRepository implements IPreferencesRepository {
 /// layouts streamed back so the active layout resolves to the classic one.
 class _FakeLayoutRepository implements ILayoutRepository {
   @override
-  Stream<List<RemoteLayout>> watchAllLayouts() =>
-      Stream.value(builtInLayouts);
+  Stream<List<RemoteLayout>> watchAllLayouts() => Stream.value(builtInLayouts);
 
   @override
   Future<RemoteLayout?> getLayout(String id) async {
@@ -241,6 +316,15 @@ class _FakeAnalyticsService implements AnalyticsService {
   Future<void> logCustomImageAdded(String imageId) async {}
 
   @override
+  Future<void> logPurchaseRemoveAds() async {}
+
+  @override
+  Future<void> logRestoreRemoveAds() async {}
+
+  @override
+  Future<void> logConsentResolved({required bool canRequestAds}) async {}
+
+  @override
   FirebaseAnalyticsObserver get observer => throw UnimplementedError();
 }
 
@@ -279,4 +363,34 @@ class _FakeRemoteChannel implements RemoteChannel {
 
   @override
   void dispose() => _events.close();
+}
+
+/// Test [ConsentService] that always denies ad requests, so [RemoteBannerAd]
+/// short-circuits to an empty [SizedBox] without touching the platform.
+class _FakeConsentService extends ConsentService {
+  _FakeConsentService(super.analytics);
+
+  @override
+  Future<bool> canRequestAds() async => false;
+
+  @override
+  Future<void> requestConsent() async {}
+}
+
+/// Test [IapService] that never reaches the real store. All purchase /
+/// restore / query operations are no-ops, and the failure stream stays empty.
+class _FakeIapService extends IapService {
+  _FakeIapService(super.preferences, super.analytics);
+
+  @override
+  Future<void> init() async {}
+
+  @override
+  Future<ProductDetails?> queryProducts() async => null;
+
+  @override
+  Future<void> buyRemoveAds() async {}
+
+  @override
+  Future<void> restorePurchases() async {}
 }

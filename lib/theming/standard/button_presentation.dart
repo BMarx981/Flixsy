@@ -12,6 +12,7 @@ import 'package:flutter/widgets.dart';
 import '../../data/models/layout/button_appearance.dart';
 import '../../data/models/layout/remote_button.dart';
 import '../icons/icon_catalog.dart';
+import '../remote_key.dart';
 
 /// What a standard renderer paints as a button's primary mark.
 sealed class ButtonGlyph {
@@ -65,12 +66,18 @@ class ButtonPresentation {
 /// [imagePaths] maps a custom-image id to its absolute file path; pass it
 /// (typically from `customImagePathsProvider`) so [CustomImage] appearances
 /// resolve. An id absent from the map degrades to the action's default icon.
+///
+/// [labelFor] supplies the localized label for a key — pass
+/// `context.l10n.remoteKeyLabel` from a widget. When omitted, the English
+/// catalogue label (`defaultLabel`) is used, which keeps this function usable
+/// from non-UI code such as tests.
 ButtonPresentation resolveButton(
   RemoteButton button, {
   Map<String, String>? imagePaths,
+  String Function(RemoteKey action)? labelFor,
 }) {
   final appearance = button.appearance;
-  final keyLabel = defaultLabel(button.action);
+  final keyLabel = labelFor?.call(button.action) ?? defaultLabel(button.action);
   final override = appearance.labelOverride;
 
   // labelOverride: null = use the key default; '' = hide; else the text.

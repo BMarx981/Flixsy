@@ -7,6 +7,9 @@ import 'package:flixsy/data/models/layout/remote_layout.dart';
 import 'package:flixsy/domain/repositories/i_layout_repository.dart';
 import 'package:flixsy/domain/repositories/i_preferences_repository.dart';
 import 'package:flixsy/features/layout_picker/screens/layout_picker_screen.dart';
+import 'package:flixsy/l10n/generated/app_localizations.dart';
+import 'package:flixsy/shared/ads/ad_service.dart';
+import 'package:flixsy/shared/ads/consent_service.dart';
 import 'package:flixsy/shared/providers/app_providers.dart';
 import 'package:flixsy/theming/skin_registry.dart';
 import 'package:flutter/material.dart';
@@ -28,14 +31,22 @@ void main() {
   });
 
   Future<void> pumpPicker(WidgetTester tester) async {
+    final analytics = _NoopAnalytics();
+    final consent = _DenyConsentService(analytics);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           layoutRepositoryProvider.overrideWithValue(layouts),
           preferencesRepositoryProvider.overrideWithValue(preferences),
-          analyticsServiceProvider.overrideWithValue(_NoopAnalytics()),
+          analyticsServiceProvider.overrideWithValue(analytics),
+          consentServiceProvider.overrideWithValue(consent),
+          adServiceProvider.overrideWithValue(AdService(analytics, consent)),
         ],
-        child: const MaterialApp(home: LayoutPickerScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: LayoutPickerScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -55,7 +66,9 @@ void main() {
   });
 
   testWidgets('shows custom layouts alongside the built-ins', (tester) async {
-    layouts.seed(const RemoteLayout(id: 'mine', name: 'Den Remote', blocks: []));
+    layouts.seed(
+      const RemoteLayout(id: 'mine', name: 'Den Remote', blocks: []),
+    );
     await pumpPicker(tester);
 
     expect(find.text('Classic'), findsOneWidget);
@@ -63,7 +76,9 @@ void main() {
   });
 
   testWidgets('tapping a layout makes it the active layout', (tester) async {
-    layouts.seed(const RemoteLayout(id: 'mine', name: 'Den Remote', blocks: []));
+    layouts.seed(
+      const RemoteLayout(id: 'mine', name: 'Den Remote', blocks: []),
+    );
     await pumpPicker(tester);
 
     await tester.tap(find.text('Den Remote'));
@@ -97,7 +112,9 @@ void main() {
   testWidgets('custom layouts expose Duplicate, Edit and Delete', (
     tester,
   ) async {
-    layouts.seed(const RemoteLayout(id: 'mine', name: 'Den Remote', blocks: []));
+    layouts.seed(
+      const RemoteLayout(id: 'mine', name: 'Den Remote', blocks: []),
+    );
     await pumpPicker(tester);
 
     await tester.tap(menuFor('Den Remote'));
@@ -223,11 +240,27 @@ class _FakePreferencesRepository implements IPreferencesRepository {
   @override
   Future<void> setActiveSkin(AppSkin skin) async {}
   @override
+  Stream<bool> watchAdsRemoved() => Stream<bool>.value(false);
+  @override
+  Future<bool> getAdsRemoved() async => false;
+  @override
+  Future<void> setAdsRemoved(bool adsRemoved) async {}
+  @override
   Future<String?> getDeviceCredential(String deviceId) async => null;
   @override
   Future<void> setDeviceCredential(String deviceId, String credential) async {}
 
   void dispose() => _layoutController.close();
+}
+
+/// Test [ConsentService] that always denies ad requests — keeps banner ads
+/// short-circuited so the picker tests don't need to mock the platform.
+class _DenyConsentService extends ConsentService {
+  _DenyConsentService(super.analytics);
+  @override
+  Future<bool> canRequestAds() async => false;
+  @override
+  Future<void> requestConsent() async {}
 }
 
 /// Discards every analytics call — Firebase is never reached in tests.
@@ -252,6 +285,12 @@ class _NoopAnalytics implements AnalyticsService {
   Future<void> logLayoutDeleted(String layoutId) async {}
   @override
   Future<void> logCustomImageAdded(String imageId) async {}
+  @override
+  Future<void> logPurchaseRemoveAds() async {}
+  @override
+  Future<void> logRestoreRemoveAds() async {}
+  @override
+  Future<void> logConsentResolved({required bool canRequestAds}) async {}
   @override
   FirebaseAnalyticsObserver get observer => throw UnimplementedError();
 }

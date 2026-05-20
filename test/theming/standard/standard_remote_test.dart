@@ -2,6 +2,7 @@ import 'package:flixsy/data/models/layout/built_in_layouts.dart';
 import 'package:flixsy/data/models/layout/layout_block.dart';
 import 'package:flixsy/data/models/layout/remote_button.dart';
 import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/l10n/generated/app_localizations.dart';
 import 'package:flixsy/theming/remote_key.dart';
 import 'package:flixsy/theming/remote_skin.dart';
 import 'package:flixsy/theming/skins/classic/classic_section_renderer.dart';
@@ -36,7 +37,10 @@ const _everyBlockLayout = RemoteLayout(
     ),
     GridBlock(
       columns: 2,
-      cells: [RemoteButton(action: RemoteKey.power), null],
+      cells: [
+        RemoteButton(action: RemoteKey.power),
+        null,
+      ],
     ),
   ],
 );
@@ -47,6 +51,8 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: ClassicTheme.themeData,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: StandardRemote(
             layout: layout,

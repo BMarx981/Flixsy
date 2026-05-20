@@ -11,6 +11,11 @@ abstract interface class IPreferencesRepository {
   Future<String?> getActiveLayoutId();
   Future<void> setActiveLayoutId(String layoutId);
 
+  /// Whether the user has purchased the "Remove Ads" entitlement.
+  Stream<bool> watchAdsRemoved();
+  Future<bool> getAdsRemoved();
+  Future<void> setAdsRemoved(bool adsRemoved);
+
   /// Returns the stored pairing credential for [deviceId], or `null` if the
   /// device has never been paired.
   Future<String?> getDeviceCredential(String deviceId);

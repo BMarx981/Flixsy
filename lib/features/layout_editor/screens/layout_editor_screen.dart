@@ -4,10 +4,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/extensions/l10n_extensions.dart';
 import '../../../data/models/layout/layout_block.dart';
 import '../../../data/models/layout/remote_button.dart';
 import '../../../data/models/layout/remote_layout.dart';
 import '../../../theming/custom_image_provider.dart';
+import '../../../theming/icons/remote_key_l10n.dart';
 import '../../../theming/layout_provider.dart';
 import '../../../theming/skins/classic/classic_section_renderer.dart';
 import '../../../theming/standard/button_presentation.dart';
@@ -32,18 +34,18 @@ class LayoutEditorScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit layout'),
+        title: Text(context.l10n.editorTitle),
         actions: [
           TextButton(
             onPressed: () => _save(context, ref),
-            child: const Text('Save'),
+            child: Text(context.l10n.commonSave),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addBlock(context, notifier),
         icon: const Icon(Icons.add),
-        label: const Text('Add block'),
+        label: Text(context.l10n.editorAddBlockButton),
       ),
       body: SafeArea(
         child: ReorderableListView(
@@ -91,19 +93,22 @@ class LayoutEditorScreen extends ConsumerWidget {
 
     if (draft.name.trim().isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Give the layout a name.')),
+        SnackBar(content: Text(context.l10n.editorValidationName)),
       );
       return;
     }
     if (draft.blocks.isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Add at least one block before saving.')),
+        SnackBar(content: Text(context.l10n.editorValidationBlocks)),
       );
       return;
     }
 
     await ref.read(layoutControllerProvider).updateLayout(draft);
-    messenger.showSnackBar(const SnackBar(content: Text('Layout saved.')));
+    if (!context.mounted) return;
+    messenger.showSnackBar(
+      SnackBar(content: Text(context.l10n.editorSavedSnack)),
+    );
   }
 }
 
@@ -122,11 +127,11 @@ class _EditorHeader extends StatelessWidget {
       children: [
         _NameField(layout: layout),
         const SizedBox(height: 16),
-        Text('Preview', style: labelStyle),
+        Text(context.l10n.editorPreviewLabel, style: labelStyle),
         const SizedBox(height: 8),
         _PreviewBox(layout: draft),
         const SizedBox(height: 16),
-        Text('Blocks', style: labelStyle),
+        Text(context.l10n.editorBlocksLabel, style: labelStyle),
         const SizedBox(height: 8),
       ],
     );
@@ -164,13 +169,12 @@ class _NameFieldState extends ConsumerState<_NameField> {
   Widget build(BuildContext context) {
     return TextField(
       controller: _controller,
-      decoration: const InputDecoration(
-        labelText: 'Layout name',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        labelText: context.l10n.editorNameFieldLabel,
+        border: const OutlineInputBorder(),
       ),
-      onChanged: (value) => ref
-          .read(layoutEditorProvider(widget.layout).notifier)
-          .rename(value),
+      onChanged: (value) =>
+          ref.read(layoutEditorProvider(widget.layout).notifier).rename(value),
     );
   }
 }
@@ -194,7 +198,7 @@ class _PreviewBox extends ConsumerWidget {
       ),
       child: layout.blocks.isEmpty
           ? Text(
-              'Add a block to see a preview',
+              context.l10n.editorEmptyPreview,
               style: TextStyle(color: colors.onSurfaceVariant),
             )
           : IgnorePointer(
@@ -239,13 +243,13 @@ class _BlockCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    _blockName(block),
+                    _blockName(context, block),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
-                  tooltip: 'Remove block',
+                  tooltip: context.l10n.editorRemoveBlockTooltip,
                   onPressed: onDelete,
                 ),
                 ReorderableDragStartListener(
@@ -290,7 +294,11 @@ class _ButtonChip extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final imagePaths = ref.watch(customImagePathsProvider);
-    final presentation = resolveButton(button, imagePaths: imagePaths);
+    final presentation = resolveButton(
+      button,
+      imagePaths: imagePaths,
+      labelFor: context.l10n.remoteKeyLabel,
+    );
     final avatar = switch (presentation.glyph) {
       IconGlyph(:final icon) => Icon(icon, size: 18),
       ImageGlyph(:final path) => SizedBox(
@@ -319,17 +327,17 @@ class _EmptyCellChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Chip(
-      avatar: Icon(Icons.add, size: 18),
-      label: Text('Empty'),
+    return Chip(
+      avatar: const Icon(Icons.add, size: 18),
+      label: Text(context.l10n.editorEmptyCell),
     );
   }
 }
 
-String _blockName(LayoutBlock block) => switch (block) {
-  DpadBlock() => 'D-pad',
-  ButtonRowBlock() => 'Button row',
-  VolumeBlock() => 'Volume rocker',
-  GridBlock() => 'Grid',
-  SpacerBlock() => 'Spacer',
+String _blockName(BuildContext context, LayoutBlock block) => switch (block) {
+  DpadBlock() => context.l10n.blockKindDpad,
+  ButtonRowBlock() => context.l10n.blockKindButtonRow,
+  VolumeBlock() => context.l10n.blockKindVolume,
+  GridBlock() => context.l10n.blockKindGrid,
+  SpacerBlock() => context.l10n.blockKindSpacer,
 };

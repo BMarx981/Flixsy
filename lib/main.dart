@@ -31,16 +31,37 @@ void main() async {
     debugPrint('[main] Firebase/Ads init skipped (debug): $e\n$st');
   }
 
+  final container = ProviderContainer(
+    overrides: [
+      if (_useFakeTv)
+        remoteChannelProvider.overrideWith((ref) {
+          final fake = FakeConnectChannel();
+          ref.onDispose(fake.dispose);
+          return fake;
+        }),
+    ],
+  );
+
+  // Resolve consent before the first ad request, and start the IAP listener
+  // so any cold-start "restored purchase" replays land in our entitlement.
+  // Failures here must not block the UI — a missing AdMob config in a
+  // simulator should still let the rest of the app come up.
+  try {
+    await container.read(consentServiceProvider).requestConsent();
+  } catch (e, st) {
+    if (kReleaseMode) rethrow;
+    debugPrint('[main] UMP consent skipped (debug): $e\n$st');
+  }
+  try {
+    await container.read(iapServiceProvider).init();
+  } catch (e, st) {
+    if (kReleaseMode) rethrow;
+    debugPrint('[main] IAP init skipped (debug): $e\n$st');
+  }
+
   runApp(
-    ProviderScope(
-      overrides: [
-        if (_useFakeTv)
-          remoteChannelProvider.overrideWith((ref) {
-            final fake = FakeConnectChannel();
-            ref.onDispose(fake.dispose);
-            return fake;
-          }),
-      ],
+    UncontrolledProviderScope(
+      container: container,
       child: const FlixsyApp(),
     ),
   );

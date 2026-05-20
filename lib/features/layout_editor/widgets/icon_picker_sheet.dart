@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/extensions/l10n_extensions.dart';
 import '../../../data/models/layout/button_appearance.dart';
 import '../../../data/models/stored_image.dart';
 import '../../../theming/custom_image_provider.dart';
 import '../../../theming/icons/icon_catalog.dart';
 import '../../../theming/icons/icon_pack.dart';
+import '../../../theming/icons/remote_key_l10n.dart';
 import '../../../theming/remote_key.dart';
 
 /// Shows a bottom sheet to pick a button's *appearance kind* — the catalogue
@@ -41,9 +43,7 @@ class _IconPickerSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final appearance = current;
-    final selectedIconId = appearance is BuiltInIcon
-        ? appearance.iconId
-        : null;
+    final selectedIconId = appearance is BuiltInIcon ? appearance.iconId : null;
     final selectedImageId = appearance is CustomImage
         ? appearance.imageId
         : null;
@@ -58,26 +58,32 @@ class _IconPickerSheet extends ConsumerWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-            child: Text('Choose icon', style: theme.textTheme.titleMedium),
+            child: Text(
+              context.l10n.iconPickerTitle,
+              style: theme.textTheme.titleMedium,
+            ),
           ),
           _OptionTile(
             icon: defaultIconFor(action),
-            title: 'Default',
-            subtitle: 'The standard icon for this action',
+            title: context.l10n.appearanceDefault,
+            subtitle: context.l10n.iconPickerDefaultSubtitle,
             selected: appearance is DefaultLook,
             onTap: () => choose(const DefaultLook()),
           ),
           _OptionTile(
             icon: Icons.text_fields,
-            title: 'Text only',
-            subtitle: 'Show the label, no icon',
+            title: context.l10n.appearanceTextOnly,
+            subtitle: context.l10n.iconPickerTextOnlySubtitle,
             selected: appearance is TextOnly,
             onTap: () => choose(const TextOnly()),
           ),
           const Divider(height: 24),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Text(standardPack.name, style: theme.textTheme.labelLarge),
+            child: Text(
+              context.l10n.iconPackStandardName,
+              style: theme.textTheme.labelLarge,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
@@ -97,7 +103,10 @@ class _IconPickerSheet extends ConsumerWidget {
           const Divider(height: 24),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: Text('Your images', style: theme.textTheme.labelLarge),
+            child: Text(
+              context.l10n.iconPickerYourImages,
+              style: theme.textTheme.labelLarge,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
@@ -111,9 +120,7 @@ class _IconPickerSheet extends ConsumerWidget {
                     selected: image.id == selectedImageId,
                     onTap: () => choose(CustomImage(imageId: image.id)),
                   ),
-                _AddImageTile(
-                  onTap: () => _addImage(context, ref),
-                ),
+                _AddImageTile(onTap: () => _addImage(context, ref)),
               ],
             ),
           ),
@@ -124,9 +131,7 @@ class _IconPickerSheet extends ConsumerWidget {
 
   /// Imports an image and, on success, selects it for the button.
   Future<void> _addImage(BuildContext context, WidgetRef ref) async {
-    final image = await ref
-        .read(customImageControllerProvider)
-        .importImage();
+    final image = await ref.read(customImageControllerProvider).importImage();
     if (image != null && context.mounted) {
       Navigator.of(context).pop(CustomImage(imageId: image.id));
     }
@@ -221,7 +226,7 @@ class _IconTile extends StatelessWidget {
           Icon(entry.icon, size: 28),
           const SizedBox(height: 4),
           Text(
-            entry.name,
+            context.l10n.iconName(entry.id),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -271,12 +276,15 @@ class _AddImageTile extends StatelessWidget {
     return _GridTile(
       selected: false,
       onTap: onTap,
-      child: const Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.add_photo_alternate_outlined, size: 28),
-          SizedBox(height: 4),
-          Text('Add', style: TextStyle(fontSize: 10)),
+          const Icon(Icons.add_photo_alternate_outlined, size: 28),
+          const SizedBox(height: 4),
+          Text(
+            context.l10n.iconPickerAddImage,
+            style: const TextStyle(fontSize: 10),
+          ),
         ],
       ),
     );

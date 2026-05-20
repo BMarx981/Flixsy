@@ -12,9 +12,7 @@ void main() {
 
   group('resolveButton', () {
     test('DefaultLook resolves to the action default icon + caption', () {
-      final p = resolveButton(
-        const RemoteButton(action: RemoteKey.playPause),
-      );
+      final p = resolveButton(const RemoteButton(action: RemoteKey.playPause));
 
       expect(p.glyph, isA<IconGlyph>());
       expect(iconOf(p), defaultIconFor(RemoteKey.playPause));

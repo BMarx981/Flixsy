@@ -89,8 +89,10 @@ class LayoutController {
   /// triggered it appear to fail, so any error is swallowed.
   Future<void> _sweepOrphanImages() async {
     try {
-      final layouts =
-          await _ref.read(layoutRepositoryProvider).watchAllLayouts().first;
+      final layouts = await _ref
+          .read(layoutRepositoryProvider)
+          .watchAllLayouts()
+          .first;
       final referenced = <String>{
         for (final layout in layouts) ...layout.referencedImageIds,
       };

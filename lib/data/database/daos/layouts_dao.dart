@@ -13,32 +13,24 @@ class LayoutsDao extends DatabaseAccessor<AppDatabase> with _$LayoutsDaoMixin {
 
   /// Watches every custom layout, most recently updated first.
   Stream<List<CustomLayoutsTableData>> watchAll() {
-    return (select(customLayoutsTable)
-          ..orderBy([
-            (t) => OrderingTerm(
-              expression: t.updatedAt,
-              mode: OrderingMode.desc,
-            ),
-          ]))
+    return (select(customLayoutsTable)..orderBy([
+          (t) => OrderingTerm(expression: t.updatedAt, mode: OrderingMode.desc),
+        ]))
         .watch();
   }
 
   /// Every custom layout, most recently updated first.
   Future<List<CustomLayoutsTableData>> getAll() {
-    return (select(customLayoutsTable)
-          ..orderBy([
-            (t) => OrderingTerm(
-              expression: t.updatedAt,
-              mode: OrderingMode.desc,
-            ),
-          ]))
+    return (select(customLayoutsTable)..orderBy([
+          (t) => OrderingTerm(expression: t.updatedAt, mode: OrderingMode.desc),
+        ]))
         .get();
   }
 
   Future<CustomLayoutsTableData?> getById(String id) {
-    return (select(customLayoutsTable)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    return (select(
+      customLayoutsTable,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
   }
 
   /// Inserts the layout, or replaces it if a row with the same id exists.

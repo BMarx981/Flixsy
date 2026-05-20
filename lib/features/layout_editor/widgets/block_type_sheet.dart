@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/extensions/l10n_extensions.dart';
 import '../providers/layout_editor_provider.dart';
 
 /// Shows a bottom sheet of the block types and resolves to the chosen kind —
@@ -16,8 +17,8 @@ Future<LayoutBlockKind?> showBlockTypeSheet(BuildContext context) {
           for (final kind in LayoutBlockKind.values)
             ListTile(
               leading: Icon(_iconFor(kind)),
-              title: Text(kind.label),
-              subtitle: Text(_descriptionFor(kind)),
+              title: Text(_labelFor(sheetContext, kind)),
+              subtitle: Text(_descriptionFor(sheetContext, kind)),
               onTap: () => Navigator.of(sheetContext).pop(kind),
             ),
         ],
@@ -34,10 +35,19 @@ IconData _iconFor(LayoutBlockKind kind) => switch (kind) {
   LayoutBlockKind.spacer => Icons.space_bar,
 };
 
-String _descriptionFor(LayoutBlockKind kind) => switch (kind) {
-  LayoutBlockKind.dpad => 'A five-button directional cross',
-  LayoutBlockKind.buttonRow => 'An evenly spaced row of buttons',
-  LayoutBlockKind.volume => 'Volume down / mute / volume up',
-  LayoutBlockKind.grid => 'A grid of buttons',
-  LayoutBlockKind.spacer => 'Blank vertical space between blocks',
+String _labelFor(BuildContext context, LayoutBlockKind kind) => switch (kind) {
+  LayoutBlockKind.dpad => context.l10n.blockKindDpad,
+  LayoutBlockKind.buttonRow => context.l10n.blockKindButtonRow,
+  LayoutBlockKind.volume => context.l10n.blockKindVolume,
+  LayoutBlockKind.grid => context.l10n.blockKindGrid,
+  LayoutBlockKind.spacer => context.l10n.blockKindSpacer,
 };
+
+String _descriptionFor(BuildContext context, LayoutBlockKind kind) =>
+    switch (kind) {
+      LayoutBlockKind.dpad => context.l10n.blockDescDpad,
+      LayoutBlockKind.buttonRow => context.l10n.blockDescButtonRow,
+      LayoutBlockKind.volume => context.l10n.blockDescVolume,
+      LayoutBlockKind.grid => context.l10n.blockDescGrid,
+      LayoutBlockKind.spacer => context.l10n.blockDescSpacer,
+    };

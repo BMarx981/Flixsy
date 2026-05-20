@@ -30,6 +30,20 @@ class PreferencesDao extends DatabaseAccessor<AppDatabase>
 
   Stream<String?> watchActiveLayoutId() => _watchValue(_activeLayoutKey);
 
+  static const _adsRemovedKey = 'ads_removed';
+
+  /// Whether the user has purchased the "Remove Ads" entitlement.
+  Future<bool> getAdsRemoved() async {
+    final value = await _getValue(_adsRemovedKey);
+    return value == 'true';
+  }
+
+  Future<void> setAdsRemoved(bool adsRemoved) =>
+      _setValue(_adsRemovedKey, adsRemoved ? 'true' : 'false');
+
+  Stream<bool> watchAdsRemoved() =>
+      _watchValue(_adsRemovedKey).map((value) => value == 'true');
+
   static const _deviceCredentialPrefix = 'device_cred:';
 
   /// Returns the stored pairing credential for [deviceId] — a webOS

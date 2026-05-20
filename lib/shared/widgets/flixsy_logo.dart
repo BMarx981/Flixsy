@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../core/extensions/l10n_extensions.dart';
+
 /// The Flixsy brand mark, rendered from a vector asset so it stays crisp
 /// at any size.
 ///
@@ -21,7 +23,7 @@ class FlixsyLogo extends StatelessWidget {
       _assetPath,
       width: size,
       height: size,
-      semanticsLabel: 'Flixsy logo',
+      semanticsLabel: context.l10n.logoSemanticLabel,
     );
   }
 }

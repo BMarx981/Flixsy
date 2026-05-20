@@ -48,12 +48,15 @@ void main() {
       const custom = RemoteLayout(id: 'c1', name: 'Mine', blocks: []);
       await container.read(layoutRepositoryProvider).saveLayout(custom);
 
-      await container.read(layoutControllerProvider).updateLayout(
-        const RemoteLayout(id: 'c1', name: 'Renamed', blocks: []),
-      );
+      await container
+          .read(layoutControllerProvider)
+          .updateLayout(
+            const RemoteLayout(id: 'c1', name: 'Renamed', blocks: []),
+          );
 
-      final loaded =
-          await container.read(layoutRepositoryProvider).getLayout('c1');
+      final loaded = await container
+          .read(layoutRepositoryProvider)
+          .getLayout('c1');
       expect(loaded?.name, 'Renamed');
     });
 
@@ -65,64 +68,72 @@ void main() {
       expect(copy.id, isNot(classicLayout.id));
       expect(copy.isTemplate, isFalse);
       expect(copy.name, 'Classic copy');
-      expect(await container.read(layoutRepositoryProvider).getLayout(copy.id),
-          isNotNull);
-    });
-
-    test('deleting the active layout falls back to the classic built-in',
-        () async {
-      const custom = RemoteLayout(id: 'c1', name: 'Mine', blocks: []);
-      final controller = container.read(layoutControllerProvider);
-      await container.read(layoutRepositoryProvider).saveLayout(custom);
-      await controller.selectLayout('c1');
-      expect(await PreferencesRepository(db).getActiveLayoutId(), 'c1');
-
-      await controller.deleteLayout(custom);
-
       expect(
-        await PreferencesRepository(db).getActiveLayoutId(),
-        classicLayout.id,
+        await container.read(layoutRepositoryProvider).getLayout(copy.id),
+        isNotNull,
       );
     });
 
-    test('deleting a non-active layout leaves the active choice alone',
-        () async {
-      const custom = RemoteLayout(id: 'c1', name: 'Mine', blocks: []);
-      final controller = container.read(layoutControllerProvider);
-      await container.read(layoutRepositoryProvider).saveLayout(custom);
-      await controller.selectLayout(classicLayout.id);
+    test(
+      'deleting the active layout falls back to the classic built-in',
+      () async {
+        const custom = RemoteLayout(id: 'c1', name: 'Mine', blocks: []);
+        final controller = container.read(layoutControllerProvider);
+        await container.read(layoutRepositoryProvider).saveLayout(custom);
+        await controller.selectLayout('c1');
+        expect(await PreferencesRepository(db).getActiveLayoutId(), 'c1');
 
-      await controller.deleteLayout(custom);
+        await controller.deleteLayout(custom);
 
-      expect(
-        await PreferencesRepository(db).getActiveLayoutId(),
-        classicLayout.id,
-      );
-    });
+        expect(
+          await PreferencesRepository(db).getActiveLayoutId(),
+          classicLayout.id,
+        );
+      },
+    );
 
-    test('updateLayout sweeps orphans, keeping the layout\'s own images',
-        () async {
-      const withImage = RemoteLayout(
-        id: 'c1',
-        name: 'Mine',
-        blocks: [
-          ButtonRowBlock(
-            buttons: [
-              RemoteButton(
-                action: RemoteKey.ok,
-                appearance: CustomImage(imageId: 'img-keep'),
-              ),
-            ],
-          ),
-        ],
-      );
-      await container.read(layoutRepositoryProvider).saveLayout(withImage);
+    test(
+      'deleting a non-active layout leaves the active choice alone',
+      () async {
+        const custom = RemoteLayout(id: 'c1', name: 'Mine', blocks: []);
+        final controller = container.read(layoutControllerProvider);
+        await container.read(layoutRepositoryProvider).saveLayout(custom);
+        await controller.selectLayout(classicLayout.id);
 
-      await container.read(layoutControllerProvider).updateLayout(withImage);
+        await controller.deleteLayout(custom);
 
-      // The save runs before the sweep, so the layout's image survives.
-      expect(images.lastSweep, contains('img-keep'));
-    });
+        expect(
+          await PreferencesRepository(db).getActiveLayoutId(),
+          classicLayout.id,
+        );
+      },
+    );
+
+    test(
+      'updateLayout sweeps orphans, keeping the layout\'s own images',
+      () async {
+        const withImage = RemoteLayout(
+          id: 'c1',
+          name: 'Mine',
+          blocks: [
+            ButtonRowBlock(
+              buttons: [
+                RemoteButton(
+                  action: RemoteKey.ok,
+                  appearance: CustomImage(imageId: 'img-keep'),
+                ),
+              ],
+            ),
+          ],
+        );
+        await container.read(layoutRepositoryProvider).saveLayout(withImage);
+
+        await container.read(layoutControllerProvider).updateLayout(withImage);
+
+        // The save runs before the sweep, so the layout's image survives.
+        expect(images.lastSweep, contains('img-keep'));
+      },
+    );
 
     test('deleteLayout runs the orphan sweep', () async {
       const custom = RemoteLayout(id: 'c1', name: 'Mine', blocks: []);
@@ -175,6 +186,12 @@ class _NoopAnalytics implements AnalyticsService {
   Future<void> logLayoutDeleted(String layoutId) async {}
   @override
   Future<void> logCustomImageAdded(String imageId) async {}
+  @override
+  Future<void> logPurchaseRemoveAds() async {}
+  @override
+  Future<void> logRestoreRemoveAds() async {}
+  @override
+  Future<void> logConsentResolved({required bool canRequestAds}) async {}
   @override
   FirebaseAnalyticsObserver get observer => throw UnimplementedError();
 }

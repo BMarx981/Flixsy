@@ -41,23 +41,30 @@ class StandardRemote extends StatelessWidget implements RemoteSkin {
 
     return RemoteImageScope(
       imagePaths: imagePaths,
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final block in layout.blocks)
-              switch (block) {
-                DpadBlock() => renderer.buildDpad(context, block, onKey),
-                ButtonRowBlock() => renderer.buildButtonRow(
-                  context,
-                  block,
-                  onKey,
-                ),
-                VolumeBlock() => renderer.buildVolume(context, block, onKey),
-                GridBlock() => renderer.buildGrid(context, block, onKey),
-                SpacerBlock() => renderer.buildSpacer(context, block),
-              },
-          ],
+      // A remote is a physical control surface: a D-pad's left/right and a
+      // grid's column order must keep their geometry, so the layout is fixed
+      // to LTR and never mirrors with an RTL UI language. Button captions are
+      // still localized — only the spatial arrangement is pinned.
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final block in layout.blocks)
+                switch (block) {
+                  DpadBlock() => renderer.buildDpad(context, block, onKey),
+                  ButtonRowBlock() => renderer.buildButtonRow(
+                    context,
+                    block,
+                    onKey,
+                  ),
+                  VolumeBlock() => renderer.buildVolume(context, block, onKey),
+                  GridBlock() => renderer.buildGrid(context, block, onKey),
+                  SpacerBlock() => renderer.buildSpacer(context, block),
+                },
+            ],
+          ),
         ),
       ),
     );

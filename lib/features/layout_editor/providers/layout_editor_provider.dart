@@ -7,18 +7,10 @@ import '../../../data/models/layout/remote_layout.dart';
 import '../../../theming/remote_key.dart';
 
 /// The kinds of block the editor can add.
-enum LayoutBlockKind {
-  dpad('D-pad'),
-  buttonRow('Button row'),
-  volume('Volume rocker'),
-  grid('Grid'),
-  spacer('Spacer');
-
-  const LayoutBlockKind(this.label);
-
-  /// Human-readable name shown in the add-block sheet.
-  final String label;
-}
+///
+/// The localized name and description shown in the add-block sheet are
+/// resolved in `block_type_sheet.dart` — see `lib/l10n/app_en.arb`.
+enum LayoutBlockKind { dpad, buttonRow, volume, grid, spacer }
 
 /// Holds the editable draft of one [RemoteLayout].
 ///

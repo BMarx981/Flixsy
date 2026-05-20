@@ -3,12 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/connect_failure.dart';
+import '../../../core/extensions/l10n_extensions.dart';
 import '../../../router/app_router.dart';
+import '../../../shared/ads/remote_banner_ad.dart';
+import '../../../shared/iap/iap_failure.dart';
+import '../../../shared/iap/iap_failure_l10n.dart';
+import '../../../shared/providers/app_providers.dart';
 import '../../../theming/custom_image_provider.dart';
 import '../../../theming/layout_provider.dart';
 import '../../../theming/skin_provider.dart';
 import '../../../theming/skin_registry.dart';
 import '../providers/remote_control_provider.dart';
+import '../widgets/skin_picker_carousel.dart';
+
+enum _HomeMenuAction { removeAds, restorePurchases }
 
 @RoutePage()
 class HomeScreen extends ConsumerWidget {
@@ -19,13 +27,16 @@ class HomeScreen extends ConsumerWidget {
     final skinConfig = ref.watch(skinConfigProvider);
     final layout = ref.watch(activeLayoutProvider);
     final imagePaths = ref.watch(customImagePathsProvider);
+    final preview = ref.watch(previewSkinProvider);
+    final isPicking = preview != null;
+    final adsRemoved = ref.watch(adsRemovedProvider).valueOrNull ?? false;
 
     // Surface failed key commands as a snackbar.
     ref.listen<ConnectFailure?>(remoteControlProvider, (prev, next) {
       if (next != null && next != prev) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(next.message),
+            content: Text(context.l10n.failureMessage(next)),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
@@ -33,112 +44,166 @@ class HomeScreen extends ConsumerWidget {
       }
     });
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Remote'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.dashboard_customize_outlined),
-            tooltip: 'Layouts',
-            onPressed: () => context.router.push(const LayoutPickerRoute()),
+    // Surface IAP failures (cancel / network / etc.) as a snackbar.
+    ref.listen<AsyncValue<IapFailure>>(iapFailureStreamProvider, (prev, next) {
+      next.whenData((failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.iapFailureMessage(failure)),
+            behavior: SnackBarBehavior.floating,
           ),
-          const _SkinMenuButton(),
-        ],
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: skinConfig.buildRemoteSkin(
+        );
+      });
+    });
+
+    // Confirmation when the entitlement flips on (purchase or restore).
+    ref.listen<AsyncValue<bool>>(adsRemovedProvider, (prev, next) {
+      final wasOff = prev?.valueOrNull == false;
+      final isNowOn = next.valueOrNull == true;
+      if (wasOff && isNowOn) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.removeAdsSuccess),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    });
+
+    final remote = isPicking || !skinConfig.edgeToEdge
+        ? SafeArea(
+            // Don't extend the safe area into the banner ad — the banner has
+            // its own bottom inset handling at the Scaffold level.
+            bottom: adsRemoved,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: isPicking
+                  ? SkinPickerCarousel(
+                      layout: layout,
+                      imagePaths: imagePaths,
+                    )
+                  : skinConfig.buildRemoteSkin(
+                      layout: layout,
+                      imagePaths: imagePaths,
+                      onKeyPressed: (key) => ref
+                          .read(remoteControlProvider.notifier)
+                          .sendKey(key),
+                    ),
+            ),
+          )
+        : skinConfig.buildRemoteSkin(
             layout: layout,
             imagePaths: imagePaths,
             onKeyPressed: (key) =>
                 ref.read(remoteControlProvider.notifier).sendKey(key),
-          ),
-        ),
+          );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(context.l10n.homeTitle),
+        leading: isPicking
+            ? IconButton(
+                icon: const Icon(Icons.close),
+                tooltip: context.l10n.skinPickerCancel,
+                onPressed: () =>
+                    ref.read(previewSkinProvider.notifier).state = null,
+              )
+            : null,
+        actions: isPicking
+            ? [
+                TextButton(
+                  onPressed: () async {
+                    await ref
+                        .read(skinControllerProvider)
+                        .selectSkin(preview);
+                    ref.read(previewSkinProvider.notifier).state = null;
+                  },
+                  child: Text(context.l10n.skinPickerApply),
+                ),
+                const SizedBox(width: 4),
+              ]
+            : [
+                IconButton(
+                  icon: const Icon(Icons.dashboard_customize_outlined),
+                  tooltip: context.l10n.homeLayoutsTooltip,
+                  onPressed: () =>
+                      context.router.push(const LayoutPickerRoute()),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.palette_outlined),
+                  tooltip: context.l10n.homeChangeSkinTooltip,
+                  onPressed: () {
+                    final active =
+                        ref.read(activeSkinProvider).valueOrNull ??
+                        AppSkin.classic;
+                    ref.read(previewSkinProvider.notifier).state = active;
+                  },
+                ),
+                _HomeOverflowMenu(adsRemoved: adsRemoved),
+              ],
       ),
+      body: adsRemoved
+          ? remote
+          : Column(
+              children: [
+                Expanded(child: remote),
+                const RemoteBannerAd(),
+              ],
+            ),
     );
   }
 }
 
-/// App-bar action that lets the user switch between registered skins.
-class _SkinMenuButton extends ConsumerWidget {
-  const _SkinMenuButton();
+/// Streams IAP failures from the singleton [IapService] so screens can show
+/// them in a snackbar without subscribing twice. Lives here because today
+/// only HomeScreen surfaces them.
+final iapFailureStreamProvider = StreamProvider.autoDispose<IapFailure>((ref) {
+  return ref.watch(iapServiceProvider).failures;
+});
+
+class _HomeOverflowMenu extends ConsumerWidget {
+  const _HomeOverflowMenu({required this.adsRemoved});
+
+  final bool adsRemoved;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activeSkin =
-        ref.watch(activeSkinProvider).valueOrNull ?? AppSkin.classic;
-    final colorScheme = Theme.of(context).colorScheme;
+    final productAsync = ref.watch(removeAdsProductProvider);
+    final price = productAsync.valueOrNull?.price;
 
-    return PopupMenuButton<AppSkin>(
-      icon: const Icon(Icons.palette_outlined),
-      tooltip: 'Change skin',
-      initialValue: activeSkin,
-      onSelected: (skin) => ref.read(skinControllerProvider).selectSkin(skin),
-      // Slick rounded popup with a theme-colored outline that makes it pop.
-      color: colorScheme.surface,
-      surfaceTintColor: Colors.transparent,
-      elevation: 12,
-      shadowColor: colorScheme.primary.withAlpha(140),
-      menuPadding: const EdgeInsets.symmetric(vertical: 6),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: colorScheme.primary, width: 1.5),
-      ),
+    return PopupMenuButton<_HomeMenuAction>(
+      icon: const Icon(Icons.more_vert),
+      onSelected: (action) => _handle(context, ref, action),
       itemBuilder: (context) => [
-        for (final skin in AppSkin.values)
-          PopupMenuItem<AppSkin>(
-            value: skin,
-            child: _SkinMenuRow(
-              label: _skinLabel(skin),
-              isActive: skin == activeSkin,
-              colorScheme: colorScheme,
+        if (!adsRemoved)
+          PopupMenuItem(
+            value: _HomeMenuAction.removeAds,
+            child: Text(
+              price == null
+                  ? context.l10n.removeAdsAction
+                  : context.l10n.removeAdsActionWithPrice(price),
             ),
           ),
-      ],
-    );
-  }
-
-  static String _skinLabel(AppSkin skin) {
-    final name = skin.name;
-    return '${name[0].toUpperCase()}${name.substring(1)}';
-  }
-}
-
-/// A single row inside the skin popup — the active skin is tinted and bolded
-/// so the current selection reads clearly.
-class _SkinMenuRow extends StatelessWidget {
-  const _SkinMenuRow({
-    required this.label,
-    required this.isActive,
-    required this.colorScheme,
-  });
-
-  final String label;
-  final bool isActive;
-  final ColorScheme colorScheme;
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = colorScheme.primary;
-    return Row(
-      children: [
-        Icon(
-          isActive
-              ? Icons.radio_button_checked
-              : Icons.radio_button_unchecked,
-          size: 18,
-          color: isActive ? accent : colorScheme.onSurface.withAlpha(120),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          label,
-          style: TextStyle(
-            color: isActive ? accent : colorScheme.onSurface,
-            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+        if (!adsRemoved)
+          PopupMenuItem(
+            value: _HomeMenuAction.restorePurchases,
+            child: Text(context.l10n.restorePurchasesAction),
           ),
-        ),
       ],
     );
+  }
+
+  Future<void> _handle(
+    BuildContext context,
+    WidgetRef ref,
+    _HomeMenuAction action,
+  ) async {
+    final iap = ref.read(iapServiceProvider);
+    switch (action) {
+      case _HomeMenuAction.removeAds:
+        await iap.buyRemoveAds();
+      case _HomeMenuAction.restorePurchases:
+        await iap.restorePurchases();
+    }
   }
 }

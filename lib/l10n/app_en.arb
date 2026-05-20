@@ -1,0 +1,502 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Flixsy",
+  "@appTitle": {
+    "description": "The application name, shown as the OS task/window title."
+  },
+
+  "discoveryHeaderTitle": "Find Your TV",
+  "@discoveryHeaderTitle": {
+    "description": "Heading on the device-discovery screen."
+  },
+  "discoveryHeaderSubtitle": "Make sure your TV is on and connected to the same Wi-Fi network.",
+  "@discoveryHeaderSubtitle": {
+    "description": "Sub-heading explaining the network requirement on the discovery screen."
+  },
+  "discoveryErrorTitle": "Could not start search",
+  "@discoveryErrorTitle": {
+    "description": "Title shown when device discovery fails to start."
+  },
+  "discoveryErrorBody": "Check your network connection and try again.",
+  "@discoveryErrorBody": {
+    "description": "Body text shown when device discovery fails to start."
+  },
+  "discoveryRetryButton": "Try Again",
+  "@discoveryRetryButton": {
+    "description": "Button that restarts a failed device search."
+  },
+  "discoverySearching": "Searching your network…",
+  "@discoverySearching": {
+    "description": "Status text shown while scanning the network for TVs."
+  },
+  "discoverySearchingHint": "This can take a few seconds.",
+  "@discoverySearchingHint": {
+    "description": "Reassurance shown beneath the searching status text."
+  },
+  "discoveryDevicesFound": "{count, plural, =1{1 device found} other{{count} devices found}}",
+  "@discoveryDevicesFound": {
+    "description": "Count of TVs found by discovery.",
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "discoveryDeviceFallbackName": "your TV",
+  "@discoveryDeviceFallbackName": {
+    "description": "Stand-in name used when a device's real name is unknown, e.g. 'Accept the request on your TV'."
+  },
+  "discoveryPairingEnterCodeTitle": "Enter the code",
+  "@discoveryPairingEnterCodeTitle": {
+    "description": "Title of the pairing banner when the TV shows a code to type in."
+  },
+  "discoveryPairingCheckTvTitle": "Check your TV",
+  "@discoveryPairingCheckTvTitle": {
+    "description": "Title of the pairing banner when the user must accept a prompt on the TV."
+  },
+  "discoveryPairingEnterCodeBody": "{deviceName} is showing a 6-digit code. Type it below to finish pairing.",
+  "@discoveryPairingEnterCodeBody": {
+    "description": "Instructions for entering the code the TV displays.",
+    "placeholders": {
+      "deviceName": { "type": "String", "example": "Living Room TV" }
+    }
+  },
+  "discoveryPairingCheckTvBody": "Accept the connection request on {deviceName} using its remote.",
+  "@discoveryPairingCheckTvBody": {
+    "description": "Instructions for accepting the pairing prompt on the TV itself.",
+    "placeholders": {
+      "deviceName": { "type": "String", "example": "Living Room TV" }
+    }
+  },
+  "discoveryPairingCodeHint": "000000",
+  "@discoveryPairingCodeHint": {
+    "description": "Placeholder text in the 6-digit pairing-code input. Keep it as six digits."
+  },
+  "discoveryPairButton": "Pair",
+  "@discoveryPairButton": {
+    "description": "Button that submits the typed pairing code."
+  },
+
+  "homeTitle": "Remote",
+  "@homeTitle": {
+    "description": "App-bar title of the main remote-control screen."
+  },
+  "homeLayoutsTooltip": "Layouts",
+  "@homeLayoutsTooltip": {
+    "description": "Tooltip for the app-bar action that opens the layout picker."
+  },
+  "homeChangeSkinTooltip": "Change skin",
+  "@homeChangeSkinTooltip": {
+    "description": "Tooltip for the app-bar action that switches the visual skin."
+  },
+  "skinPickerApply": "Apply",
+  "@skinPickerApply": {
+    "description": "Confirms the previewed skin in the swipe picker and persists it."
+  },
+  "skinPickerCancel": "Cancel",
+  "@skinPickerCancel": {
+    "description": "Exits the skin picker without changing the saved skin."
+  },
+  "skinPickerPreviousTooltip": "Previous skin",
+  "@skinPickerPreviousTooltip": {
+    "description": "Tooltip for the arrow that scrolls the skin picker to the previous skin."
+  },
+  "skinPickerNextTooltip": "Next skin",
+  "@skinPickerNextTooltip": {
+    "description": "Tooltip for the arrow that scrolls the skin picker to the next skin."
+  },
+
+  "layoutPickerTitle": "Layouts",
+  "@layoutPickerTitle": {
+    "description": "App-bar title of the layout-picker screen."
+  },
+  "layoutPickerLoadError": "Could not load layouts.\n{error}",
+  "@layoutPickerLoadError": {
+    "description": "Shown when the saved layouts fail to load. {error} is a technical detail and is not translated.",
+    "placeholders": {
+      "error": { "type": "String" }
+    }
+  },
+  "layoutTypeTemplate": "Built-in template",
+  "@layoutTypeTemplate": {
+    "description": "Subtitle marking a layout as a read-only built-in template."
+  },
+  "layoutTypeCustom": "Custom layout",
+  "@layoutTypeCustom": {
+    "description": "Subtitle marking a layout as a user-created custom layout."
+  },
+  "layoutActionsTooltip": "Layout actions",
+  "@layoutActionsTooltip": {
+    "description": "Tooltip for the overflow menu on a layout row."
+  },
+  "layoutActionDuplicate": "Duplicate",
+  "@layoutActionDuplicate": {
+    "description": "Menu action that copies a layout."
+  },
+  "layoutActionEdit": "Edit",
+  "@layoutActionEdit": {
+    "description": "Menu action that opens a layout in the editor."
+  },
+  "layoutDeleteDialogTitle": "Delete layout?",
+  "@layoutDeleteDialogTitle": {
+    "description": "Title of the confirm-delete dialog for a layout."
+  },
+  "layoutDeleteDialogBody": "\"{name}\" will be permanently removed.",
+  "@layoutDeleteDialogBody": {
+    "description": "Body of the confirm-delete dialog for a layout.",
+    "placeholders": {
+      "name": { "type": "String", "example": "My Layout" }
+    }
+  },
+
+  "editorTitle": "Edit layout",
+  "@editorTitle": {
+    "description": "App-bar title of the layout-editor screen."
+  },
+  "editorAddBlockButton": "Add block",
+  "@editorAddBlockButton": {
+    "description": "Floating button that adds a new block to the layout."
+  },
+  "editorValidationName": "Give the layout a name.",
+  "@editorValidationName": {
+    "description": "Validation message shown when saving a layout with no name."
+  },
+  "editorValidationBlocks": "Add at least one block before saving.",
+  "@editorValidationBlocks": {
+    "description": "Validation message shown when saving a layout with no blocks."
+  },
+  "editorSavedSnack": "Layout saved.",
+  "@editorSavedSnack": {
+    "description": "Confirmation shown after a layout is saved."
+  },
+  "editorPreviewLabel": "Preview",
+  "@editorPreviewLabel": {
+    "description": "Section label above the live layout preview."
+  },
+  "editorBlocksLabel": "Blocks",
+  "@editorBlocksLabel": {
+    "description": "Section label above the list of editable blocks."
+  },
+  "editorNameFieldLabel": "Layout name",
+  "@editorNameFieldLabel": {
+    "description": "Label of the text field for the layout's name."
+  },
+  "editorEmptyPreview": "Add a block to see a preview",
+  "@editorEmptyPreview": {
+    "description": "Placeholder shown in the preview box when the layout has no blocks."
+  },
+  "editorRemoveBlockTooltip": "Remove block",
+  "@editorRemoveBlockTooltip": {
+    "description": "Tooltip for the button that deletes a block."
+  },
+  "editorEmptyCell": "Empty",
+  "@editorEmptyCell": {
+    "description": "Label for an empty cell in a grid block."
+  },
+
+  "blockKindDpad": "D-pad",
+  "@blockKindDpad": {
+    "description": "Name of the directional-cross block type."
+  },
+  "blockKindButtonRow": "Button row",
+  "@blockKindButtonRow": {
+    "description": "Name of the horizontal button-row block type."
+  },
+  "blockKindVolume": "Volume rocker",
+  "@blockKindVolume": {
+    "description": "Name of the volume-rocker block type."
+  },
+  "blockKindGrid": "Grid",
+  "@blockKindGrid": {
+    "description": "Name of the grid block type."
+  },
+  "blockKindSpacer": "Spacer",
+  "@blockKindSpacer": {
+    "description": "Name of the spacer block type (blank space)."
+  },
+  "blockDescDpad": "A five-button directional cross",
+  "@blockDescDpad": {
+    "description": "Description of the D-pad block type."
+  },
+  "blockDescButtonRow": "An evenly spaced row of buttons",
+  "@blockDescButtonRow": {
+    "description": "Description of the button-row block type."
+  },
+  "blockDescVolume": "Volume down / mute / volume up",
+  "@blockDescVolume": {
+    "description": "Description of the volume-rocker block type."
+  },
+  "blockDescGrid": "A grid of buttons",
+  "@blockDescGrid": {
+    "description": "Description of the grid block type."
+  },
+  "blockDescSpacer": "Blank vertical space between blocks",
+  "@blockDescSpacer": {
+    "description": "Description of the spacer block type."
+  },
+
+  "buttonEditorTitle": "Edit button",
+  "@buttonEditorTitle": {
+    "description": "Title of the button-editor bottom sheet."
+  },
+  "buttonEditorActionLabel": "Action",
+  "@buttonEditorActionLabel": {
+    "description": "Label of the row that picks which key a button sends."
+  },
+  "buttonEditorIconLabel": "Icon",
+  "@buttonEditorIconLabel": {
+    "description": "Label of the row that picks a button's icon."
+  },
+  "buttonEditorShowLabel": "Show label",
+  "@buttonEditorShowLabel": {
+    "description": "Label of the toggle that shows or hides a button's caption."
+  },
+  "buttonEditorShowLabelOn": "A caption is shown on the button",
+  "@buttonEditorShowLabelOn": {
+    "description": "Sub-text when the show-label toggle is on."
+  },
+  "buttonEditorShowLabelOff": "The button shows no caption",
+  "@buttonEditorShowLabelOff": {
+    "description": "Sub-text when the show-label toggle is off."
+  },
+  "buttonEditorLabelField": "Label",
+  "@buttonEditorLabelField": {
+    "description": "Label of the text field for a button's custom caption."
+  },
+  "buttonEditorLabelHelper": "Empty — using the default: {defaultLabel}",
+  "@buttonEditorLabelHelper": {
+    "description": "Helper text shown when the custom-label field is empty.",
+    "placeholders": {
+      "defaultLabel": { "type": "String", "example": "Volume Up" }
+    }
+  },
+
+  "iconPickerTitle": "Choose icon",
+  "@iconPickerTitle": {
+    "description": "Title of the icon-picker bottom sheet."
+  },
+  "iconPickerDefaultSubtitle": "The standard icon for this action",
+  "@iconPickerDefaultSubtitle": {
+    "description": "Sub-text for the 'Default' icon choice."
+  },
+  "iconPickerTextOnlySubtitle": "Show the label, no icon",
+  "@iconPickerTextOnlySubtitle": {
+    "description": "Sub-text for the 'Text only' icon choice."
+  },
+  "iconPickerYourImages": "Your images",
+  "@iconPickerYourImages": {
+    "description": "Section header above the user's imported button images."
+  },
+  "iconPickerAddImage": "Add",
+  "@iconPickerAddImage": {
+    "description": "Label of the tile that imports a new button image."
+  },
+  "iconPackStandardName": "Standard",
+  "@iconPackStandardName": {
+    "description": "Display name of the built-in 'Standard' icon pack."
+  },
+
+  "appearanceDefault": "Default",
+  "@appearanceDefault": {
+    "description": "Name of the default button appearance / icon choice."
+  },
+  "appearanceTextOnly": "Text only",
+  "@appearanceTextOnly": {
+    "description": "Name of the text-only button appearance / icon choice."
+  },
+  "appearancePackIcon": "Pack icon",
+  "@appearancePackIcon": {
+    "description": "Description of a button using an icon-pack icon."
+  },
+  "appearanceCustomImage": "Custom image",
+  "@appearanceCustomImage": {
+    "description": "Description of a button using a user-imported image."
+  },
+  "appearanceCustomIcon": "Custom icon",
+  "@appearanceCustomIcon": {
+    "description": "Fallback description of a button icon that cannot be named."
+  },
+
+  "keyRoleDpad": "Directional",
+  "@keyRoleDpad": {
+    "description": "Group header for the directional keys in the action picker."
+  },
+  "keyRoleNavigation": "Navigation",
+  "@keyRoleNavigation": {
+    "description": "Group header for the navigation keys in the action picker."
+  },
+  "keyRoleTransport": "Playback",
+  "@keyRoleTransport": {
+    "description": "Group header for the playback keys in the action picker."
+  },
+  "keyRoleVolume": "Volume",
+  "@keyRoleVolume": {
+    "description": "Group header for the volume keys in the action picker."
+  },
+  "keyRoleSystem": "System",
+  "@keyRoleSystem": {
+    "description": "Group header for the system keys in the action picker."
+  },
+
+  "remoteKeyUp": "Up",
+  "@remoteKeyUp": { "description": "Remote key label: D-pad up." },
+  "remoteKeyDown": "Down",
+  "@remoteKeyDown": { "description": "Remote key label: D-pad down." },
+  "remoteKeyLeft": "Left",
+  "@remoteKeyLeft": { "description": "Remote key label: D-pad left." },
+  "remoteKeyRight": "Right",
+  "@remoteKeyRight": { "description": "Remote key label: D-pad right." },
+  "remoteKeyOk": "OK",
+  "@remoteKeyOk": { "description": "Remote key label: D-pad centre / select." },
+  "remoteKeyBack": "Back",
+  "@remoteKeyBack": { "description": "Remote key label: back / return." },
+  "remoteKeyHome": "Home",
+  "@remoteKeyHome": { "description": "Remote key label: home screen." },
+  "remoteKeyRewind": "Rewind",
+  "@remoteKeyRewind": { "description": "Remote key label: rewind." },
+  "remoteKeyPlayPause": "Play/Pause",
+  "@remoteKeyPlayPause": { "description": "Remote key label: toggle play and pause." },
+  "remoteKeyFastForward": "Fast Forward",
+  "@remoteKeyFastForward": { "description": "Remote key label: fast-forward." },
+  "remoteKeyNext": "Next",
+  "@remoteKeyNext": { "description": "Remote key label: skip to next." },
+  "remoteKeyPrevious": "Previous",
+  "@remoteKeyPrevious": { "description": "Remote key label: skip to previous." },
+  "remoteKeyVolumeUp": "Volume Up",
+  "@remoteKeyVolumeUp": { "description": "Remote key label: raise volume." },
+  "remoteKeyVolumeDown": "Volume Down",
+  "@remoteKeyVolumeDown": { "description": "Remote key label: lower volume." },
+  "remoteKeyMute": "Mute",
+  "@remoteKeyMute": { "description": "Remote key label: mute." },
+  "remoteKeyPower": "Power",
+  "@remoteKeyPower": { "description": "Remote key label: power on/off." },
+
+  "iconNameUp": "Up",
+  "@iconNameUp": { "description": "Icon name in the Standard pack: up arrow." },
+  "iconNameDown": "Down",
+  "@iconNameDown": { "description": "Icon name in the Standard pack: down arrow." },
+  "iconNameLeft": "Left",
+  "@iconNameLeft": { "description": "Icon name in the Standard pack: left arrow." },
+  "iconNameRight": "Right",
+  "@iconNameRight": { "description": "Icon name in the Standard pack: right arrow." },
+  "iconNameOk": "OK",
+  "@iconNameOk": { "description": "Icon name in the Standard pack: select / OK." },
+  "iconNameBack": "Back",
+  "@iconNameBack": { "description": "Icon name in the Standard pack: back arrow." },
+  "iconNameHome": "Home",
+  "@iconNameHome": { "description": "Icon name in the Standard pack: home." },
+  "iconNameRewind": "Rewind",
+  "@iconNameRewind": { "description": "Icon name in the Standard pack: rewind." },
+  "iconNameFastForward": "Fast forward",
+  "@iconNameFastForward": { "description": "Icon name in the Standard pack: fast-forward." },
+  "iconNamePlayPause": "Play / Pause",
+  "@iconNamePlayPause": { "description": "Icon name in the Standard pack: play/pause." },
+  "iconNamePlay": "Play",
+  "@iconNamePlay": { "description": "Icon name in the Standard pack: play." },
+  "iconNamePause": "Pause",
+  "@iconNamePause": { "description": "Icon name in the Standard pack: pause." },
+  "iconNameStop": "Stop",
+  "@iconNameStop": { "description": "Icon name in the Standard pack: stop." },
+  "iconNameNext": "Next",
+  "@iconNameNext": { "description": "Icon name in the Standard pack: skip next." },
+  "iconNamePrevious": "Previous",
+  "@iconNamePrevious": { "description": "Icon name in the Standard pack: skip previous." },
+  "iconNameVolumeUp": "Volume up",
+  "@iconNameVolumeUp": { "description": "Icon name in the Standard pack: volume up." },
+  "iconNameVolumeDown": "Volume down",
+  "@iconNameVolumeDown": { "description": "Icon name in the Standard pack: volume down." },
+  "iconNameMute": "Mute",
+  "@iconNameMute": { "description": "Icon name in the Standard pack: mute." },
+  "iconNamePower": "Power",
+  "@iconNamePower": { "description": "Icon name in the Standard pack: power." },
+  "iconNameMenu": "Menu",
+  "@iconNameMenu": { "description": "Icon name in the Standard pack: menu." },
+  "iconNameSettings": "Settings",
+  "@iconNameSettings": { "description": "Icon name in the Standard pack: settings." },
+  "iconNameInfo": "Info",
+  "@iconNameInfo": { "description": "Icon name in the Standard pack: info." },
+  "iconNameMic": "Microphone",
+  "@iconNameMic": { "description": "Icon name in the Standard pack: microphone." },
+
+  "failureDiscovery": "Couldn't search for TVs. Check your Wi-Fi and try again.",
+  "@failureDiscovery": {
+    "description": "User-facing message for a device-discovery failure."
+  },
+  "failureConnection": "Couldn't connect to the TV. Make sure it's on and nearby.",
+  "@failureConnection": {
+    "description": "User-facing message for a connection failure."
+  },
+  "failureCommand": "That button didn't go through. Please try again.",
+  "@failureCommand": {
+    "description": "User-facing message for a failed remote-key command."
+  },
+  "failureUnknown": "Something went wrong. Please try again.",
+  "@failureUnknown": {
+    "description": "User-facing message for an unclassified failure."
+  },
+
+  "logoSemanticLabel": "Flixsy logo",
+  "@logoSemanticLabel": {
+    "description": "Accessibility label for the Flixsy brand logo image."
+  },
+  "mainRemoteSemanticLabel": "Flixsy remote",
+  "@mainRemoteSemanticLabel": {
+    "description": "Accessibility label for the logo-shaped remote control surface."
+  },
+
+  "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Generic 'Cancel' button used in dialogs."
+  },
+  "commonDelete": "Delete",
+  "@commonDelete": {
+    "description": "Generic 'Delete' action used in menus and dialogs."
+  },
+  "commonSave": "Save",
+  "@commonSave": {
+    "description": "Generic 'Save' button."
+  },
+  "commonDone": "Done",
+  "@commonDone": {
+    "description": "Generic 'Done' button that confirms and closes a sheet."
+  },
+
+  "removeAdsAction": "Remove Ads",
+  "@removeAdsAction": {
+    "description": "Menu action that opens the 'Remove Ads' in-app purchase. Used when the localized price isn't yet known."
+  },
+  "removeAdsActionWithPrice": "Remove Ads — {price}",
+  "@removeAdsActionWithPrice": {
+    "description": "Menu action that opens the 'Remove Ads' in-app purchase. {price} is the localized store price (already formatted with currency).",
+    "placeholders": {
+      "price": { "type": "String", "example": "$2.99" }
+    }
+  },
+  "restorePurchasesAction": "Restore Purchases",
+  "@restorePurchasesAction": {
+    "description": "Menu action that asks the store to restore any previous purchases made by the user."
+  },
+  "removeAdsSuccess": "Ads removed. Thanks for your support!",
+  "@removeAdsSuccess": {
+    "description": "Confirmation snackbar after a successful 'Remove Ads' purchase."
+  },
+  "removeAdsFailureCancelled": "Purchase cancelled.",
+  "@removeAdsFailureCancelled": {
+    "description": "User-facing message when the user cancels the purchase sheet."
+  },
+  "removeAdsFailureProductNotFound": "This product isn't available right now. Please try again later.",
+  "@removeAdsFailureProductNotFound": {
+    "description": "User-facing message when the store doesn't return the Remove Ads product."
+  },
+  "removeAdsFailureNetwork": "Couldn't reach the store. Check your connection and try again.",
+  "@removeAdsFailureNetwork": {
+    "description": "User-facing message for an IAP network failure."
+  },
+  "removeAdsFailureNothingToRestore": "No previous purchases found.",
+  "@removeAdsFailureNothingToRestore": {
+    "description": "Snackbar shown after Restore Purchases when nothing was restored."
+  },
+  "removeAdsFailureUnknown": "Something went wrong. Please try again.",
+  "@removeAdsFailureUnknown": {
+    "description": "User-facing message for an unclassified IAP failure."
+  }
+}

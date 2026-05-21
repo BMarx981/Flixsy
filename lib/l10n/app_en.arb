@@ -332,6 +332,10 @@
   "@keyRoleVolume": {
     "description": "Group header for the volume keys in the action picker."
   },
+  "keyRoleChannel": "Channel",
+  "@keyRoleChannel": {
+    "description": "Group header for the channel keys in the action picker."
+  },
   "keyRoleSystem": "System",
   "@keyRoleSystem": {
     "description": "Group header for the system keys in the action picker."
@@ -367,8 +371,14 @@
   "@remoteKeyVolumeDown": { "description": "Remote key label: lower volume." },
   "remoteKeyMute": "Mute",
   "@remoteKeyMute": { "description": "Remote key label: mute." },
+  "remoteKeyChannelUp": "Channel Up",
+  "@remoteKeyChannelUp": { "description": "Remote key label: next channel." },
+  "remoteKeyChannelDown": "Channel Down",
+  "@remoteKeyChannelDown": { "description": "Remote key label: previous channel." },
   "remoteKeyPower": "Power",
   "@remoteKeyPower": { "description": "Remote key label: power on/off." },
+  "remoteKeySettings": "Settings",
+  "@remoteKeySettings": { "description": "Remote key label: opens the TV's settings or menu." },
 
   "iconNameUp": "Up",
   "@iconNameUp": { "description": "Icon name in the Standard pack: up arrow." },
@@ -406,6 +416,10 @@
   "@iconNameVolumeDown": { "description": "Icon name in the Standard pack: volume down." },
   "iconNameMute": "Mute",
   "@iconNameMute": { "description": "Icon name in the Standard pack: mute." },
+  "iconNameChannelUp": "Channel up",
+  "@iconNameChannelUp": { "description": "Icon name in the Standard pack: channel up." },
+  "iconNameChannelDown": "Channel down",
+  "@iconNameChannelDown": { "description": "Icon name in the Standard pack: channel down." },
   "iconNamePower": "Power",
   "@iconNamePower": { "description": "Icon name in the Standard pack: power." },
   "iconNameMenu": "Menu",

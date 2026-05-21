@@ -14,7 +14,7 @@ library;
 ///
 /// Used by the layout editor to offer keys in sensible clusters; it never
 /// affects what a key does or how it is sent.
-enum RemoteKeyRole { dpad, navigation, transport, volume, system }
+enum RemoteKeyRole { dpad, navigation, transport, volume, channel, system }
 
 /// Every remote key the app can send.
 ///
@@ -37,7 +37,10 @@ enum RemoteKey {
   volumeUp('VOLUME_UP', RemoteKeyRole.volume),
   volumeDown('VOLUME_DOWN', RemoteKeyRole.volume),
   mute('MUTE', RemoteKeyRole.volume),
-  power('POWER', RemoteKeyRole.system);
+  channelUp('CHANNEL_UP', RemoteKeyRole.channel),
+  channelDown('CHANNEL_DOWN', RemoteKeyRole.channel),
+  power('POWER', RemoteKeyRole.system),
+  settings('SETTINGS', RemoteKeyRole.system);
 
   const RemoteKey(this.code, this.role);
 

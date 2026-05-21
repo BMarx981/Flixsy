@@ -257,6 +257,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get keyRoleVolume => 'Volume';
 
   @override
+  String get keyRoleChannel => 'Channel';
+
+  @override
   String get keyRoleSystem => 'System';
 
   @override
@@ -305,7 +308,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String get remoteKeyMute => 'Mute';
 
   @override
+  String get remoteKeyChannelUp => 'Channel Up';
+
+  @override
+  String get remoteKeyChannelDown => 'Channel Down';
+
+  @override
   String get remoteKeyPower => 'Power';
+
+  @override
+  String get remoteKeySettings => 'Settings';
 
   @override
   String get iconNameUp => 'Up';
@@ -360,6 +372,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get iconNameMute => 'Mute';
+
+  @override
+  String get iconNameChannelUp => 'Channel up';
+
+  @override
+  String get iconNameChannelDown => 'Channel down';
 
   @override
   String get iconNamePower => 'Power';

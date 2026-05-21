@@ -17,6 +17,10 @@ const _fullLayout = RemoteLayout(
       left: RemoteButton(action: RemoteKey.left),
       right: RemoteButton(action: RemoteKey.right),
       ok: RemoteButton(action: RemoteKey.ok),
+      volumeUp: RemoteButton(action: RemoteKey.volumeUp),
+      volumeDown: RemoteButton(action: RemoteKey.volumeDown),
+      channelUp: RemoteButton(action: RemoteKey.channelUp),
+      channelDown: RemoteButton(action: RemoteKey.channelDown),
     ),
     SpacerBlock(height: 12),
     ButtonRowBlock(

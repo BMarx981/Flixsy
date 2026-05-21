@@ -25,7 +25,10 @@ extension RemoteKeyL10n on AppLocalizations {
     RemoteKey.volumeUp => remoteKeyVolumeUp,
     RemoteKey.volumeDown => remoteKeyVolumeDown,
     RemoteKey.mute => remoteKeyMute,
+    RemoteKey.channelUp => remoteKeyChannelUp,
+    RemoteKey.channelDown => remoteKeyChannelDown,
     RemoteKey.power => remoteKeyPower,
+    RemoteKey.settings => remoteKeySettings,
   };
 
   /// The localized group header for [role] in the action picker.
@@ -34,6 +37,7 @@ extension RemoteKeyL10n on AppLocalizations {
     RemoteKeyRole.navigation => keyRoleNavigation,
     RemoteKeyRole.transport => keyRoleTransport,
     RemoteKeyRole.volume => keyRoleVolume,
+    RemoteKeyRole.channel => keyRoleChannel,
     RemoteKeyRole.system => keyRoleSystem,
   };
 
@@ -60,6 +64,8 @@ extension RemoteKeyL10n on AppLocalizations {
     'volume_up' => iconNameVolumeUp,
     'volume_down' => iconNameVolumeDown,
     'mute' => iconNameMute,
+    'channel_up' => iconNameChannelUp,
+    'channel_down' => iconNameChannelDown,
     'power' => iconNamePower,
     'menu' => iconNameMenu,
     'settings' => iconNameSettings,

@@ -22,6 +22,10 @@ const _dpadLayout = RemoteLayout(
       left: RemoteButton(action: RemoteKey.left),
       right: RemoteButton(action: RemoteKey.right),
       ok: RemoteButton(action: RemoteKey.ok),
+      volumeUp: RemoteButton(action: RemoteKey.volumeUp),
+      volumeDown: RemoteButton(action: RemoteKey.volumeDown),
+      channelUp: RemoteButton(action: RemoteKey.channelUp),
+      channelDown: RemoteButton(action: RemoteKey.channelDown),
     ),
   ],
 );
@@ -67,6 +71,14 @@ void main() {
   });
 
   testWidgets('adding a block via the sheet appends it', (tester) async {
+    // The d-pad card shows nine button chips, so it pushes the new Spacer
+    // card past the default 800x600 viewport — give the test a taller view
+    // so ReorderableListView builds the appended tile.
+    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await pumpEditor(tester, _dpadLayout);
 
     await tester.tap(find.text('Add block'));

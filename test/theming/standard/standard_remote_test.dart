@@ -16,12 +16,19 @@ const _everyBlockLayout = RemoteLayout(
   id: 'test:every-block',
   name: 'Every block',
   blocks: [
+    // Rocker slots use non-volume actions so the semantic labels don't collide
+    // with the standalone VolumeBlock below — the test taps Volume Down/Mute/Up
+    // by semantic label and needs each one to resolve to a single widget.
     DpadBlock(
       up: RemoteButton(action: RemoteKey.up),
       down: RemoteButton(action: RemoteKey.down),
       left: RemoteButton(action: RemoteKey.left),
       right: RemoteButton(action: RemoteKey.right),
       ok: RemoteButton(action: RemoteKey.ok),
+      volumeUp: RemoteButton(action: RemoteKey.next),
+      volumeDown: RemoteButton(action: RemoteKey.previous),
+      channelUp: RemoteButton(action: RemoteKey.channelUp),
+      channelDown: RemoteButton(action: RemoteKey.channelDown),
     ),
     SpacerBlock(height: 8),
     ButtonRowBlock(
@@ -82,13 +89,16 @@ void main() {
     testWidgets('renders the classic built-in layout and routes every key', (
       tester,
     ) async {
+      final semantics = tester.ensureSemantics();
+
       final keys = await pump(tester, classicLayout);
 
-      // Buttons paint catalogue icons with a caption beneath each.
+      // Buttons paint catalogue icons; captions are dropped so each button is
+      // identified only by its semantic label.
       expect(find.byIcon(Icons.keyboard_arrow_up), findsOneWidget);
       expect(find.byIcon(Icons.play_arrow), findsOneWidget);
 
-      const captions = [
+      const labels = [
         'Up',
         'Left',
         'OK',
@@ -98,8 +108,8 @@ void main() {
         'Play/Pause',
         'Fast Forward',
       ];
-      for (final caption in captions) {
-        await tester.tap(find.text(caption));
+      for (final label in labels) {
+        await tester.tap(find.bySemanticsLabel(label));
       }
       await tester.pumpAndSettle();
 
@@ -113,24 +123,30 @@ void main() {
         'PLAY_PAUSE',
         'FAST_FORWARD',
       ]);
+
+      semantics.dispose();
     });
 
     testWidgets('renders every block type and routes volume + grid keys', (
       tester,
     ) async {
+      final semantics = tester.ensureSemantics();
+
       final keys = await pump(tester, _everyBlockLayout);
 
       // The d-pad and button-row blocks rendered alongside the rest.
-      expect(find.text('Up'), findsOneWidget);
-      expect(find.text('Home'), findsOneWidget);
+      expect(find.bySemanticsLabel('Up'), findsOneWidget);
+      expect(find.bySemanticsLabel('Home'), findsOneWidget);
 
-      await tester.tap(find.text('Volume Down'));
-      await tester.tap(find.text('Mute'));
-      await tester.tap(find.text('Volume Up'));
-      await tester.tap(find.text('Power')); // in the grid
+      await tester.tap(find.bySemanticsLabel('Volume Down'));
+      await tester.tap(find.bySemanticsLabel('Mute'));
+      await tester.tap(find.bySemanticsLabel('Volume Up'));
+      await tester.tap(find.bySemanticsLabel('Power')); // in the grid
       await tester.pumpAndSettle();
 
       expect(keys, ['VOLUME_DOWN', 'MUTE', 'VOLUME_UP', 'POWER']);
+
+      semantics.dispose();
     });
   });
 }

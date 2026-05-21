@@ -123,14 +123,18 @@ void main() {
   testWidgets('pressing a remote key sends the command and logs it', (
     tester,
   ) async {
+    final semantics = tester.ensureSemantics();
+
     await pumpHome(tester);
 
-    // The default classic skin renders a labelled 'OK' button.
-    await tester.tap(find.text('OK'));
+    // Buttons are icon-only; tap via the semantic label.
+    await tester.tap(find.bySemanticsLabel('OK'));
     await tester.pumpAndSettle();
 
     expect(channel.sentKeys, ['OK']);
     expect(analytics.keysSent, ['OK']);
+
+    semantics.dispose();
   });
 
   testWidgets('renders the banner ad when ads have not been removed', (

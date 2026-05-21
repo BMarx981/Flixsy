@@ -5,8 +5,12 @@ import 'skins/classic/classic_section_renderer.dart';
 import 'skins/classic/classic_theme.dart';
 import 'skins/campfire/campfire_remote_skin.dart';
 import 'skins/campfire/campfire_theme.dart';
+import 'skins/cityscape/cityscape_remote_skin.dart';
+import 'skins/cityscape/cityscape_theme.dart';
 import 'skins/cloud/cloud_remote_skin.dart';
 import 'skins/cloud/cloud_theme.dart';
+import 'skins/honkytonk/honkytonk_remote_skin.dart';
+import 'skins/honkytonk/honkytonk_theme.dart';
 import 'skins/main/main_remote_skin.dart';
 import 'skins/main/main_theme.dart';
 import 'skins/ocean/ocean_remote_skin.dart';
@@ -15,7 +19,16 @@ import 'skins/waterfall/waterfall_remote_skin.dart';
 import 'skins/waterfall/waterfall_theme.dart';
 import 'standard/standard_remote.dart';
 
-enum AppSkin { classic, main, waterfall, cloud, ocean, campfire }
+enum AppSkin {
+  classic,
+  main,
+  waterfall,
+  cloud,
+  ocean,
+  campfire,
+  honkytonk,
+  cityscape,
+}
 
 class SkinConfig {
   const SkinConfig({
@@ -103,6 +116,35 @@ final Map<AppSkin, SkinConfig> skinRegistry = {
     buildRemoteSkin:
         ({required onKeyPressed, required layout, required imagePaths}) =>
             CampfireRemoteSkin(
+              layout: layout,
+              imagePaths: imagePaths,
+              onKeyPressed: onKeyPressed,
+            ),
+  ),
+  // A dim country-bar interior: wood-plank walls, a row of warm pendant
+  // bulbs, a neon guitar sign on the back wall, drifting smoke and a wooden
+  // floor. Buttons glow hot-pink with the shared pulse.
+  AppSkin.honkytonk: SkinConfig(
+    themeData: HonkytonkTheme.themeData,
+    edgeToEdge: true,
+    buildRemoteSkin:
+        ({required onKeyPressed, required layout, required imagePaths}) =>
+            HonkytonkRemoteSkin(
+              layout: layout,
+              imagePaths: imagePaths,
+              onKeyPressed: onKeyPressed,
+            ),
+  ),
+  // A night skyline: deep indigo sky with stars and a soft moon, three
+  // parallax bands of building silhouettes speckled with lit windows, and
+  // blinking red aircraft warning lights atop the tallest towers. Buttons
+  // glow cool cyan with the shared pulse.
+  AppSkin.cityscape: SkinConfig(
+    themeData: CityscapeTheme.themeData,
+    edgeToEdge: true,
+    buildRemoteSkin:
+        ({required onKeyPressed, required layout, required imagePaths}) =>
+            CityscapeRemoteSkin(
               layout: layout,
               imagePaths: imagePaths,
               onKeyPressed: onKeyPressed,

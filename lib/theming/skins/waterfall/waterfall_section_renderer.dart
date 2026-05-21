@@ -29,19 +29,39 @@ class WaterfallSectionRenderer implements SectionRenderer {
     KeyPressHandler onKey,
   ) {
     final gap = SkinTokens.of(context).buttonGap;
-    return Column(
+    return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _button(context, block.up, onKey, gap),
-        Row(
+        Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _button(context, block.left, onKey, gap),
-            _button(context, block.ok, onKey, gap),
-            _button(context, block.right, onKey, gap),
+            _button(context, block.volumeUp, onKey, gap, compact: true),
+            _button(context, block.volumeDown, onKey, gap, compact: true),
           ],
         ),
-        _button(context, block.down, onKey, gap),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _button(context, block.up, onKey, gap),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _button(context, block.left, onKey, gap),
+                _button(context, block.ok, onKey, gap),
+                _button(context, block.right, onKey, gap),
+              ],
+            ),
+            _button(context, block.down, onKey, gap),
+          ],
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _button(context, block.channelUp, onKey, gap, compact: true),
+            _button(context, block.channelDown, onKey, gap, compact: true),
+          ],
+        ),
       ],
     );
   }
@@ -113,8 +133,9 @@ class WaterfallSectionRenderer implements SectionRenderer {
     BuildContext context,
     RemoteButton button,
     KeyPressHandler onKey,
-    double gap,
-  ) {
+    double gap, {
+    bool compact = false,
+  }) {
     final presentation = resolveButton(
       button,
       imagePaths: RemoteImageScope.of(context),
@@ -125,16 +146,22 @@ class WaterfallSectionRenderer implements SectionRenderer {
       child: _WaterfallButton(
         presentation: presentation,
         onPressed: () => onKey(button.action),
+        compact: compact,
       ),
     );
   }
 }
 
 class _WaterfallButton extends StatelessWidget {
-  const _WaterfallButton({required this.presentation, required this.onPressed});
+  const _WaterfallButton({
+    required this.presentation,
+    required this.onPressed,
+    this.compact = false,
+  });
 
   final ButtonPresentation presentation;
   final VoidCallback onPressed;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -173,12 +200,17 @@ class _WaterfallButton extends StatelessWidget {
           highlightColor: WaterfallTheme.alpha(WaterfallTheme.foam, 0.10),
           onTap: onPressed,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: compact
+                ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+                : const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             child: DefaultTextStyle.merge(
               style: const TextStyle(color: WaterfallTheme.foam),
               child: IconTheme.merge(
                 data: const IconThemeData(color: WaterfallTheme.foam),
-                child: _ButtonContent(presentation: presentation),
+                child: _ButtonContent(
+                  presentation: presentation,
+                  compact: compact,
+                ),
               ),
             ),
           ),
@@ -189,38 +221,29 @@ class _WaterfallButton extends StatelessWidget {
 }
 
 class _ButtonContent extends StatelessWidget {
-  const _ButtonContent({required this.presentation});
+  const _ButtonContent({required this.presentation, this.compact = false});
 
   final ButtonPresentation presentation;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final glyph = presentation.glyph;
+    final iconSize = compact ? 18.0 : 24.0;
+    final imageSide = compact ? 20.0 : 28.0;
     final mark = switch (glyph) {
-      IconGlyph(:final icon) => Icon(icon, size: 24),
+      IconGlyph(:final icon) => Icon(icon, size: iconSize),
       ImageGlyph(:final path) => Image.file(
         File(path),
-        width: 28,
-        height: 28,
+        width: imageSide,
+        height: imageSide,
         fit: BoxFit.contain,
         errorBuilder: (_, _, _) =>
-            const Icon(Icons.broken_image_outlined, size: 24),
+            Icon(Icons.broken_image_outlined, size: iconSize),
       ),
       TextGlyph(:final text) => Text(text),
     };
-    final caption = presentation.caption;
 
-    final content = caption == null
-        ? mark
-        : Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              mark,
-              const SizedBox(height: 2),
-              Text(caption, style: const TextStyle(fontSize: 11)),
-            ],
-          );
-
-    return Semantics(label: presentation.semanticLabel, child: content);
+    return Semantics(label: presentation.semanticLabel, child: mark);
   }
 }

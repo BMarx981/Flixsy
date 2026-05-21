@@ -28,19 +28,39 @@ class ClassicSectionRenderer implements SectionRenderer {
     KeyPressHandler onKey,
   ) {
     final gap = SkinTokens.of(context).buttonGap;
-    return Column(
+    return Row(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _button(context, block.up, onKey, gap),
-        Row(
+        Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _button(context, block.left, onKey, gap),
-            _button(context, block.ok, onKey, gap),
-            _button(context, block.right, onKey, gap),
+            _button(context, block.volumeUp, onKey, gap, compact: true),
+            _button(context, block.volumeDown, onKey, gap, compact: true),
           ],
         ),
-        _button(context, block.down, onKey, gap),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _button(context, block.up, onKey, gap),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _button(context, block.left, onKey, gap),
+                _button(context, block.ok, onKey, gap),
+                _button(context, block.right, onKey, gap),
+              ],
+            ),
+            _button(context, block.down, onKey, gap),
+          ],
+        ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _button(context, block.channelUp, onKey, gap, compact: true),
+            _button(context, block.channelDown, onKey, gap, compact: true),
+          ],
+        ),
       ],
     );
   }
@@ -114,8 +134,9 @@ class ClassicSectionRenderer implements SectionRenderer {
     BuildContext context,
     RemoteButton button,
     KeyPressHandler onKey,
-    double gap,
-  ) {
+    double gap, {
+    bool compact = false,
+  }) {
     final presentation = resolveButton(
       button,
       imagePaths: RemoteImageScope.of(context),
@@ -124,8 +145,26 @@ class ClassicSectionRenderer implements SectionRenderer {
     return Padding(
       padding: EdgeInsets.all(gap / 2),
       child: ElevatedButton(
+        style: compact
+            ? ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              )
+            : ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 12,
+                ),
+              ),
         onPressed: () => onKey(button.action),
-        child: _ButtonContent(presentation: presentation),
+        child: _ButtonContent(
+          presentation: presentation,
+          compact: compact,
+        ),
       ),
     );
   }
@@ -135,40 +174,32 @@ class ClassicSectionRenderer implements SectionRenderer {
 /// custom image, or text for a text-only button — with the caption beneath it
 /// when shown.
 class _ButtonContent extends StatelessWidget {
-  const _ButtonContent({required this.presentation});
+  const _ButtonContent({required this.presentation, this.compact = false});
 
   final ButtonPresentation presentation;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final glyph = presentation.glyph;
+    final iconSize = compact ? 18.0 : 24.0;
+    final imageSide = compact ? 20.0 : 28.0;
     final mark = switch (glyph) {
-      IconGlyph(:final icon) => Icon(icon, size: 24),
+      IconGlyph(:final icon) => Icon(icon, size: iconSize),
       ImageGlyph(:final path) => Image.file(
         File(path),
-        width: 28,
-        height: 28,
+        width: imageSide,
+        height: imageSide,
         fit: BoxFit.contain,
         // The file may have been swept between path resolution and paint.
         errorBuilder: (_, _, _) =>
-            const Icon(Icons.broken_image_outlined, size: 24),
+            Icon(Icons.broken_image_outlined, size: iconSize),
       ),
       TextGlyph(:final text) => Text(text),
     };
-    final caption = presentation.caption;
 
-    final content = caption == null
-        ? mark
-        : Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              mark,
-              const SizedBox(height: 2),
-              Text(caption, style: const TextStyle(fontSize: 11)),
-            ],
-          );
-
-    // The icon/image glyph carries no text, so name the button for a11y.
-    return Semantics(label: presentation.semanticLabel, child: content);
+    // Captions are intentionally dropped: every button is icon-only. The
+    // semantic label names the action for accessibility.
+    return Semantics(label: presentation.semanticLabel, child: mark);
   }
 }

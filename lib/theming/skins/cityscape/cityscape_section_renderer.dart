@@ -11,14 +11,14 @@ import '../../skin_tokens.dart';
 import '../../standard/button_presentation.dart';
 import '../../standard/remote_image_scope.dart';
 import '../../standard/section_renderer.dart';
-import 'cloud_pulse_scope.dart';
-import 'cloud_theme.dart';
+import 'cityscape_pulse_scope.dart';
+import 'cityscape_theme.dart';
 
-/// Renders the `Cloud` skin's blocks: soft rounded white buttons with a
-/// gentle drop shadow that breathes in time with the shared pulse animation.
-/// Layout structure mirrors `ClassicSectionRenderer`; only the chrome differs.
-class CloudSectionRenderer implements SectionRenderer {
-  const CloudSectionRenderer();
+/// Renders the `Cityscape` skin's blocks: midnight-blue panels with a cool
+/// cyan window-glow rim that breathes with the shared pulse, echoing the lit
+/// windows in the skyline behind.
+class CityscapeSectionRenderer implements SectionRenderer {
+  const CityscapeSectionRenderer();
 
   static const double _emptyCellSide = 60;
 
@@ -143,7 +143,7 @@ class CloudSectionRenderer implements SectionRenderer {
     );
     return Padding(
       padding: EdgeInsets.all(gap / 2),
-      child: _CloudButton(
+      child: _CityscapeButton(
         presentation: presentation,
         onPressed: () => onKey(button.action),
         compact: compact,
@@ -152,8 +152,8 @@ class CloudSectionRenderer implements SectionRenderer {
   }
 }
 
-class _CloudButton extends StatelessWidget {
-  const _CloudButton({
+class _CityscapeButton extends StatelessWidget {
+  const _CityscapeButton({
     required this.presentation,
     required this.onPressed,
     this.compact = false,
@@ -165,24 +165,41 @@ class _CloudButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pulse = CloudPulseScope.of(context);
+    final pulse = CityscapePulseScope.of(context);
     return AnimatedBuilder(
       animation: pulse,
       builder: (context, child) {
         final t = pulse.value;
         return Container(
           decoration: BoxDecoration(
-            color: CloudTheme.alpha(CloudTheme.cloud, 0.94 + 0.04 * t),
-            borderRadius: BorderRadius.circular(22),
+            color: CityscapeTheme.alpha(
+              CityscapeTheme.midnight,
+              0.72 + 0.04 * t,
+            ),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: CloudTheme.alpha(CloudTheme.cloudEdge, 0.7),
-              width: 1,
+              color: CityscapeTheme.alpha(
+                CityscapeTheme.neon,
+                0.28 + 0.22 * t,
+              ),
+              width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: CloudTheme.alpha(CloudTheme.inkDeep, 0.10 + 0.05 * t),
-                blurRadius: 16 + 8 * t,
-                offset: const Offset(0, 4),
+                color: CityscapeTheme.alpha(
+                  CityscapeTheme.neon,
+                  0.10 + 0.14 * t,
+                ),
+                blurRadius: 12 + 10 * t,
+                spreadRadius: 0.4,
+              ),
+              BoxShadow(
+                color: CityscapeTheme.alpha(
+                  CityscapeTheme.window,
+                  0.04 + 0.05 * t,
+                ),
+                blurRadius: 18,
+                spreadRadius: -2,
               ),
             ],
           ),
@@ -192,21 +209,18 @@ class _CloudButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(22),
-          splashColor: CloudTheme.alpha(CloudTheme.skyTop, 0.25),
-          highlightColor: CloudTheme.alpha(CloudTheme.skyTop, 0.10),
+          borderRadius: BorderRadius.circular(18),
+          splashColor: CityscapeTheme.alpha(CityscapeTheme.neon, 0.30),
+          highlightColor: CityscapeTheme.alpha(CityscapeTheme.window, 0.14),
           onTap: onPressed,
           child: Padding(
             padding: compact
                 ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
                 : const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             child: DefaultTextStyle.merge(
-              style: const TextStyle(
-                color: CloudTheme.inkDeep,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(color: CityscapeTheme.ice),
               child: IconTheme.merge(
-                data: const IconThemeData(color: CloudTheme.inkDeep),
+                data: const IconThemeData(color: CityscapeTheme.ice),
                 child: _ButtonContent(
                   presentation: presentation,
                   compact: compact,

@@ -574,6 +574,12 @@ abstract class AppLocalizations {
   /// **'Volume'**
   String get keyRoleVolume;
 
+  /// Group header for the channel keys in the action picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Channel'**
+  String get keyRoleChannel;
+
   /// Group header for the system keys in the action picker.
   ///
   /// In en, this message translates to:
@@ -670,11 +676,29 @@ abstract class AppLocalizations {
   /// **'Mute'**
   String get remoteKeyMute;
 
+  /// Remote key label: next channel.
+  ///
+  /// In en, this message translates to:
+  /// **'Channel Up'**
+  String get remoteKeyChannelUp;
+
+  /// Remote key label: previous channel.
+  ///
+  /// In en, this message translates to:
+  /// **'Channel Down'**
+  String get remoteKeyChannelDown;
+
   /// Remote key label: power on/off.
   ///
   /// In en, this message translates to:
   /// **'Power'**
   String get remoteKeyPower;
+
+  /// Remote key label: opens the TV's settings or menu.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get remoteKeySettings;
 
   /// Icon name in the Standard pack: up arrow.
   ///
@@ -783,6 +807,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mute'**
   String get iconNameMute;
+
+  /// Icon name in the Standard pack: channel up.
+  ///
+  /// In en, this message translates to:
+  /// **'Channel up'**
+  String get iconNameChannelUp;
+
+  /// Icon name in the Standard pack: channel down.
+  ///
+  /// In en, this message translates to:
+  /// **'Channel down'**
+  String get iconNameChannelDown;
 
   /// Icon name in the Standard pack: power.
   ///

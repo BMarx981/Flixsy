@@ -11,14 +11,14 @@ import '../../skin_tokens.dart';
 import '../../standard/button_presentation.dart';
 import '../../standard/remote_image_scope.dart';
 import '../../standard/section_renderer.dart';
-import 'cloud_pulse_scope.dart';
-import 'cloud_theme.dart';
+import 'honkytonk_pulse_scope.dart';
+import 'honkytonk_theme.dart';
 
-/// Renders the `Cloud` skin's blocks: soft rounded white buttons with a
-/// gentle drop shadow that breathes in time with the shared pulse animation.
-/// Layout structure mirrors `ClassicSectionRenderer`; only the chrome differs.
-class CloudSectionRenderer implements SectionRenderer {
-  const CloudSectionRenderer();
+/// Renders the `Honkytonk` skin's blocks: mahogany panels with a hot-pink
+/// neon rim that breathes with the shared pulse, picking up the stage sign's
+/// warmth on the remote surface.
+class HonkytonkSectionRenderer implements SectionRenderer {
+  const HonkytonkSectionRenderer();
 
   static const double _emptyCellSide = 60;
 
@@ -143,7 +143,7 @@ class CloudSectionRenderer implements SectionRenderer {
     );
     return Padding(
       padding: EdgeInsets.all(gap / 2),
-      child: _CloudButton(
+      child: _HonkytonkButton(
         presentation: presentation,
         onPressed: () => onKey(button.action),
         compact: compact,
@@ -152,8 +152,8 @@ class CloudSectionRenderer implements SectionRenderer {
   }
 }
 
-class _CloudButton extends StatelessWidget {
-  const _CloudButton({
+class _HonkytonkButton extends StatelessWidget {
+  const _HonkytonkButton({
     required this.presentation,
     required this.onPressed,
     this.compact = false,
@@ -165,24 +165,41 @@ class _CloudButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pulse = CloudPulseScope.of(context);
+    final pulse = HonkytonkPulseScope.of(context);
     return AnimatedBuilder(
       animation: pulse,
       builder: (context, child) {
         final t = pulse.value;
         return Container(
           decoration: BoxDecoration(
-            color: CloudTheme.alpha(CloudTheme.cloud, 0.94 + 0.04 * t),
-            borderRadius: BorderRadius.circular(22),
+            color: HonkytonkTheme.alpha(
+              HonkytonkTheme.mahogany,
+              0.70 + 0.04 * t,
+            ),
+            borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: CloudTheme.alpha(CloudTheme.cloudEdge, 0.7),
-              width: 1,
+              color: HonkytonkTheme.alpha(
+                HonkytonkTheme.neon,
+                0.30 + 0.22 * t,
+              ),
+              width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: CloudTheme.alpha(CloudTheme.inkDeep, 0.10 + 0.05 * t),
-                blurRadius: 16 + 8 * t,
-                offset: const Offset(0, 4),
+                color: HonkytonkTheme.alpha(
+                  HonkytonkTheme.neon,
+                  0.10 + 0.14 * t,
+                ),
+                blurRadius: 12 + 10 * t,
+                spreadRadius: 0.4,
+              ),
+              BoxShadow(
+                color: HonkytonkTheme.alpha(
+                  HonkytonkTheme.bulb,
+                  0.05 + 0.05 * t,
+                ),
+                blurRadius: 18,
+                spreadRadius: -2,
               ),
             ],
           ),
@@ -192,21 +209,18 @@ class _CloudButton extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(22),
-          splashColor: CloudTheme.alpha(CloudTheme.skyTop, 0.25),
-          highlightColor: CloudTheme.alpha(CloudTheme.skyTop, 0.10),
+          borderRadius: BorderRadius.circular(18),
+          splashColor: HonkytonkTheme.alpha(HonkytonkTheme.neon, 0.30),
+          highlightColor: HonkytonkTheme.alpha(HonkytonkTheme.bourbon, 0.14),
           onTap: onPressed,
           child: Padding(
             padding: compact
                 ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
                 : const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             child: DefaultTextStyle.merge(
-              style: const TextStyle(
-                color: CloudTheme.inkDeep,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(color: HonkytonkTheme.cream),
               child: IconTheme.merge(
-                data: const IconThemeData(color: CloudTheme.inkDeep),
+                data: const IconThemeData(color: HonkytonkTheme.cream),
                 child: _ButtonContent(
                   presentation: presentation,
                   compact: compact,

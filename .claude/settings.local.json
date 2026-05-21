@@ -106,7 +106,9 @@
       "Bash(python3 -c \"from PIL import Image; print\\('ok'\\)\")",
       "Bash(python3 -m pip install --quiet --user Pillow)",
       "Bash(grep -r \"ConsentInformation\\\\|UserMessagingPlatform\" /Users/brianmarx/Desktop/flixsy/.dart_tool/package_config.json 2>/dev/null; find ~/.pub-cache -name \"consent_information.dart\" 2>/dev/null | head -5)",
-      "Read(//Users/brianmarx/.pub-cache/**)"
+      "Read(//Users/brianmarx/.pub-cache/**)",
+      "Bash(git -C /Users/brianmarx/Desktop/flixsy diff lib/features/device_discovery/screens/device_discovery_screen.dart lib/theming/skins/ocean/ocean_background.dart lib/theming/skins/ocean/ocean_palette.dart)",
+      "Bash(md5)"
     ],
     "ask": [
       "Bash(sed -i*)",

@@ -124,6 +124,7 @@ class _OceanPainter extends CustomPainter {
       state.sunPos,
       state.sunColor,
       state.sunAlpha,
+      isSun: true,
     );
     _paintLuminary(
       canvas,
@@ -178,15 +179,55 @@ class _OceanPainter extends CustomPainter {
     Size size,
     Offset posFraction,
     Color color,
-    double alpha,
-  ) {
+    double alpha, {
+    bool isSun = false,
+  }) {
     if (alpha <= 0) return;
     final w = size.width;
     final h = size.height;
     final centre = Offset(posFraction.dx * w, posFraction.dy * h);
-    final radius = math.min(w, h) * 0.045;
+    final radius = math.min(w, h) * (isSun ? 0.055 : 0.045);
 
-    // Soft halo first (large + blurred), then the disc on top.
+    if (isSun) {
+      // Outer warm halo, broad and soft.
+      canvas.drawCircle(
+        centre,
+        radius * 4.0,
+        Paint()
+          ..color = color.withAlpha((alpha * 110).round())
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 40),
+      );
+      // Mid halo — adds visible glow density.
+      canvas.drawCircle(
+        centre,
+        radius * 2.2,
+        Paint()
+          ..color = color.withAlpha((alpha * 180).round())
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20),
+      );
+      // Sun disc — crisper edge so it reads as a bright body.
+      canvas.drawCircle(
+        centre,
+        radius,
+        Paint()
+          ..color = color.withAlpha((alpha * 255).round())
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+      );
+      // Bright near-white core for that hot midday feel.
+      canvas.drawCircle(
+        centre,
+        radius * 0.6,
+        Paint()
+          ..color = Color.lerp(
+            color,
+            Colors.white,
+            0.6,
+          )!.withAlpha((alpha * 255).round()),
+      );
+      return;
+    }
+
+    // Moon: soft halo + disc.
     canvas.drawCircle(
       centre,
       radius * 3.0,

@@ -37,8 +37,14 @@ sealed class LayoutBlock {
   }
 }
 
-/// A five-button directional cross. The cross arrangement is fixed; only the
-/// buttons' actions and appearance vary.
+/// A directional cross flanked by two vertical rocker columns — volume on the
+/// left, channel on the right. The cross + rocker arrangement is fixed; only
+/// the buttons' actions and appearance vary.
+///
+/// The four rocker slots default to the matching `RemoteKey.volumeUp/Down` and
+/// `channelUp/Down` keys when a layout's JSON omits them, so older saved
+/// layouts (which predate the rockers) load with sensible defaults rather than
+/// breaking.
 final class DpadBlock extends LayoutBlock {
   const DpadBlock({
     required this.up,
@@ -46,6 +52,10 @@ final class DpadBlock extends LayoutBlock {
     required this.left,
     required this.right,
     required this.ok,
+    required this.volumeUp,
+    required this.volumeDown,
+    required this.channelUp,
+    required this.channelDown,
   });
 
   final RemoteButton up;
@@ -53,6 +63,10 @@ final class DpadBlock extends LayoutBlock {
   final RemoteButton left;
   final RemoteButton right;
   final RemoteButton ok;
+  final RemoteButton volumeUp;
+  final RemoteButton volumeDown;
+  final RemoteButton channelUp;
+  final RemoteButton channelDown;
 
   @override
   Map<String, Object?> toJson() => {
@@ -62,6 +76,10 @@ final class DpadBlock extends LayoutBlock {
     'left': left.toJson(),
     'right': right.toJson(),
     'ok': ok.toJson(),
+    'volumeUp': volumeUp.toJson(),
+    'volumeDown': volumeDown.toJson(),
+    'channelUp': channelUp.toJson(),
+    'channelDown': channelDown.toJson(),
   };
 
   factory DpadBlock.fromJson(Map<String, Object?> json) => DpadBlock(
@@ -70,15 +88,39 @@ final class DpadBlock extends LayoutBlock {
     left: _slot(json['left'], RemoteKey.left),
     right: _slot(json['right'], RemoteKey.right),
     ok: _slot(json['ok'], RemoteKey.ok),
+    volumeUp: _slot(json['volumeUp'], RemoteKey.volumeUp),
+    volumeDown: _slot(json['volumeDown'], RemoteKey.volumeDown),
+    channelUp: _slot(json['channelUp'], RemoteKey.channelUp),
+    channelDown: _slot(json['channelDown'], RemoteKey.channelDown),
   );
 
   @override
-  List<RemoteButton?> get buttons => [up, down, left, right, ok];
+  List<RemoteButton?> get buttons => [
+    up,
+    down,
+    left,
+    right,
+    ok,
+    volumeUp,
+    volumeDown,
+    channelUp,
+    channelDown,
+  ];
 
   @override
   DpadBlock withButtonAt(int index, RemoteButton button) {
-    if (index < 0 || index > 4) return this;
-    final next = <RemoteButton>[up, down, left, right, ok];
+    if (index < 0 || index > 8) return this;
+    final next = <RemoteButton>[
+      up,
+      down,
+      left,
+      right,
+      ok,
+      volumeUp,
+      volumeDown,
+      channelUp,
+      channelDown,
+    ];
     next[index] = button;
     return DpadBlock(
       up: next[0],
@@ -86,6 +128,10 @@ final class DpadBlock extends LayoutBlock {
       left: next[2],
       right: next[3],
       ok: next[4],
+      volumeUp: next[5],
+      volumeDown: next[6],
+      channelUp: next[7],
+      channelDown: next[8],
     );
   }
 }

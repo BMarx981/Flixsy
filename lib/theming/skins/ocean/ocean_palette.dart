@@ -207,11 +207,15 @@ const double _luminaryPeakLift = 0.85;
 
 // Sun emerges from the middle-top of the screen and arcs down to set at the
 // same west-horizon point as the moon. _sunStartX gives a top-centre origin.
-// The sun stays invisible through the first half of the day and only fades
-// in over the last 50% as it descends, then fades out at the horizon.
+// The sun is invisible through the first half of the day, then visible at
+// full brightness across the back half — with a tiny edge fade so it
+// doesn't pop in or out.
 const double _sunStartX = 0.50;
-const double _sunFadeInStart = 0.50;
-const double _sunFadeOut = 0.06;
+const double _sunVisibleStart = 0.38;
+const double _sunEdgeFade = 0.14;
+// Extra slice of day-cycle phase past sunset during which the sun keeps
+// sinking below the horizon and fades out, instead of cutting off abruptly.
+const double _sunSinkBuffer = 0.05;
 
 const Color _sunNoonColor = Color(0xFFFFE9B0);
 const Color _sunHorizonColor = Color(0xFFFF8A56);
@@ -230,14 +234,17 @@ class _LuminaryState {
 }
 
 _LuminaryState _sunState(double t) {
-  if (t < _sunrise || t > _sunset) {
+  if (t < _sunrise || t > _sunset + _sunSinkBuffer) {
     return const _LuminaryState(
       pos: Offset.zero,
       color: _sunNoonColor,
       alpha: 0,
     );
   }
-  final phase = (t - _sunrise) / (_sunset - _sunrise);
+  // Phase runs 0..1 across the daylight arc, then continues past 1 during
+  // the sink buffer so the sun keeps descending below the horizon line.
+  final dayLength = _sunset - _sunrise;
+  final phase = (t - _sunrise) / dayLength;
 
   // Arc: start at middle-top (x=0.5, y=0) and finish at the west horizon
   // (x=_luminaryWestX, y=_horizonFraction). y is eased so the sun lingers
@@ -247,16 +254,16 @@ _LuminaryState _sunState(double t) {
   final y = _horizonFraction * math.pow(phase, 1.6).toDouble();
 
   // Golden when high, warmer and redder as it approaches the horizon.
-  final warmth = phase * phase;
+  final warmth = math.min(phase, 1.0) * math.min(phase, 1.0);
   final color = Color.lerp(_sunNoonColor, _sunHorizonColor, warmth)!;
 
-  // Stay invisible through the first half, then fade in across the back
-  // half of the day. A short fade-out at the very end lets the sun dissolve
-  // into the horizon line at sunset.
-  final fadeIn =
-      ((phase - _sunFadeInStart) / (1.0 - _sunFadeInStart - _sunFadeOut))
-          .clamp(0.0, 1.0);
-  final fadeOut = ((1.0 - phase) / _sunFadeOut).clamp(0.0, 1.0);
+  // Tiny fade in at emergence; full brightness until the sun reaches the
+  // horizon, then a smooth fade-out as it sinks below the waterline.
+  final fadeIn = ((phase - _sunVisibleStart) / _sunEdgeFade).clamp(0.0, 1.0);
+  final sinkPhase = _sunSinkBuffer / dayLength;
+  final fadeOut = phase <= 1.0
+      ? 1.0
+      : (1.0 - (phase - 1.0) / sinkPhase).clamp(0.0, 1.0);
   final alpha = fadeIn * fadeOut;
 
   return _LuminaryState(pos: Offset(x, y), color: color, alpha: alpha);
@@ -284,8 +291,7 @@ _LuminaryState _moonState(double t) {
   final y = _horizonFraction - _horizonFraction * lift;
 
   final fadeIn = (nightT / _luminaryEdgeFade).clamp(0.0, 1.0);
-  final fadeOut = ((nightLength - nightT) / _luminaryEdgeFade).clamp(0.0, 1.0);
-  final alpha = fadeIn * fadeOut * 0.85;
+  final alpha = fadeIn * 0.85;
 
   return _LuminaryState(pos: Offset(x, y), color: _moonColor, alpha: alpha);
 }

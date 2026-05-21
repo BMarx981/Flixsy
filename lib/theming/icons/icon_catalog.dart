@@ -51,6 +51,12 @@ final IconPack standardPack = IconPack(
       icon: Icons.volume_down,
     ),
     IconPackEntry(id: 'mute', name: 'Mute', icon: Icons.volume_off),
+    IconPackEntry(id: 'channel_up', name: 'Channel up', icon: Icons.add),
+    IconPackEntry(
+      id: 'channel_down',
+      name: 'Channel down',
+      icon: Icons.remove,
+    ),
     IconPackEntry(id: 'power', name: 'Power', icon: Icons.power_settings_new),
     IconPackEntry(id: 'menu', name: 'Menu', icon: Icons.menu),
     IconPackEntry(id: 'settings', name: 'Settings', icon: Icons.settings),
@@ -81,7 +87,10 @@ const Map<RemoteKey, String> _defaultIconIds = {
   RemoteKey.volumeUp: 'volume_up',
   RemoteKey.volumeDown: 'volume_down',
   RemoteKey.mute: 'mute',
+  RemoteKey.channelUp: 'channel_up',
+  RemoteKey.channelDown: 'channel_down',
   RemoteKey.power: 'power',
+  RemoteKey.settings: 'settings',
 };
 
 /// The default human-readable label for each key.
@@ -101,7 +110,10 @@ const Map<RemoteKey, String> _defaultLabels = {
   RemoteKey.volumeUp: 'Volume Up',
   RemoteKey.volumeDown: 'Volume Down',
   RemoteKey.mute: 'Mute',
+  RemoteKey.channelUp: 'Channel Up',
+  RemoteKey.channelDown: 'Channel Down',
   RemoteKey.power: 'Power',
+  RemoteKey.settings: 'Settings',
 };
 
 /// Fallback glyph for a key with no catalogue default — should never show in

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,9 +42,9 @@ class DeviceDiscoveryScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 56),
-              _Header(isScanning: state.status == DiscoveryStatus.scanning),
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
+              const _Header(),
+              const SizedBox(height: 20),
               if (state.pairing != null) ...[
                 _PairingBanner(
                   request: state.pairing!,
@@ -51,16 +53,24 @@ class DeviceDiscoveryScreen extends ConsumerWidget {
                       context.l10n.discoveryDeviceFallbackName,
                   onSubmitCode: notifier.submitPairingCode,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
               ],
               Expanded(
-                child: state.devices.isEmpty
-                    ? _EmptyBody(status: state.status, onRetry: notifier.retry)
-                    : _DeviceList(
-                        state: state,
+                child: state.status == DiscoveryStatus.error
+                    ? _ErrorBody(onRetry: notifier.retry)
+                    : _RadarView(
+                        devices: state.devices,
+                        connectingDeviceId: state.connectingDeviceId,
+                        isConnecting: state.isConnecting,
                         onConnect: notifier.connectToDevice,
                       ),
               ),
+              const SizedBox(height: 16),
+              _StatusFooter(
+                status: state.status,
+                deviceCount: state.devices.length,
+              ),
+              const SizedBox(height: 12),
             ],
           ),
         ),
@@ -72,9 +82,7 @@ class DeviceDiscoveryScreen extends ConsumerWidget {
 // ─── Header ──────────────────────────────────────────────────────────────────
 
 class _Header extends StatelessWidget {
-  const _Header({required this.isScanning});
-
-  final bool isScanning;
+  const _Header();
 
   @override
   Widget build(BuildContext context) {
@@ -82,21 +90,19 @@ class _Header extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _PulsingTvIcon(animate: isScanning),
-        const SizedBox(height: 24),
         Text(
           context.l10n.discoveryHeaderTitle,
-          style: theme.textTheme.bodyMedium?.copyWith(
+          style: theme.textTheme.titleLarge?.copyWith(
             color: Colors.white,
-            fontWeight: .bold,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         Text(
           context.l10n.discoveryHeaderSubtitle,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: Colors.white54,
-            height: 1.5,
+            height: 1.4,
           ),
         ),
       ],
@@ -104,151 +110,77 @@ class _Header extends StatelessWidget {
   }
 }
 
-// ─── Pulsing TV icon ─────────────────────────────────────────────────────────
+// ─── Status footer (device count + spinner) ──────────────────────────────────
 
-class _PulsingTvIcon extends StatefulWidget {
-  const _PulsingTvIcon({required this.animate});
-  final bool animate;
+class _StatusFooter extends StatelessWidget {
+  const _StatusFooter({required this.status, required this.deviceCount});
 
-  @override
-  State<_PulsingTvIcon> createState() => _PulsingTvIconState();
-}
-
-class _PulsingTvIconState extends State<_PulsingTvIcon>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _scale;
-  late final Animation<double> _opacity;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    );
-    _scale = Tween<double>(
-      begin: 0.8,
-      end: 1.6,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-    _opacity = Tween<double>(
-      begin: 0.5,
-      end: 0.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-    if (widget.animate) _controller.repeat();
-  }
-
-  @override
-  void didUpdateWidget(_PulsingTvIcon old) {
-    super.didUpdateWidget(old);
-    if (widget.animate && !_controller.isAnimating) {
-      _controller.repeat();
-    } else if (!widget.animate && _controller.isAnimating) {
-      _controller.stop();
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  final DiscoveryStatus status;
+  final int deviceCount;
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
-    return SizedBox(
-      width: 72,
-      height: 72,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Pulsing ring
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (_, _) => Transform.scale(
-              scale: _scale.value,
-              child: Opacity(
-                opacity: _opacity.value,
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: color.withAlpha(60),
-                  ),
-                ),
-              ),
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    return Row(
+      children: [
+        Text(
+          context.l10n.discoveryDevicesFound(deviceCount),
+          style: theme.textTheme.labelMedium?.copyWith(
+            color: primary,
+            letterSpacing: 0.8,
+          ),
+        ),
+        if (status == DiscoveryStatus.scanning) ...[
+          const SizedBox(width: 10),
+          SizedBox(
+            width: 12,
+            height: 12,
+            child: CircularProgressIndicator(
+              strokeWidth: 1.5,
+              valueColor: AlwaysStoppedAnimation(primary),
             ),
           ),
-          Icon(Icons.tv_rounded, size: 44, color: color),
         ],
-      ),
+      ],
     );
   }
 }
 
-// ─── Empty body (no devices found yet) ───────────────────────────────────────
+// ─── Error body ──────────────────────────────────────────────────────────────
 
-class _EmptyBody extends StatelessWidget {
-  const _EmptyBody({required this.status, required this.onRetry});
+class _ErrorBody extends StatelessWidget {
+  const _ErrorBody({required this.onRetry});
 
-  final DiscoveryStatus status;
   final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    if (status == DiscoveryStatus.error) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.wifi_off_rounded,
-              size: 48,
-              color: theme.colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              context.l10n.discoveryErrorTitle,
-              style: theme.textTheme.titleMedium?.copyWith(color: Colors.white),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              context.l10n.discoveryErrorBody,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.tonal(
-              onPressed: onRetry,
-              child: Text(context.l10n.discoveryRetryButton),
-            ),
-          ],
-        ),
-      );
-    }
-
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(strokeWidth: 2),
+          Icon(
+            Icons.wifi_off_rounded,
+            size: 48,
+            color: theme.colorScheme.error,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Text(
-            context.l10n.discoverySearching,
-            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
+            context.l10n.discoveryErrorTitle,
+            style: theme.textTheme.titleMedium?.copyWith(color: Colors.white),
           ),
           const SizedBox(height: 8),
           Text(
-            context.l10n.discoverySearchingHint,
-            style: theme.textTheme.bodySmall?.copyWith(color: Colors.white38),
+            context.l10n.discoveryErrorBody,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
+          ),
+          const SizedBox(height: 24),
+          FilledButton.tonal(
+            onPressed: onRetry,
+            child: Text(context.l10n.discoveryRetryButton),
           ),
         ],
       ),
@@ -256,146 +188,392 @@ class _EmptyBody extends StatelessWidget {
   }
 }
 
-// ─── Device list ─────────────────────────────────────────────────────────────
+// ─── Radar view ──────────────────────────────────────────────────────────────
 
-class _DeviceList extends StatelessWidget {
-  const _DeviceList({required this.state, required this.onConnect});
+/// Maximum normalized radius (0..1) at which a target can be placed; keeps
+/// dots from kissing the outer ring.
+const double _targetMaxRadius = 0.86;
 
-  final DiscoveryState state;
-  final void Function(TvDevice device) onConnect;
+/// Minimum normalized radius — avoids stacking everything on the center.
+const double _targetMinRadius = 0.18;
+
+/// Minimum pixel distance between two target dots.
+const double _targetMinSeparationPx = 70;
+
+/// Attempts to find a non-overlapping slot before falling back to the last
+/// candidate. Higher = better packing but more work; 80 is plenty for ≤12 TVs.
+const int _placementAttempts = 80;
+
+class _RadarView extends StatefulWidget {
+  const _RadarView({
+    required this.devices,
+    required this.connectingDeviceId,
+    required this.isConnecting,
+    required this.onConnect,
+  });
+
+  final List<TvDevice> devices;
+  final String? connectingDeviceId;
+  final bool isConnecting;
+  final ValueChanged<TvDevice> onConnect;
+
+  @override
+  State<_RadarView> createState() => _RadarViewState();
+}
+
+class _RadarViewState extends State<_RadarView>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _sweep;
+
+  // Cached pixel positions per device id. Cleared when the radar size changes.
+  final Map<String, Offset> _positions = {};
+  double? _cachedRadarSize;
+
+  @override
+  void initState() {
+    super.initState();
+    _sweep = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _sweep.dispose();
+    super.dispose();
+  }
+
+  // Lay out new devices into free slots, preserving positions of devices that
+  // were already placed. Stable across rebuilds within a single discovery
+  // session unless the radar resizes.
+  void _layoutTargets(double radarSize, List<TvDevice> devices) {
+    if (_cachedRadarSize != radarSize) {
+      _positions.clear();
+      _cachedRadarSize = radarSize;
+    }
+    final currentIds = {for (final d in devices) d.id};
+    _positions.removeWhere((id, _) => !currentIds.contains(id));
+
+    final center = radarSize / 2;
+    final maxR = radarSize / 2 - 2;
+
+    for (final device in devices) {
+      if (_positions.containsKey(device.id)) continue;
+      _positions[device.id] = _findSlot(device.id, center, maxR);
+    }
+  }
+
+  Offset _findSlot(String id, double center, double maxRadiusPx) {
+    // Linear congruential PRNG seeded by the device id so attempts are
+    // deterministic per device but explore the full disk if rejected.
+    var seed = id.hashCode & 0x7FFFFFFF;
+    late Offset candidate;
+    for (var attempt = 0; attempt < _placementAttempts; attempt++) {
+      seed = (seed * 1103515245 + 12345) & 0x7FFFFFFF;
+      final a = ((seed >> 8) & 0xFFFF) / 0xFFFF;
+      final r = ((seed >> 16) & 0xFFFF) / 0xFFFF;
+      final angle = a * 2 * math.pi;
+      final radiusNorm =
+          _targetMinRadius + r * (_targetMaxRadius - _targetMinRadius);
+      candidate = Offset(
+        center + maxRadiusPx * radiusNorm * math.cos(angle),
+        center + maxRadiusPx * radiusNorm * math.sin(angle),
+      );
+      var ok = true;
+      for (final placed in _positions.values) {
+        if ((candidate - placed).distance < _targetMinSeparationPx) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) return candidate;
+    }
+    return candidate;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              context.l10n.discoveryDevicesFound(state.devices.length),
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                letterSpacing: 0.8,
-              ),
+    final color = Theme.of(context).colorScheme.primary;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = math.min(constraints.maxWidth, constraints.maxHeight);
+        _layoutTargets(size, widget.devices);
+        final center = size / 2;
+        return Center(
+          child: SizedBox(
+            width: size,
+            height: size,
+            child: AnimatedBuilder(
+              animation: _sweep,
+              builder: (context, _) {
+                final sweepAngle = _sweep.value * 2 * math.pi;
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: _RadarBackgroundPainter(
+                          color: color,
+                          sweepAngle: sweepAngle,
+                        ),
+                      ),
+                    ),
+                    for (final device in widget.devices)
+                      if (_positions[device.id] case final pos?)
+                        _RadarTarget(
+                          device: device,
+                          position: pos,
+                          // Angle from center, used to drive the sweep afterglow.
+                          targetAngle: math.atan2(
+                            pos.dy - center,
+                            pos.dx - center,
+                          ),
+                          sweepAngle: sweepAngle,
+                          isConnecting:
+                              widget.connectingDeviceId == device.id,
+                          isDisabled: widget.isConnecting &&
+                              widget.connectingDeviceId != device.id,
+                          color: color,
+                          onTap: () => widget.onConnect(device),
+                        ),
+                  ],
+                );
+              },
             ),
-            if (state.status == DiscoveryStatus.scanning) ...[
-              const SizedBox(width: 10),
-              const SizedBox(
-                width: 12,
-                height: 12,
-                child: CircularProgressIndicator(strokeWidth: 1.5),
-              ),
-            ],
-          ],
-        ),
-        const SizedBox(height: 12),
-        Expanded(
-          child: ListView.separated(
-            itemCount: state.devices.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (context, i) {
-              final device = state.devices[i];
-              return _DeviceTile(
-                device: device,
-                isConnecting: state.connectingDeviceId == device.id,
-                isDisabled:
-                    state.isConnecting && state.connectingDeviceId != device.id,
-                onTap: () => onConnect(device),
-              );
-            },
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
 
-// ─── Device tile ─────────────────────────────────────────────────────────────
+// ─── Radar background painter ────────────────────────────────────────────────
 
-class _DeviceTile extends StatelessWidget {
-  const _DeviceTile({
+class _RadarBackgroundPainter extends CustomPainter {
+  _RadarBackgroundPainter({required this.color, required this.sweepAngle});
+
+  final Color color;
+  final double sweepAngle;
+
+  static const double _tailWidth = math.pi / 2.2;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = math.min(size.width, size.height) / 2 - 2;
+
+    final ringPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..color = color.withAlpha(60);
+    canvas.drawCircle(center, radius, ringPaint);
+    canvas.drawCircle(center, radius * (2 / 3), ringPaint);
+    canvas.drawCircle(center, radius * (1 / 3), ringPaint);
+
+    // Center dot.
+    canvas.drawCircle(
+      center,
+      2.5,
+      Paint()..color = color.withAlpha(180),
+    );
+
+    // Semi-transparent axes.
+    final axisPaint = Paint()
+      ..color = color.withAlpha(70)
+      ..strokeWidth = 1;
+    canvas.drawLine(
+      Offset(center.dx - radius, center.dy),
+      Offset(center.dx + radius, center.dy),
+      axisPaint,
+    );
+    canvas.drawLine(
+      Offset(center.dx, center.dy - radius),
+      Offset(center.dx, center.dy + radius),
+      axisPaint,
+    );
+
+    // Small tick marks along each axis.
+    final tickPaint = Paint()
+      ..color = color.withAlpha(110)
+      ..strokeWidth = 1;
+    const tickHalf = 4.0;
+    for (final fraction in const [1 / 3, 2 / 3]) {
+      final d = radius * fraction;
+      // X axis ticks.
+      canvas.drawLine(
+        Offset(center.dx + d, center.dy - tickHalf),
+        Offset(center.dx + d, center.dy + tickHalf),
+        tickPaint,
+      );
+      canvas.drawLine(
+        Offset(center.dx - d, center.dy - tickHalf),
+        Offset(center.dx - d, center.dy + tickHalf),
+        tickPaint,
+      );
+      // Y axis ticks.
+      canvas.drawLine(
+        Offset(center.dx - tickHalf, center.dy + d),
+        Offset(center.dx + tickHalf, center.dy + d),
+        tickPaint,
+      );
+      canvas.drawLine(
+        Offset(center.dx - tickHalf, center.dy - d),
+        Offset(center.dx + tickHalf, center.dy - d),
+        tickPaint,
+      );
+    }
+
+    // Sweep tail — a wedge with a sweep gradient that fades from transparent
+    // at the trailing edge to bright at the leading edge. Rotate the canvas
+    // so the gradient angles stay in [0, tailWidth] and never wrap past 2π
+    // (which would otherwise flood the off-range region with the bright
+    // clamp color).
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(sweepAngle - _tailWidth);
+    canvas.translate(-center.dx, -center.dy);
+
+    final shader = SweepGradient(
+      startAngle: 0,
+      endAngle: _tailWidth,
+      colors: [
+        color.withAlpha(0),
+        color.withAlpha(140),
+      ],
+    ).createShader(rect);
+
+    final tailPath = Path()
+      ..moveTo(center.dx, center.dy)
+      ..arcTo(rect, 0, _tailWidth, false)
+      ..close();
+    canvas.drawPath(tailPath, Paint()..shader = shader);
+    canvas.restore();
+
+    // Leading sweep line.
+    final linePaint = Paint()
+      ..color = color.withAlpha(230)
+      ..strokeWidth = 2;
+    canvas.drawLine(
+      center,
+      Offset(
+        center.dx + radius * math.cos(sweepAngle),
+        center.dy + radius * math.sin(sweepAngle),
+      ),
+      linePaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_RadarBackgroundPainter old) =>
+      old.sweepAngle != sweepAngle || old.color != color;
+}
+
+// ─── Radar target ────────────────────────────────────────────────────────────
+
+class _RadarTarget extends StatelessWidget {
+  const _RadarTarget({
     required this.device,
+    required this.position,
+    required this.targetAngle,
+    required this.sweepAngle,
     required this.isConnecting,
     required this.isDisabled,
+    required this.color,
     required this.onTap,
   });
 
   final TvDevice device;
+  final Offset position;
+  final double targetAngle;
+  final double sweepAngle;
   final bool isConnecting;
   final bool isDisabled;
+  final Color color;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final x = position.dx;
+    final y = position.dy;
 
-    return AnimatedOpacity(
-      duration: const Duration(milliseconds: 200),
-      opacity: isDisabled ? 0.4 : 1.0,
-      child: Material(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(14),
-        child: InkWell(
+    // How recently the sweep passed over this target's angle (0..1, 1 = now).
+    var delta = (sweepAngle - targetAngle) % (2 * math.pi);
+    if (delta < 0) delta += 2 * math.pi;
+    // Bright for the first ~half rotation behind the sweep, then fade out.
+    final glow = math.max(0.0, 1.0 - (delta / math.pi));
+
+    const dotSize = 12.0;
+    const hitSize = 56.0;
+    const labelWidth = 96.0;
+
+    return Positioned(
+      left: x - hitSize / 2,
+      top: y - hitSize / 2,
+      child: Opacity(
+        opacity: isDisabled ? 0.35 : 1.0,
+        child: GestureDetector(
           onTap: isDisabled ? null : onTap,
-          borderRadius: BorderRadius.circular(14),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            child: Row(
+          behavior: HitTestBehavior.opaque,
+          child: SizedBox(
+            width: hitSize,
+            height: hitSize,
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
+                // Outer afterglow ring — brighter just after the sweep hits it.
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 120),
+                  width: dotSize + 18,
+                  height: dotSize + 18,
                   decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    Icons.tv_rounded,
-                    color: colorScheme.onPrimaryContainer,
-                    size: 22,
+                    shape: BoxShape.circle,
+                    color: color.withAlpha((130 * glow).round()),
                   ),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        device.name,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                if (isConnecting)
+                  SizedBox(
+                    width: dotSize + 10,
+                    height: dotSize + 10,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(color),
+                    ),
+                  ),
+                Container(
+                  width: dotSize,
+                  height: dotSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color,
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withAlpha(180),
+                        blurRadius: 8,
                       ),
-                      if (device.modelName.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          device.modelName,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.white38,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                if (isConnecting)
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                else
-                  Icon(
-                    Icons.chevron_right_rounded,
-                    color: colorScheme.onSurface.withAlpha(100),
+                Positioned(
+                  top: hitSize / 2 + dotSize / 2 + 2,
+                  width: labelWidth,
+                  child: Text(
+                    device.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(220),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      shadows: const [
+                        Shadow(blurRadius: 4, color: Colors.black87),
+                      ],
+                    ),
                   ),
+                ),
               ],
             ),
           ),

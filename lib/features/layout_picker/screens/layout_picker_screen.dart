@@ -7,6 +7,7 @@ import '../../../data/models/layout/remote_layout.dart';
 import '../../../router/app_router.dart';
 import '../../../shared/ads/remote_banner_ad.dart';
 import '../../../shared/providers/app_providers.dart';
+import '../../../shared/widgets/glass_popup_menu.dart';
 import '../../../theming/layout_provider.dart';
 
 /// Lists the built-in templates and the user's custom layouts, and lets the
@@ -99,25 +100,25 @@ class _LayoutMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PopupMenuButton<_LayoutAction>(
-      icon: const Icon(Icons.more_vert),
+    return GlassPopupMenu<_LayoutAction>(
       tooltip: context.l10n.layoutActionsTooltip,
-      onSelected: (action) {
-        _handle(context, ref, action);
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
+      onSelected: (action) => _handle(context, ref, action),
+      items: [
+        GlassPopupMenuItem(
           value: _LayoutAction.duplicate,
-          child: Text(context.l10n.layoutActionDuplicate),
+          icon: Icons.copy_rounded,
+          label: context.l10n.layoutActionDuplicate,
         ),
         if (!layout.isTemplate) ...[
-          PopupMenuItem(
+          GlassPopupMenuItem(
             value: _LayoutAction.edit,
-            child: Text(context.l10n.layoutActionEdit),
+            icon: Icons.edit_outlined,
+            label: context.l10n.layoutActionEdit,
           ),
-          PopupMenuItem(
+          GlassPopupMenuItem(
             value: _LayoutAction.delete,
-            child: Text(context.l10n.commonDelete),
+            icon: Icons.delete_outline,
+            label: context.l10n.commonDelete,
           ),
         ],
       ],

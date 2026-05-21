@@ -1,6 +1,6 @@
 # Flixsy
 
-A Flutter TV remote control app for iOS and Android. Communicates with TVs via the ConnectSDK native library through Flutter Platform Channels. Supports multiple visual skins, Riverpod state management, Drift local persistence, and Firebase Analytics.
+A Flutter TV remote control app for iOS and Android. Communicates with TVs via the ConnectSDK native library through Flutter Platform Channels. Supports multiple visual skins, user-editable custom layouts, full localization across 12 languages, Riverpod state management, Drift local persistence, Firebase Analytics, and AdMob.
 
 ---
 
@@ -79,12 +79,14 @@ lib/
 │       ├── providers/         # Riverpod providers
 │       ├── screens/           # Screen widgets
 │       └── widgets/           # Feature-scoped widgets
+├── l10n/                      # ARB files (12 locales) + generated AppLocalizations
 ├── theming/
 │   ├── remote_skin.dart       # RemoteSkin interface
 │   ├── skin_registry.dart     # AppSkin enum + SkinConfig map
 │   ├── skin_provider.dart     # activeSkinProvider, skinConfigProvider
-│   └── skins/
-│       └── classic/           # Dark navy skin (theme + remote widget)
+│   ├── icons/                 # Icon packs for remote keys
+│   └── skins/                 # campfire, cityscape, classic, cloud,
+│                              # honkytonk, main, ocean, waterfall
 ├── analytics/
 │   └── analytics_service.dart # Firebase Analytics wrapper
 ├── router/
@@ -110,6 +112,8 @@ Riverpod without code generation. No `@riverpod` annotations. All providers are 
 
 Each skin lives in `lib/theming/skins/<skin>/` and provides a `ThemeData` and a widget implementing `RemoteSkin`. The active skin is persisted to the Drift `preferences_table` and exposed via `activeSkinProvider`.
 
+**Available skins:** `campfire`, `cityscape`, `classic`, `cloud`, `honkytonk`, `main`, `ocean`, `waterfall`.
+
 **To add a new skin:**
 
 1. Create `lib/theming/skins/<skin>/<skin>_theme.dart` — return a `ThemeData`
@@ -117,6 +121,32 @@ Each skin lives in `lib/theming/skins/<skin>/` and provides a `ThemeData` and a 
 3. Add the new `AppSkin` enum value and its `SkinConfig` to `lib/theming/skin_registry.dart`
 
 No changes to screens, providers, or routing needed.
+
+---
+
+## Custom Layouts
+
+Users can create and edit their own remote layouts (`features/layout_editor/`, `features/layout_picker/`). Layouts follow a 3-axis model — key catalog, layout data, and skin — so a single layout renders correctly in every skin. See `docs/custom_layouts_design.md` for the design.
+
+---
+
+## Localization
+
+12 locales: `en`, `es`, `fr`, `de`, `pt`, `ja`, `zh`, `hi`, `ar`, `ru`, `it`, `ko`. The UI language follows the device locale — there is no in-app language picker. Arabic renders RTL; the remote control surface stays LTR.
+
+- Source of truth: `lib/l10n/app_en.arb` (keys + English text + `@key` descriptions).
+- Other locales: `lib/l10n/app_<locale>.arb` — blank cells fall back to English.
+- Generated: `lib/l10n/generated/` (do not edit, do not gitignore).
+- Access in widgets via `context.l10n.<key>` (extension in `lib/core/extensions/l10n_extensions.dart`). No user-facing string literals in widgets.
+
+**Translation round-trip** (ARB ↔ Google Sheets via CSV):
+
+```bash
+dart run tool/l10n_csv.dart export   # ARB  -> l10n_strings.csv
+# ...translate locale columns in Sheets, download as CSV...
+dart run tool/l10n_csv.dart import   # CSV  -> ARB
+flutter gen-l10n                     # regenerate AppLocalizations
+```
 
 ---
 

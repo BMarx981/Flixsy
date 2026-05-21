@@ -94,17 +94,92 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
 
   @override
   Widget build(BuildContext context) {
-    // The sparkle star carries the directional + OK keys; navigation and
-    // transport keys live in the control bar below it.
+    // The sparkle star carries the directional + OK keys. System / transport
+    // keys sit in a top bar, volume + channel rockers flank the star, and
+    // navigation + remaining transport keys live in the bottom bar.
     //
     // The remote is a physical control surface: its geometry is fixed to LTR
-    // so the star's points and the control bar never mirror with an RTL UI
-    // language. The button labels themselves are still localized.
+    // so the star's points and the surrounding buttons never mirror with an
+    // RTL UI language. The button labels themselves are still localized.
+    final onKey = widget.onKeyPressed;
     return Directionality(
       textDirection: TextDirection.ltr,
       child: Column(
         children: [
-          Expanded(child: _buildLogoPad()),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _ControlButton(
+                icon: Icons.power_settings_new,
+                action: RemoteKey.power,
+                onKeyPressed: onKey,
+              ),
+              _ControlButton(
+                icon: Icons.settings_outlined,
+                action: RemoteKey.settings,
+                onKeyPressed: onKey,
+              ),
+              _ControlButton(
+                icon: Icons.volume_off_outlined,
+                action: RemoteKey.mute,
+                onKeyPressed: onKey,
+              ),
+              _ControlButton(
+                icon: Icons.play_arrow_outlined,
+                action: RemoteKey.playPause,
+                onKeyPressed: onKey,
+              ),
+            ],
+          ),
+          Expanded(
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _ControlButton(
+                        icon: Icons.volume_up_outlined,
+                        action: RemoteKey.volumeUp,
+                        onKeyPressed: onKey,
+                        compact: true,
+                      ),
+                      const SizedBox(height: 12),
+                      _ControlButton(
+                        icon: Icons.volume_down_outlined,
+                        action: RemoteKey.volumeDown,
+                        onKeyPressed: onKey,
+                        compact: true,
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(child: _buildLogoPad()),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _ControlButton(
+                        icon: Icons.keyboard_arrow_up,
+                        action: RemoteKey.channelUp,
+                        onKeyPressed: onKey,
+                        compact: true,
+                      ),
+                      const SizedBox(height: 12),
+                      _ControlButton(
+                        icon: Icons.keyboard_arrow_down,
+                        action: RemoteKey.channelDown,
+                        onKeyPressed: onKey,
+                        compact: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -112,22 +187,22 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
               _ControlButton(
                 icon: Icons.fast_rewind_outlined,
                 action: RemoteKey.rewind,
-                onKeyPressed: widget.onKeyPressed,
+                onKeyPressed: onKey,
               ),
               _ControlButton(
                 icon: Icons.arrow_back_rounded,
                 action: RemoteKey.back,
-                onKeyPressed: widget.onKeyPressed,
+                onKeyPressed: onKey,
               ),
               _ControlButton(
                 icon: Icons.home_outlined,
                 action: RemoteKey.home,
-                onKeyPressed: widget.onKeyPressed,
+                onKeyPressed: onKey,
               ),
               _ControlButton(
                 icon: Icons.fast_forward_outlined,
                 action: RemoteKey.fastForward,
-                onKeyPressed: widget.onKeyPressed,
+                onKeyPressed: onKey,
               ),
             ],
           ),
@@ -192,11 +267,13 @@ class _ControlButton extends StatelessWidget {
     required this.icon,
     required this.action,
     required this.onKeyPressed,
+    this.compact = false,
   });
 
   final IconData icon;
   final RemoteKey action;
   final void Function(String key) onKeyPressed;
+  final bool compact;
 
   void _handleTap() {
     HapticFeedback.selectionClick();
@@ -207,36 +284,26 @@ class _ControlButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final label = context.l10n.remoteKeyLabel(action);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Tooltip(
-          message: label,
-          child: Material(
-            color: scheme.surfaceContainerHigh,
-            shape: CircleBorder(
-              side: BorderSide(color: scheme.primary.withValues(alpha: 0.45)),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: _handleTap,
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Icon(icon, size: 24, color: scheme.onSurface),
-              ),
+    return Tooltip(
+      message: label,
+      child: Material(
+        color: scheme.surfaceContainerHigh,
+        shape: CircleBorder(
+          side: BorderSide(color: scheme.primary.withValues(alpha: 0.45)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: _handleTap,
+          child: Padding(
+            padding: EdgeInsets.all(compact ? 10 : 18),
+            child: Icon(
+              icon,
+              size: compact ? 18 : 24,
+              color: scheme.onSurface,
             ),
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            letterSpacing: 0.4,
-            color: scheme.onSurface.withValues(alpha: 0.7),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

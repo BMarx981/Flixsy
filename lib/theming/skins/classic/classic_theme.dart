@@ -24,6 +24,6 @@ abstract final class ClassicTheme {
         ),
       ),
     ),
-    extensions: const [SkinTokens(buttonGap: 8)],
+    extensions: const [SkinTokens(buttonGap: 12)],
   );
 }

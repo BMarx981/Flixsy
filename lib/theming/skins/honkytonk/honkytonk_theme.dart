@@ -27,7 +27,7 @@ abstract final class HonkytonkTheme {
       foregroundColor: cream,
       elevation: 0,
     ),
-    extensions: const [SkinTokens(buttonGap: 10)],
+    extensions: const [SkinTokens(buttonGap: 14)],
   );
 
   static Color alpha(Color color, double fraction) =>

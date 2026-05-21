@@ -9,6 +9,7 @@ import '../../../shared/ads/remote_banner_ad.dart';
 import '../../../shared/iap/iap_failure.dart';
 import '../../../shared/iap/iap_failure_l10n.dart';
 import '../../../shared/providers/app_providers.dart';
+import '../../../shared/widgets/glass_popup_menu.dart';
 import '../../../theming/custom_image_provider.dart';
 import '../../../theming/layout_provider.dart';
 import '../../../theming/skin_provider.dart';
@@ -168,36 +169,30 @@ class _HomeOverflowMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productAsync = ref.watch(removeAdsProductProvider);
-    final price = productAsync.valueOrNull?.price;
+    final price = ref.watch(removeAdsProductProvider).valueOrNull?.price;
 
-    return PopupMenuButton<_HomeMenuAction>(
-      icon: const Icon(Icons.more_vert),
-      onSelected: (action) => _handle(context, ref, action),
-      itemBuilder: (context) => [
+    return GlassPopupMenu<_HomeMenuAction>(
+      onSelected: (action) => _handle(ref, action),
+      items: [
         if (!adsRemoved)
-          PopupMenuItem(
+          GlassPopupMenuItem(
             value: _HomeMenuAction.removeAds,
-            child: Text(
-              price == null
-                  ? context.l10n.removeAdsAction
-                  : context.l10n.removeAdsActionWithPrice(price),
-            ),
+            icon: Icons.block_outlined,
+            label: price == null
+                ? context.l10n.removeAdsAction
+                : context.l10n.removeAdsActionWithPrice(price),
           ),
         if (!adsRemoved)
-          PopupMenuItem(
+          GlassPopupMenuItem(
             value: _HomeMenuAction.restorePurchases,
-            child: Text(context.l10n.restorePurchasesAction),
+            icon: Icons.restore_rounded,
+            label: context.l10n.restorePurchasesAction,
           ),
       ],
     );
   }
 
-  Future<void> _handle(
-    BuildContext context,
-    WidgetRef ref,
-    _HomeMenuAction action,
-  ) async {
+  Future<void> _handle(WidgetRef ref, _HomeMenuAction action) async {
     final iap = ref.read(iapServiceProvider);
     switch (action) {
       case _HomeMenuAction.removeAds:

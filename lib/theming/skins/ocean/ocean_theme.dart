@@ -25,7 +25,7 @@ abstract final class OceanTheme {
       foregroundColor: foam,
       elevation: 0,
     ),
-    extensions: const [SkinTokens(buttonGap: 14)],
+    extensions: const [SkinTokens(buttonGap: 14, accent: goldGlow)],
   );
 
   static Color alpha(Color color, double fraction) =>

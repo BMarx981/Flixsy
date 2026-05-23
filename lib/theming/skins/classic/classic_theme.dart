@@ -24,6 +24,8 @@ abstract final class ClassicTheme {
         ),
       ),
     ),
-    extensions: const [SkinTokens(buttonGap: 12)],
+    extensions: const [
+      SkinTokens(buttonGap: 12, accent: Color(0xFF3B82F6)),
+    ],
   );
 }

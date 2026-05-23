@@ -27,7 +27,7 @@ abstract final class CityscapeTheme {
       foregroundColor: ice,
       elevation: 0,
     ),
-    extensions: const [SkinTokens(buttonGap: 14)],
+    extensions: const [SkinTokens(buttonGap: 14, accent: neon)],
   );
 
   static Color alpha(Color color, double fraction) =>

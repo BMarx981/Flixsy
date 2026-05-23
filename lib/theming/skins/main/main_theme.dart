@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../skin_tokens.dart';
+
 /// Theme for the "Main" skin — colours sampled from the Flixsy logo mark.
 abstract final class MainTheme {
   static const _pink = Color(0xFFFF3D8A); // logo disc
@@ -27,5 +29,6 @@ abstract final class MainTheme {
         ),
       ),
     ),
+    extensions: const [SkinTokens(buttonGap: 12, accent: _pink)],
   );
 }

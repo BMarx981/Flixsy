@@ -28,7 +28,7 @@ abstract final class PunkTheme {
       foregroundColor: bone,
       elevation: 0,
     ),
-    extensions: const [SkinTokens(buttonGap: 14)],
+    extensions: const [SkinTokens(buttonGap: 14, accent: magenta)],
   );
 
   static Color alpha(Color color, double fraction) =>

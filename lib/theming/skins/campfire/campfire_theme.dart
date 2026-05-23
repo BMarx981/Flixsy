@@ -25,7 +25,7 @@ abstract final class CampfireTheme {
       foregroundColor: sand,
       elevation: 0,
     ),
-    extensions: const [SkinTokens(buttonGap: 14)],
+    extensions: const [SkinTokens(buttonGap: 14, accent: ember)],
   );
 
   static Color alpha(Color color, double fraction) =>

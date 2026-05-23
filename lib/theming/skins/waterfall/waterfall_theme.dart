@@ -24,7 +24,7 @@ abstract final class WaterfallTheme {
       foregroundColor: foam,
       elevation: 0,
     ),
-    extensions: const [SkinTokens(buttonGap: 14)],
+    extensions: const [SkinTokens(buttonGap: 14, accent: foam)],
   );
 
   static Color alpha(Color color, double fraction) =>

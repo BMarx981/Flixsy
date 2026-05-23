@@ -4,6 +4,7 @@ import 'package:flixsy/core/channels/composite_remote_channel.dart';
 import 'package:flixsy/core/channels/multicast_lock.dart';
 import 'package:flixsy/core/channels/pointer_control.dart';
 import 'package:flixsy/core/channels/remote_channel.dart';
+import 'package:flixsy/core/channels/text_input.dart';
 import 'package:flixsy/core/errors/connect_failure.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -390,6 +391,9 @@ class _FakeRemoteChannel implements RemoteChannel {
 
   @override
   PointerControl? get pointerControl => null;
+
+  @override
+  RemoteTextInput? get textInput => null;
 
   @override
   void dispose() {

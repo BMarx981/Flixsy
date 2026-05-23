@@ -1,5 +1,6 @@
 import '../errors/connect_failure.dart';
 import 'pointer_control.dart';
+import 'text_input.dart';
 
 /// The platform-agnostic contract for discovering and controlling a TV.
 ///
@@ -85,4 +86,10 @@ abstract interface class RemoteChannel {
   /// this nullability to decide whether to surface the LG-style pointer
   /// gesture (long-press OK on the D-pad).
   PointerControl? get pointerControl => null;
+
+  /// Remote text-injection capability, if the currently connected device
+  /// supports typing into a focused TV field. Returns `null` otherwise —
+  /// the keyboard sheet keys off this nullability to hide its "Keyboard"
+  /// button when no text-capable device is connected.
+  RemoteTextInput? get textInput => null;
 }

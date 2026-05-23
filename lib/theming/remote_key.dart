@@ -21,6 +21,12 @@ enum RemoteKeyRole { dpad, navigation, transport, volume, channel, system }
 /// [code] is the only thing handed to `RemoteChannel.sendKeyCommand`; channel
 /// implementations translate it to their vendor-specific wire value. The enum
 /// is extended as channels gain support for more keys.
+///
+/// A handful of keys are **UI-only** — they exist as actions the user can
+/// place on a remote, but the dispatcher intercepts them before they reach
+/// `sendKeyCommand` and routes them to an in-app surface instead. Their
+/// [code] is used only for serialisation and the action picker. Currently:
+/// [keyboard] (opens the keyboard sheet).
 enum RemoteKey {
   up('UP', RemoteKeyRole.dpad),
   down('DOWN', RemoteKeyRole.dpad),
@@ -29,6 +35,7 @@ enum RemoteKey {
   ok('OK', RemoteKeyRole.dpad),
   back('BACK', RemoteKeyRole.navigation),
   home('HOME', RemoteKeyRole.navigation),
+  keyboard('KEYBOARD', RemoteKeyRole.navigation),
   rewind('REWIND', RemoteKeyRole.transport),
   playPause('PLAY_PAUSE', RemoteKeyRole.transport),
   fastForward('FAST_FORWARD', RemoteKeyRole.transport),

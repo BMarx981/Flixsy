@@ -5,6 +5,7 @@ import '../errors/connect_failure.dart';
 import 'pointer_control.dart';
 import 'remote_channel.dart';
 import 'ssdp_discovery.dart';
+import 'text_input.dart';
 import 'web_socket_connection.dart';
 
 /// Default port for the webOS SSAP WebSocket.
@@ -225,6 +226,14 @@ class WebosConnectChannel implements RemoteChannel, PointerControl {
   @override
   PointerControl? get pointerControl =>
       _connectedDeviceId != null && _pointerSocket != null ? this : null;
+
+  // --- RemoteTextInput ----------------------------------------------------
+  // Phase 3 will fold WebosConnectChannel into `implements RemoteTextInput`
+  // and back this getter with the SSAP IME service. Until then, advertising
+  // null keeps the keyboard sheet hidden on webOS without breaking the
+  // RemoteChannel contract.
+  @override
+  RemoteTextInput? get textInput => null;
 
   /// webOS opens the pointer socket as part of [connectToDevice], so this is
   /// a sanity check rather than a setup call.

@@ -5,6 +5,7 @@ import '../errors/connect_failure.dart';
 import 'pointer_control.dart';
 import 'remote_channel.dart';
 import 'ssdp_discovery.dart';
+import 'text_input.dart';
 import 'web_socket_connection.dart';
 
 /// Path of the Samsung remote-control channel within the connect URL.
@@ -221,6 +222,9 @@ class SamsungConnectChannel implements RemoteChannel {
 
   @override
   PointerControl? get pointerControl => null;
+
+  @override
+  RemoteTextInput? get textInput => null;
 
   @override
   void dispose() {

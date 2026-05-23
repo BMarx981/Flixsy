@@ -9,6 +9,7 @@ import 'pointer_control.dart';
 import 'proto_codec.dart';
 import 'proto_socket.dart';
 import 'remote_channel.dart';
+import 'text_input.dart';
 
 // --- Protocol constants -----------------------------------------------------
 //
@@ -315,6 +316,9 @@ class AndroidTvConnectChannel implements RemoteChannel {
 
   @override
   PointerControl? get pointerControl => null;
+
+  @override
+  RemoteTextInput? get textInput => null;
 
   @override
   void dispose() {

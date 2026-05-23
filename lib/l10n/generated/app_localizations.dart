@@ -712,6 +712,12 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get remoteKeySettings;
 
+  /// Remote key label: opens the in-app keyboard sheet so the user can type into a TV text field.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyboard'**
+  String get remoteKeyKeyboard;
+
   /// Icon name in the Standard pack: up arrow.
   ///
   /// In en, this message translates to:
@@ -861,6 +867,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Microphone'**
   String get iconNameMic;
+
+  /// Icon name in the Standard pack: keyboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Keyboard'**
+  String get iconNameKeyboard;
 
   /// User-facing message for a device-discovery failure.
   ///

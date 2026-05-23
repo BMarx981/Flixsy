@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flixsy/core/channels/pointer_control.dart';
 import 'package:flixsy/core/channels/remote_channel.dart';
+import 'package:flixsy/core/channels/text_input.dart';
 import 'package:flixsy/features/device_discovery/providers/device_discovery_provider.dart';
 import 'package:flixsy/shared/providers/app_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -120,6 +121,9 @@ class _FakeChannel implements RemoteChannel {
 
   @override
   PointerControl? get pointerControl => null;
+
+  @override
+  RemoteTextInput? get textInput => null;
 
   @override
   void dispose() => _events.close();

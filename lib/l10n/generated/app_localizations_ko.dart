@@ -326,6 +326,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get remoteKeySettings => 'Settings';
 
   @override
+  String get remoteKeyKeyboard => 'Keyboard';
+
+  @override
   String get iconNameUp => 'Up';
 
   @override
@@ -399,6 +402,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get iconNameMic => 'Microphone';
+
+  @override
+  String get iconNameKeyboard => 'Keyboard';
 
   @override
   String get failureDiscovery =>

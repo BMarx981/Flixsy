@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../errors/connect_failure.dart';
 import 'pointer_control.dart';
 import 'remote_channel.dart';
+import 'text_input.dart';
 
 const _methodChannel = MethodChannel('com.flixsy.app/connect_sdk');
 const _eventChannel = EventChannel('com.flixsy.app/connect_sdk_events');
@@ -64,6 +65,9 @@ class ConnectChannel implements RemoteChannel {
 
   @override
   PointerControl? get pointerControl => null;
+
+  @override
+  RemoteTextInput? get textInput => null;
 
   @override
   void dispose() {

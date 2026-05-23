@@ -387,6 +387,8 @@
   "@remoteKeyPower": { "description": "Remote key label: power on/off." },
   "remoteKeySettings": "Settings",
   "@remoteKeySettings": { "description": "Remote key label: opens the TV's settings or menu." },
+  "remoteKeyKeyboard": "Keyboard",
+  "@remoteKeyKeyboard": { "description": "Remote key label: opens the in-app keyboard sheet so the user can type into a TV text field." },
 
   "iconNameUp": "Up",
   "@iconNameUp": { "description": "Icon name in the Standard pack: up arrow." },
@@ -438,6 +440,8 @@
   "@iconNameInfo": { "description": "Icon name in the Standard pack: info." },
   "iconNameMic": "Microphone",
   "@iconNameMic": { "description": "Icon name in the Standard pack: microphone." },
+  "iconNameKeyboard": "Keyboard",
+  "@iconNameKeyboard": { "description": "Icon name in the Standard pack: keyboard." },
 
   "failureDiscovery": "Couldn't search for TVs. Check your Wi-Fi and try again.",
   "@failureDiscovery": {

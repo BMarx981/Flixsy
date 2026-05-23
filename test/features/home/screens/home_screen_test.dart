@@ -4,6 +4,7 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flixsy/analytics/analytics_service.dart';
 import 'package:flixsy/core/channels/pointer_control.dart';
 import 'package:flixsy/core/channels/remote_channel.dart';
+import 'package:flixsy/core/channels/text_input.dart';
 import 'package:flixsy/data/models/layout/built_in_layouts.dart';
 import 'package:flixsy/data/models/layout/remote_layout.dart';
 import 'package:flixsy/data/models/stored_image.dart';
@@ -368,6 +369,9 @@ class _FakeRemoteChannel implements RemoteChannel {
 
   @override
   PointerControl? get pointerControl => null;
+
+  @override
+  RemoteTextInput? get textInput => null;
 
   @override
   void dispose() => _events.close();

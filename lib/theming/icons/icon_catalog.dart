@@ -62,6 +62,7 @@ final IconPack standardPack = IconPack(
     IconPackEntry(id: 'settings', name: 'Settings', icon: Icons.settings),
     IconPackEntry(id: 'info', name: 'Info', icon: Icons.info_outline),
     IconPackEntry(id: 'mic', name: 'Microphone', icon: Icons.mic),
+    IconPackEntry(id: 'keyboard', name: 'Keyboard', icon: Icons.keyboard),
   ],
 );
 
@@ -79,6 +80,7 @@ const Map<RemoteKey, String> _defaultIconIds = {
   RemoteKey.ok: 'ok',
   RemoteKey.back: 'back',
   RemoteKey.home: 'home',
+  RemoteKey.keyboard: 'keyboard',
   RemoteKey.rewind: 'rewind',
   RemoteKey.playPause: 'play_pause',
   RemoteKey.fastForward: 'fast_forward',
@@ -102,6 +104,7 @@ const Map<RemoteKey, String> _defaultLabels = {
   RemoteKey.ok: 'OK',
   RemoteKey.back: 'Back',
   RemoteKey.home: 'Home',
+  RemoteKey.keyboard: 'Keyboard',
   RemoteKey.rewind: 'Rewind',
   RemoteKey.playPause: 'Play/Pause',
   RemoteKey.fastForward: 'Fast Forward',

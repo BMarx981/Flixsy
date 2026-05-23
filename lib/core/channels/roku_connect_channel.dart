@@ -9,6 +9,7 @@ import '../errors/connect_failure.dart';
 import 'pointer_control.dart';
 import 'remote_channel.dart';
 import 'ssdp_discovery.dart';
+import 'text_input.dart';
 
 /// Default port for Roku's External Control Protocol (ECP).
 const int _rokuEcpPort = 8060;
@@ -215,6 +216,9 @@ class RokuConnectChannel implements RemoteChannel {
 
   @override
   PointerControl? get pointerControl => null;
+
+  @override
+  RemoteTextInput? get textInput => null;
 
   @override
   void dispose() {

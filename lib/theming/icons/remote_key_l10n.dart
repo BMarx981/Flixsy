@@ -17,6 +17,7 @@ extension RemoteKeyL10n on AppLocalizations {
     RemoteKey.ok => remoteKeyOk,
     RemoteKey.back => remoteKeyBack,
     RemoteKey.home => remoteKeyHome,
+    RemoteKey.keyboard => remoteKeyKeyboard,
     RemoteKey.rewind => remoteKeyRewind,
     RemoteKey.playPause => remoteKeyPlayPause,
     RemoteKey.fastForward => remoteKeyFastForward,
@@ -71,6 +72,7 @@ extension RemoteKeyL10n on AppLocalizations {
     'settings' => iconNameSettings,
     'info' => iconNameInfo,
     'mic' => iconNameMic,
+    'keyboard' => iconNameKeyboard,
     _ => appearanceCustomIcon,
   };
 }

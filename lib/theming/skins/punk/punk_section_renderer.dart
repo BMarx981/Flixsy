@@ -13,14 +13,14 @@ import '../../skin_tokens.dart';
 import '../../standard/button_presentation.dart';
 import '../../standard/remote_image_scope.dart';
 import '../../standard/section_renderer.dart';
-import 'cloud_pulse_scope.dart';
-import 'cloud_theme.dart';
+import 'punk_pulse_scope.dart';
+import 'punk_theme.dart';
 
-/// Renders the `Cloud` skin's blocks: soft rounded white buttons with a
-/// gentle drop shadow that breathes in time with the shared pulse animation.
-/// Layout structure mirrors `ClassicSectionRenderer`; only the chrome differs.
-class CloudSectionRenderer implements SectionRenderer {
-  const CloudSectionRenderer();
+/// Renders the `Punk` skin's blocks: bottle-black panels with a hot-magenta
+/// rim that breathes with the shared pulse and a notched corner to give the
+/// chrome a torn, stencil-cut feel against the brick.
+class PunkSectionRenderer implements SectionRenderer {
+  const PunkSectionRenderer();
 
   static const double _emptyCellSide = 60;
 
@@ -38,8 +38,8 @@ class CloudSectionRenderer implements SectionRenderer {
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _button(context, block.volumeUp, onKey, gap, compact: true),
-            _button(context, block.volumeDown, onKey, gap, compact: true),
+            _button(context, block.volumeUp, onKey, gap),
+            _button(context, block.volumeDown, onKey, gap),
           ],
         ),
         Padding(
@@ -58,8 +58,8 @@ class CloudSectionRenderer implements SectionRenderer {
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _button(context, block.channelUp, onKey, gap, compact: true),
-            _button(context, block.channelDown, onKey, gap, compact: true),
+            _button(context, block.channelUp, onKey, gap),
+            _button(context, block.channelDown, onKey, gap),
           ],
         ),
       ],
@@ -133,9 +133,8 @@ class CloudSectionRenderer implements SectionRenderer {
     BuildContext context,
     RemoteButton button,
     KeyPressHandler onKey,
-    double gap, {
-    bool compact = false,
-  }) {
+    double gap,
+  ) {
     final presentation = resolveButton(
       button,
       imagePaths: RemoteImageScope.of(context),
@@ -143,46 +142,103 @@ class CloudSectionRenderer implements SectionRenderer {
     );
     return Padding(
       padding: EdgeInsets.all(gap / 2),
-      child: _CloudButton(
+      child: _PunkButton(
         presentation: presentation,
         onPressed: () => onKey(button.action),
-        compact: compact,
       ),
     );
   }
 }
 
-class _CloudButton extends StatelessWidget {
-  const _CloudButton({
-    required this.presentation,
-    required this.onPressed,
-    this.compact = false,
-  });
+/// Decoration shape — a rectangle with the top-right corner clipped at 45°,
+/// suggesting a torn-poster / stencil-cut look. Used both as the visible
+/// border and as the ink-well clip so taps follow the same silhouette.
+class _NotchedRectBorder extends OutlinedBorder {
+  const _NotchedRectBorder({super.side, this.notch = 12});
+
+  final double notch;
+
+  @override
+  EdgeInsetsGeometry get dimensions => EdgeInsets.all(side.width);
+
+  @override
+  ShapeBorder scale(double t) =>
+      _NotchedRectBorder(side: side.scale(t), notch: notch * t);
+
+  @override
+  _NotchedRectBorder copyWith({BorderSide? side, double? notch}) =>
+      _NotchedRectBorder(side: side ?? this.side, notch: notch ?? this.notch);
+
+  @override
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
+      _build(rect.deflate(side.width));
+
+  @override
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) => _build(rect);
+
+  Path _build(Rect rect) {
+    final n = math.min(notch, math.min(rect.width, rect.height) / 3);
+    return Path()
+      ..moveTo(rect.left, rect.top)
+      ..lineTo(rect.right - n, rect.top)
+      ..lineTo(rect.right, rect.top + n)
+      ..lineTo(rect.right, rect.bottom)
+      ..lineTo(rect.left, rect.bottom)
+      ..close();
+  }
+
+  @override
+  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
+    if (side.style == BorderStyle.none) return;
+    canvas.drawPath(
+      getOuterPath(rect),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = side.width
+        ..color = side.color,
+    );
+  }
+}
+
+class _PunkButton extends StatelessWidget {
+  const _PunkButton({required this.presentation, required this.onPressed});
 
   final ButtonPresentation presentation;
   final VoidCallback onPressed;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final pulse = CloudPulseScope.of(context);
+    final pulse = PunkPulseScope.of(context);
     return AnimatedBuilder(
       animation: pulse,
       builder: (context, child) {
         final t = pulse.value;
-        return Container(
-          decoration: BoxDecoration(
-            color: CloudTheme.alpha(CloudTheme.cloud, 0.94 + 0.04 * t),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: CloudTheme.alpha(CloudTheme.cloudEdge, 0.7),
-              width: 1,
-            ),
-            boxShadow: [
+        final shape = _NotchedRectBorder(
+          side: BorderSide(
+            color: PunkTheme.alpha(PunkTheme.magenta, 0.45 + 0.35 * t),
+            width: 1.4,
+          ),
+        );
+        return DecoratedBox(
+          decoration: ShapeDecoration(
+            color: PunkTheme.alpha(PunkTheme.ink, 0.82 + 0.06 * t),
+            shape: shape,
+            shadows: [
               BoxShadow(
-                color: CloudTheme.alpha(CloudTheme.inkDeep, 0.10 + 0.05 * t),
-                blurRadius: 16 + 8 * t,
-                offset: const Offset(0, 4),
+                color: PunkTheme.alpha(
+                  PunkTheme.magenta,
+                  0.15 + 0.20 * t,
+                ),
+                blurRadius: 12 + 12 * t,
+                spreadRadius: 0.6,
+              ),
+              BoxShadow(
+                color: PunkTheme.alpha(
+                  PunkTheme.acid,
+                  0.04 + 0.05 * t,
+                ),
+                blurRadius: 18,
+                spreadRadius: -2,
               ),
             ],
           ),
@@ -191,26 +247,23 @@ class _CloudButton extends StatelessWidget {
       },
       child: Material(
         color: Colors.transparent,
+        shape: const _NotchedRectBorder(side: BorderSide.none),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: BorderRadius.circular(22),
-          splashColor: CloudTheme.alpha(CloudTheme.skyTop, 0.25),
-          highlightColor: CloudTheme.alpha(CloudTheme.skyTop, 0.10),
+          splashColor: PunkTheme.alpha(PunkTheme.magenta, 0.32),
+          highlightColor: PunkTheme.alpha(PunkTheme.acid, 0.12),
           onTap: onPressed,
           child: Padding(
-            padding: compact
-                ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
-                : const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: DefaultTextStyle.merge(
               style: const TextStyle(
-                color: CloudTheme.inkDeep,
-                fontWeight: FontWeight.w500,
+                color: PunkTheme.bone,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6,
               ),
               child: IconTheme.merge(
-                data: const IconThemeData(color: CloudTheme.inkDeep),
-                child: _ButtonContent(
-                  presentation: presentation,
-                  compact: compact,
-                ),
+                data: const IconThemeData(color: PunkTheme.bone),
+                child: _ButtonContent(presentation: presentation),
               ),
             ),
           ),
@@ -221,29 +274,38 @@ class _CloudButton extends StatelessWidget {
 }
 
 class _ButtonContent extends StatelessWidget {
-  const _ButtonContent({required this.presentation, this.compact = false});
+  const _ButtonContent({required this.presentation});
 
   final ButtonPresentation presentation;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final glyph = presentation.glyph;
-    final iconSize = compact ? 18.0 : 24.0;
-    final imageSide = compact ? 20.0 : 28.0;
     final mark = switch (glyph) {
-      IconGlyph(:final icon) => Icon(icon, size: iconSize),
+      IconGlyph(:final icon) => Icon(icon, size: 24),
       ImageGlyph(:final path) => Image.file(
         File(path),
-        width: imageSide,
-        height: imageSide,
+        width: 28,
+        height: 28,
         fit: BoxFit.contain,
         errorBuilder: (_, _, _) =>
-            Icon(Icons.broken_image_outlined, size: iconSize),
+            const Icon(Icons.broken_image_outlined, size: 24),
       ),
       TextGlyph(:final text) => Text(text),
     };
+    final caption = presentation.caption;
 
-    return Semantics(label: presentation.semanticLabel, child: mark);
+    final content = caption == null
+        ? mark
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              mark,
+              const SizedBox(height: 2),
+              Text(caption, style: const TextStyle(fontSize: 11)),
+            ],
+          );
+
+    return Semantics(label: presentation.semanticLabel, child: content);
   }
 }

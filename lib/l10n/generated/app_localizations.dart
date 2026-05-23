@@ -376,6 +376,18 @@ abstract class AppLocalizations {
   /// **'Empty'**
   String get editorEmptyCell;
 
+  /// Tooltip for the small × that removes a single button from a row or grid in the layout editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove button'**
+  String get editorRemoveButtonTooltip;
+
+  /// Label of the trailing chip that appends a new button to a row or grid in the layout editor.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get editorAddButtonChip;
+
   /// Name of the directional-cross block type.
   ///
   /// In en, this message translates to:

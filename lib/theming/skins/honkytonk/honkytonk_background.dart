@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 /// Country-bar interior backdrop for the `Honkytonk` skin: dim wood-plank
 /// back wall, a row of warm pendant bulbs hanging across the top, a glowing
 /// neon guitar sign centred on the back wall, soft cigarette-smoke haze
-/// drifting horizontally, and a wood-plank floor below a bar counter strip.
-/// The neon flickers on a fast controller; the smoke drifts on a slow one —
-/// both are seeded so the scene is reproducible.
+/// drifting horizontally, a wood-plank floor below a bar counter strip, a
+/// felt cowboy hat resting on the counter, a row of bar stools along the
+/// customer side, and two pool tables anchored at the canvas edges in the
+/// foreground. The neon flickers on a fast controller; the smoke drifts on
+/// a slow one — both are seeded so the scene is reproducible.
 class HonkytonkBackground extends StatefulWidget {
   const HonkytonkBackground({super.key});
 
@@ -157,7 +159,10 @@ class _HonkytonkPainter extends CustomPainter {
     _paintBulbs(canvas, size);
     _paintSmoke(canvas, size);
     _paintBarCounter(canvas, size);
+    _paintCowboyHat(canvas, size);
     _paintFloor(canvas, size);
+    _paintBarStools(canvas, size);
+    _paintPoolTables(canvas, size);
   }
 
   void _paintBackWall(Canvas canvas, Size size) {
@@ -559,6 +564,123 @@ class _HonkytonkPainter extends CustomPainter {
     );
   }
 
+  void _paintCowboyHat(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final counterTopY = _counterTop * h;
+
+    // Sits off-centre on the bar counter so it isn't masked by the remote.
+    final hatCentreX = w * 0.80;
+    final brimY = counterTopY + 2;
+
+    final brimWidth = math.min(w, h) * 0.14;
+    final brimHeight = brimWidth * 0.20;
+    final crownWidth = brimWidth * 0.46;
+    final crownHeight = brimWidth * 0.40;
+
+    const hatBrown = Color(0xFF3E2418);
+    const hatHighlight = Color(0xFF5A3624);
+    const hatShadow = Color(0xFF1A0A04);
+    const hatBand = Color(0xFF08030A);
+
+    // Crown — rounded with the classic cattleman crease down the centre.
+    final crownRect = Rect.fromCenter(
+      center: Offset(hatCentreX, brimY - crownHeight * 0.46),
+      width: crownWidth,
+      height: crownHeight,
+    );
+    final crownPath = Path()
+      ..moveTo(crownRect.left, crownRect.bottom)
+      ..lineTo(
+        crownRect.left + crownWidth * 0.08,
+        crownRect.top + crownHeight * 0.32,
+      )
+      ..quadraticBezierTo(
+        crownRect.left + crownWidth * 0.18,
+        crownRect.top,
+        crownRect.left + crownWidth * 0.34,
+        crownRect.top + crownHeight * 0.10,
+      )
+      ..quadraticBezierTo(
+        crownRect.center.dx,
+        crownRect.top + crownHeight * 0.32,
+        crownRect.right - crownWidth * 0.34,
+        crownRect.top + crownHeight * 0.10,
+      )
+      ..quadraticBezierTo(
+        crownRect.right - crownWidth * 0.18,
+        crownRect.top,
+        crownRect.right - crownWidth * 0.08,
+        crownRect.top + crownHeight * 0.32,
+      )
+      ..lineTo(crownRect.right, crownRect.bottom)
+      ..close();
+    canvas.drawPath(
+      crownPath,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [hatHighlight, hatBrown, hatShadow],
+          stops: [0.0, 0.55, 1.0],
+        ).createShader(crownRect),
+    );
+
+    // Hatband — thin dark strip at the base of the crown.
+    final bandRect = Rect.fromLTWH(
+      crownRect.left,
+      crownRect.bottom - crownHeight * 0.20,
+      crownWidth,
+      crownHeight * 0.13,
+    );
+    canvas.drawRect(bandRect, Paint()..color = hatBand);
+    // Tiny silver buckle on the band.
+    canvas.drawRect(
+      Rect.fromCenter(
+        center: Offset(crownRect.center.dx, bandRect.center.dy),
+        width: crownWidth * 0.10,
+        height: bandRect.height * 0.75,
+      ),
+      Paint()..color = const Color(0xFFD4B070),
+    );
+
+    // Brim — ellipse with shadowed underside and brown top.
+    final brimRect = Rect.fromCenter(
+      center: Offset(hatCentreX, brimY),
+      width: brimWidth,
+      height: brimHeight,
+    );
+    canvas.drawOval(brimRect, Paint()..color = hatShadow);
+    canvas.save();
+    canvas.clipRect(
+      Rect.fromLTRB(
+        brimRect.left,
+        brimRect.top,
+        brimRect.right,
+        brimRect.center.dy,
+      ),
+    );
+    canvas.drawOval(brimRect, Paint()..color = hatBrown);
+    canvas.restore();
+    // Rim highlight on the front edge.
+    canvas.drawOval(
+      brimRect,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.8
+        ..color = hatHighlight.withAlpha(180),
+    );
+
+    // Warm wash from the overhead bulbs landing on the crown.
+    canvas.drawCircle(
+      Offset(hatCentreX, crownRect.top + crownHeight * 0.25),
+      crownWidth * 0.42,
+      Paint()
+        ..color = const Color(0xFFFFB060).withAlpha(46)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
+  }
+
   void _paintFloor(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
@@ -591,6 +713,281 @@ class _HonkytonkPainter extends CustomPainter {
         seamPaint,
       );
     }
+  }
+
+  void _paintBarStools(Canvas canvas, Size size) {
+    // Stools sit at the customer side of the bar. The cushions line up with
+    // the counter top; posts run down through the floor band. Spaced so the
+    // outer pair frames the visible counter and the inner pair sits just
+    // beyond where the foreground pool tables crop in.
+    for (final x in const [0.10, 0.32, 0.68, 0.92]) {
+      _paintBarStool(canvas, size, xFraction: x);
+    }
+  }
+
+  void _paintBarStool(
+    Canvas canvas,
+    Size size, {
+    required double xFraction,
+  }) {
+    final w = size.width;
+    final h = size.height;
+    final cx = xFraction * w;
+
+    final floorBaseY = h * 0.955;
+    final seatRadius = math.min(w, h) * 0.040;
+    final seatThickness = seatRadius * 0.55;
+    // Seat sits midway between the counter line and the floor — a slightly
+    // shortened stool reads better against the foreground than one whose
+    // cushion floats up at counter height.
+    final seatCentreY = h * 0.82;
+
+    final cushionRect = Rect.fromCenter(
+      center: Offset(cx, seatCentreY),
+      width: seatRadius * 2,
+      height: seatThickness * 2.0,
+    );
+
+    // Soft shadow just under the cushion.
+    canvas.drawOval(
+      cushionRect.shift(Offset(0, seatThickness * 0.5)),
+      Paint()
+        ..color = const Color(0xFF000000).withAlpha(90)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+    );
+
+    // Leather cushion with an upper-left highlight to read as 3D.
+    canvas.drawOval(
+      cushionRect,
+      Paint()
+        ..shader = const RadialGradient(
+          center: Alignment(-0.3, -0.5),
+          radius: 1.0,
+          colors: [Color(0xFF7E3820), Color(0xFF2C1208)],
+        ).createShader(cushionRect),
+    );
+    // Dark rim around the cushion edge — gives the seat a defined silhouette.
+    canvas.drawOval(
+      cushionRect,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.9
+        ..color = const Color(0xFF120804).withAlpha(220),
+    );
+
+    // Vertical post — metal rod from cushion bottom to floor base.
+    final postWidth = math.min(w, h) * 0.011;
+    final postTop = seatCentreY + seatThickness * 0.85;
+    final postRect = Rect.fromLTWH(
+      cx - postWidth * 0.5,
+      postTop,
+      postWidth,
+      floorBaseY - postTop,
+    );
+    canvas.drawRect(
+      postRect,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [Color(0xFF0A0604), Color(0xFF3A2614), Color(0xFF0A0604)],
+          stops: [0.0, 0.55, 1.0],
+        ).createShader(postRect),
+    );
+
+    // Footring — brass ring around the post, partway down.
+    final ringY = postTop + (floorBaseY - postTop) * 0.55;
+    final ringRect = Rect.fromCenter(
+      center: Offset(cx, ringY),
+      width: seatRadius * 1.55,
+      height: seatRadius * 0.32,
+    );
+    canvas.drawOval(
+      ringRect,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5
+        ..color = const Color(0xFF8A5828),
+    );
+    // Highlight along the near (lower-front) arc of the ring.
+    canvas.drawArc(
+      ringRect,
+      math.pi * 0.10,
+      math.pi * 0.80,
+      false,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 0.7
+        ..color = const Color(0xFFD0A060).withAlpha(190),
+    );
+
+    // Flared floor base.
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(cx, floorBaseY),
+        width: seatRadius * 1.7,
+        height: seatRadius * 0.45,
+      ),
+      Paint()..color = const Color(0xFF080302),
+    );
+  }
+
+  void _paintPoolTables(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    // Both tables are anchored at the canvas edges with their outer halves
+    // off-screen — they frame the foreground without competing with the
+    // remote in the middle. The right one sits slightly larger and lower so
+    // the two read as different tables rather than a mirrored pair.
+    _paintPoolTable(
+      canvas,
+      Offset(0, h * 0.91),
+      width: w * 0.58,
+    );
+    _paintPoolTable(
+      canvas,
+      Offset(w, h * 0.94),
+      width: w * 0.66,
+    );
+  }
+
+  void _paintPoolTable(
+    Canvas canvas,
+    Offset centre, {
+    required double width,
+  }) {
+    final cx = centre.dx;
+    final cy = centre.dy;
+    final tableHeight = width * 0.50;
+
+    // Foreshortening — far edge narrower than near edge.
+    final topHalfW = width * 0.42;
+    final bottomHalfW = width * 0.50;
+    final topY = cy - tableHeight * 0.5;
+    final bottomY = cy + tableHeight * 0.5;
+    final fullRect = Rect.fromCenter(
+      center: Offset(cx, cy),
+      width: 2 * bottomHalfW,
+      height: tableHeight,
+    );
+
+    // Wood rails — outer trapezoid with a soft top-edge highlight.
+    final railPath = Path()
+      ..moveTo(cx - topHalfW, topY)
+      ..lineTo(cx + topHalfW, topY)
+      ..lineTo(cx + bottomHalfW, bottomY)
+      ..lineTo(cx - bottomHalfW, bottomY)
+      ..close();
+    canvas.drawPath(
+      railPath,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF4A2614), Color(0xFF2E1408)],
+        ).createShader(fullRect),
+    );
+    canvas.drawLine(
+      Offset(cx - topHalfW, topY),
+      Offset(cx + topHalfW, topY),
+      Paint()
+        ..color = const Color(0xFF8A4820).withAlpha(160)
+        ..strokeWidth = 1.4,
+    );
+
+    // Felt inset.
+    final inset = width * 0.06;
+    final feltTopHalfW = topHalfW - inset * 0.85;
+    final feltBottomHalfW = bottomHalfW - inset;
+    final feltTopY = topY + inset * 0.6;
+    final feltBottomY = bottomY - inset * 0.5;
+    final feltPath = Path()
+      ..moveTo(cx - feltTopHalfW, feltTopY)
+      ..lineTo(cx + feltTopHalfW, feltTopY)
+      ..lineTo(cx + feltBottomHalfW, feltBottomY)
+      ..lineTo(cx - feltBottomHalfW, feltBottomY)
+      ..close();
+    canvas.drawPath(
+      feltPath,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF083014),
+            Color(0xFF1A5028),
+            Color(0xFF082610),
+          ],
+          stops: [0.0, 0.5, 1.0],
+        ).createShader(fullRect),
+    );
+
+    // Pockets — six total: four corners + two side pockets.
+    final pocketR = inset * 0.55;
+    final pocketPaint = Paint()..color = const Color(0xFF030101);
+    final pockets = <Offset>[
+      Offset(cx - topHalfW + inset * 0.4, topY + inset * 0.5),
+      Offset(cx + topHalfW - inset * 0.4, topY + inset * 0.5),
+      Offset(cx - bottomHalfW + inset * 0.4, bottomY - inset * 0.45),
+      Offset(cx + bottomHalfW - inset * 0.4, bottomY - inset * 0.45),
+      Offset(cx - (topHalfW + bottomHalfW) * 0.5, cy),
+      Offset(cx + (topHalfW + bottomHalfW) * 0.5, cy),
+    ];
+    for (final p in pockets) {
+      canvas.drawCircle(p, pocketR, pocketPaint);
+    }
+
+    // Racked balls — proper triangle near the top end of the table.
+    final ballR = inset * 0.48;
+    final rackTopY = feltTopY + tableHeight * 0.20;
+    const rackColors = <Color>[
+      Color(0xFFE0C020), // 1 yellow
+      Color(0xFF1838A0), // 2 blue
+      Color(0xFFE03020), // 3 red
+      Color(0xFF6A1090), // 4 purple
+      Color(0xFFE57020), // 5 orange
+      Color(0xFF108C40), // 6 green
+      Color(0xFF8A2018), // 7 maroon
+      Color(0xFF101010), // 8 black
+      Color(0xFFD8C040), // 9
+      Color(0xFF2848B0), // 10
+    ];
+    var idx = 0;
+    for (var row = 0; row < 4; row++) {
+      final rowY = rackTopY + row * ballR * 1.85;
+      for (var col = 0; col <= row; col++) {
+        if (idx >= rackColors.length) break;
+        final offsetX = (col - row / 2.0) * ballR * 2.1;
+        canvas.drawCircle(
+          Offset(cx + offsetX, rowY),
+          ballR,
+          Paint()..color = rackColors[idx],
+        );
+        idx++;
+      }
+    }
+
+    // Cue ball near the bottom end of the table.
+    final cueOffset = Offset(cx - tableHeight * 0.18, feltBottomY - tableHeight * 0.18);
+    canvas.drawCircle(
+      cueOffset,
+      ballR,
+      Paint()..color = const Color(0xFFF4ECD8),
+    );
+    canvas.drawCircle(
+      cueOffset.translate(-ballR * 0.32, -ballR * 0.32),
+      ballR * 0.30,
+      Paint()..color = const Color(0xFFFFFFFF).withAlpha(180),
+    );
+
+    // Overhead-lamp pool on the felt.
+    canvas.drawCircle(
+      Offset(cx, cy - tableHeight * 0.08),
+      width * 0.22,
+      Paint()
+        ..color = const Color(0xFFFFD080).withAlpha(50)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14),
+    );
   }
 
   @override

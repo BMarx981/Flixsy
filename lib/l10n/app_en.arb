@@ -192,6 +192,14 @@
   "@editorEmptyCell": {
     "description": "Label for an empty cell in a grid block."
   },
+  "editorRemoveButtonTooltip": "Remove button",
+  "@editorRemoveButtonTooltip": {
+    "description": "Tooltip for the small × that removes a single button from a row or grid in the layout editor."
+  },
+  "editorAddButtonChip": "Add",
+  "@editorAddButtonChip": {
+    "description": "Label of the trailing chip that appends a new button to a row or grid in the layout editor."
+  },
 
   "blockKindDpad": "D-pad",
   "@blockKindDpad": {

@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import '../../../core/extensions/l10n_extensions.dart';
 import '../../../data/models/layout/layout_block.dart';
 import '../../../data/models/layout/remote_button.dart';
+import '../../../shared/widgets/spinnable_star_dpad.dart';
 import '../../icons/remote_key_l10n.dart';
+import '../../remote_key.dart';
 import '../../skin_tokens.dart';
 import '../../standard/button_presentation.dart';
 import '../../standard/remote_image_scope.dart';
@@ -41,20 +43,18 @@ class OceanSectionRenderer implements SectionRenderer {
             _button(context, block.volumeDown, onKey, gap, compact: true),
           ],
         ),
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _button(context, block.up, onKey, gap),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _button(context, block.left, onKey, gap),
-                _button(context, block.ok, onKey, gap),
-                _button(context, block.right, onKey, gap),
-              ],
-            ),
-            _button(context, block.down, onKey, gap),
-          ],
+        Padding(
+          padding: EdgeInsets.all(gap / 2),
+          child: SpinnableStarDpad(
+            size: 200,
+            onUp: () => onKey(block.up.action),
+            onDown: () => onKey(block.down.action),
+            onLeft: () => onKey(block.left.action),
+            onRight: () => onKey(block.right.action),
+            onOk: () => onKey(block.ok.action),
+            onScrollUp: () => onKey(RemoteKey.up),
+            onScrollDown: () => onKey(RemoteKey.down),
+          ),
         ),
         Column(
           mainAxisSize: MainAxisSize.min,

@@ -1,10 +1,16 @@
+import 'dart:async';
 import 'dart:math' as math;
 
+// ignore: unnecessary_import — needed for PanGestureRecognizer subclassing
+// and GestureDisposition, which material.dart re-exports only as meta-types
+// (the analyzer's hint is wrong here).
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../core/extensions/l10n_extensions.dart';
+import '../../../shared/widgets/spinnable_star_dpad.dart';
 import '../../icons/remote_key_l10n.dart';
 import '../../remote_key.dart';
 import '../../remote_skin.dart';
@@ -52,20 +58,146 @@ class MainRemoteSkin extends StatefulWidget implements RemoteSkin {
   State<MainRemoteSkin> createState() => _MainRemoteSkinState();
 }
 
-class _MainRemoteSkinState extends State<MainRemoteSkin> {
+class _MainRemoteSkinState extends State<MainRemoteSkin>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _resetController = AnimationController(
+    vsync: this,
+    duration: SpinnableStarDpad.resetDuration,
+  )..addListener(_onResetTick);
+
   /// The region currently held down, used only for press feedback.
   _LogoRegion? _active;
 
-  void _handleTapDown(TapDownDetails details, double side) {
-    final region = _hitTest(details.localPosition, side);
-    if (region == null) return; // dead zone — ignore
-    HapticFeedback.selectionClick();
-    widget.onKeyPressed(region.action.code);
-    setState(() => _active = region);
-  }
+  // Rotation state — driven by pan gestures, eased back to 0 after release.
+  double _visualRotation = 0;
+  double _resetFrom = 0;
+  double _accumulatedDelta = 0;
+  double? _spinLastAngle;
+  Offset _panStart = Offset.zero;
+  double _panDistanceSq = 0;
+  bool _isSpinning = false;
+  Timer? _resetTimer;
 
   void _clearActive() {
     if (_active != null) setState(() => _active = null);
+  }
+
+  double _wrap(double a) {
+    var x = a % (2 * math.pi);
+    if (x > math.pi) x -= 2 * math.pi;
+    if (x <= -math.pi) x += 2 * math.pi;
+    return x;
+  }
+
+  void _cancelReset() {
+    _resetTimer?.cancel();
+    _resetTimer = null;
+    if (_resetController.isAnimating) _resetController.stop();
+  }
+
+  void _scheduleReset() {
+    _resetTimer?.cancel();
+    _resetTimer = Timer(SpinnableStarDpad.resetDelay, _startReset);
+  }
+
+  void _startReset() {
+    _resetFrom = _wrap(_visualRotation);
+    setState(() => _visualRotation = _resetFrom);
+    _resetController
+      ..value = 0
+      ..forward();
+  }
+
+  void _onResetTick() {
+    final t = Curves.easeOutCubic.transform(_resetController.value);
+    setState(() => _visualRotation = _resetFrom * (1 - t));
+  }
+
+  double _angleFromCenter(Offset local, double side) {
+    final v = local - Offset(side / 2, side / 2);
+    return math.atan2(v.dy, v.dx);
+  }
+
+  // Pan handlers cover *both* the arm-tap (a short pan that never crosses
+  // the spin threshold) and the spin gesture. Using a single eager pan
+  // recognizer — instead of separate tap + pan — stops ancestor scrollables
+  // (the skin-picker `PageView`) from stealing the gesture mid-spin.
+  void _onPanStart(DragStartDetails details, double side) {
+    _cancelReset();
+    _panStart = details.localPosition;
+    _panDistanceSq = 0;
+    _isSpinning = false;
+    _spinLastAngle = _angleFromCenter(details.localPosition, side);
+    _accumulatedDelta = 0;
+    final region = _hitTest(details.localPosition, side);
+    setState(() => _active = region);
+  }
+
+  void _onPanUpdate(DragUpdateDetails details, double side) {
+    final local = details.localPosition;
+    _panDistanceSq = (local - _panStart).distanceSquared;
+
+    final current = _angleFromCenter(local, side);
+    final last = _spinLastAngle;
+    if (last == null) {
+      _spinLastAngle = current;
+      return;
+    }
+    var delta = current - last;
+    if (delta > math.pi) delta -= 2 * math.pi;
+    if (delta < -math.pi) delta += 2 * math.pi;
+    _spinLastAngle = current;
+
+    if (!_isSpinning &&
+        _panDistanceSq >
+            SpinnableStarDpad.tapSlop * SpinnableStarDpad.tapSlop) {
+      _isSpinning = true;
+      // Crossed the spin threshold — the pressed-arm highlight no longer
+      // matches what the gesture will do, so drop it.
+      if (_active != null) _active = null;
+    }
+
+    _accumulatedDelta += delta;
+    setState(() => _visualRotation += delta);
+
+    while (_accumulatedDelta >= SpinnableStarDpad.tickAngle) {
+      _accumulatedDelta -= SpinnableStarDpad.tickAngle;
+      HapticFeedback.selectionClick();
+      widget.onKeyPressed(RemoteKey.up.code);
+    }
+    while (_accumulatedDelta <= -SpinnableStarDpad.tickAngle) {
+      _accumulatedDelta += SpinnableStarDpad.tickAngle;
+      HapticFeedback.selectionClick();
+      widget.onKeyPressed(RemoteKey.down.code);
+    }
+  }
+
+  void _onPanEnd(DragEndDetails _) {
+    if (!_isSpinning) {
+      final region = _active;
+      if (region != null) {
+        HapticFeedback.selectionClick();
+        widget.onKeyPressed(region.action.code);
+      }
+    }
+    setState(() => _active = null);
+    _spinLastAngle = null;
+    _isSpinning = false;
+    _scheduleReset();
+  }
+
+  void _onPanCancel() {
+    _clearActive();
+    _spinLastAngle = null;
+    _isSpinning = false;
+    _scheduleReset();
+  }
+
+  @override
+  void dispose() {
+    _resetTimer?.cancel();
+    _resetController.dispose();
+    super.dispose();
   }
 
   /// Maps a local tap position to a [_LogoRegion], or `null` for dead zones.
@@ -226,29 +358,43 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
             key: const ValueKey('flixsyLogoPad'),
             width: side,
             height: side,
-            child: GestureDetector(
+            child: RawGestureDetector(
               behavior: HitTestBehavior.opaque,
-              onTapDown: (details) => _handleTapDown(details, side),
-              onTapUp: (_) => _clearActive(),
-              onTapCancel: _clearActive,
-              child: AnimatedScale(
-                scale: _active == null ? 1.0 : 0.97,
-                duration: const Duration(milliseconds: 90),
-                curve: Curves.easeOut,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    SvgPicture.asset(
-                      'assets/images/flixsy_logo.svg',
-                      semanticsLabel: context.l10n.mainRemoteSemanticLabel,
+              gestures: <Type, GestureRecognizerFactory>{
+                _EagerPanGestureRecognizer:
+                    GestureRecognizerFactoryWithHandlers<
+                      _EagerPanGestureRecognizer
+                    >(
+                      () => _EagerPanGestureRecognizer(),
+                      (instance) {
+                        instance.onStart = (d) => _onPanStart(d, side);
+                        instance.onUpdate = (d) => _onPanUpdate(d, side);
+                        instance.onEnd = _onPanEnd;
+                        instance.onCancel = _onPanCancel;
+                      },
                     ),
-                    CustomPaint(
-                      painter: _HighlightPainter(
-                        region: _active,
-                        color: Colors.white.withValues(alpha: 0.30),
+              },
+              child: Transform.rotate(
+                angle: _visualRotation,
+                child: AnimatedScale(
+                  scale: _active == null ? 1.0 : 0.97,
+                  duration: const Duration(milliseconds: 90),
+                  curve: Curves.easeOut,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/images/flixsy_logo.svg',
+                        semanticsLabel: context.l10n.mainRemoteSemanticLabel,
                       ),
-                    ),
-                  ],
+                      CustomPaint(
+                        painter: _HighlightPainter(
+                          region: _active,
+                          color: Colors.white.withValues(alpha: 0.30),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -360,4 +506,18 @@ class _HighlightPainter extends CustomPainter {
   @override
   bool shouldRepaint(_HighlightPainter oldDelegate) =>
       oldDelegate.region != region || oldDelegate.color != color;
+}
+
+/// A [PanGestureRecognizer] that wins the gesture arena the instant a finger
+/// touches it, instead of waiting for kTouchSlop movement.
+///
+/// Without this, an ancestor `PageView` (the skin-picker carousel) steals the
+/// gesture mid-spin whenever the user's motion happens to align with its
+/// horizontal drag axis — the wheel "stops spinning after a little while."
+class _EagerPanGestureRecognizer extends PanGestureRecognizer {
+  @override
+  void addAllowedPointer(PointerDownEvent event) {
+    super.addAllowedPointer(event);
+    resolve(GestureDisposition.accepted);
+  }
 }

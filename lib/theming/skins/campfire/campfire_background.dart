@@ -215,6 +215,7 @@ class _CampfirePainter extends CustomPainter {
       bottomY: _groundY,
       topWidthRatio: 0.55,
       topShift: -0.04,
+      roughness: 0.30,
     ),
   ]);
 
@@ -698,10 +699,32 @@ class _MesaSilhouette {
       final right = m.right * w;
       final topY = m.topY * h;
       final bottomY = m.bottomY * h;
+      final mesaH = bottomY - topY;
       final topWidth = (m.right - m.left) * m.topWidthRatio * w;
       final topCentre = (left + right) / 2 + m.topShift * w;
       final topLeft = topCentre - topWidth / 2;
       final topRight = topCentre + topWidth / 2;
+
+      // Corner radius — softens the top edges. Capped so the rounding never
+      // eats more than a fraction of the top edge or the mesa's height.
+      final cornerR = math.max(
+        1.0,
+        math.min(
+          math.min(topWidth * 0.22, mesaH * 0.18),
+          math.min(topLeft - left, right - topRight) * 0.6,
+        ),
+      );
+      // Jitter amplitude scales with mesa height so distortion reads at any
+      // canvas size, but it's clamped low — the silhouette should still feel
+      // like a clean mesa shape, just with eroded edges. `roughness` lets
+      // foreground mesas dial back so they don't look noisier than the
+      // distant ones.
+      final jitter = math.min(mesaH * 0.018, 4.5) * m.roughness;
+      // Stable seed derived from the mesa's position so the noise doesn't
+      // shimmer between frames.
+      final rng = math.Random(
+        (m.left * 10000).round() ^ ((m.topY * 10000).round() << 1),
+      );
 
       if (!extendBelow && first) {
         path.moveTo(left, bottomY);
@@ -709,10 +732,34 @@ class _MesaSilhouette {
         path.lineTo(left, bottomY);
       }
       first = false;
-      path
-        ..lineTo(topLeft, topY)
-        ..lineTo(topRight, topY)
-        ..lineTo(right, bottomY);
+      // Left slope up to the start of the top-left corner arc.
+      _addJitteredEdge(
+        path,
+        Offset(left, bottomY),
+        Offset(topLeft, topY + cornerR),
+        jitter,
+        rng,
+      );
+      // Rounded top-left corner.
+      path.quadraticBezierTo(topLeft, topY, topLeft + cornerR, topY);
+      // Top edge — slightly less jitter so the plateau still reads as flat.
+      _addJitteredEdge(
+        path,
+        Offset(topLeft + cornerR, topY),
+        Offset(topRight - cornerR, topY),
+        jitter * 0.55,
+        rng,
+      );
+      // Rounded top-right corner.
+      path.quadraticBezierTo(topRight, topY, topRight, topY + cornerR);
+      // Right slope down to the base.
+      _addJitteredEdge(
+        path,
+        Offset(topRight, topY + cornerR),
+        Offset(right, bottomY),
+        jitter,
+        rng,
+      );
     }
 
     if (extendBelow) {
@@ -720,6 +767,34 @@ class _MesaSilhouette {
     }
     path.close();
     return path;
+  }
+
+  /// Appends a jittered line from [a] to [b]. Each subdivision is offset
+  /// perpendicular to the edge by a random amount up to [amp], tapering to
+  /// zero at the endpoints so corners stay anchored.
+  static void _addJitteredEdge(
+    Path path,
+    Offset a,
+    Offset b,
+    double amp,
+    math.Random rng,
+  ) {
+    final dx = b.dx - a.dx;
+    final dy = b.dy - a.dy;
+    final len = math.sqrt(dx * dx + dy * dy);
+    if (len < 1.5) {
+      path.lineTo(b.dx, b.dy);
+      return;
+    }
+    final nx = -dy / len;
+    final ny = dx / len;
+    final segments = math.max(6, (len / 7).round());
+    for (var i = 1; i <= segments; i++) {
+      final t = i / segments;
+      final taper = math.sin(t * math.pi);
+      final j = (rng.nextDouble() * 2 - 1) * amp * taper;
+      path.lineTo(a.dx + dx * t + nx * j, a.dy + dy * t + ny * j);
+    }
   }
 }
 
@@ -731,6 +806,7 @@ class _Mesa {
     required this.bottomY,
     required this.topWidthRatio,
     required this.topShift,
+    this.roughness = 1.0,
   });
 
   final double left;
@@ -739,4 +815,7 @@ class _Mesa {
   final double bottomY;
   final double topWidthRatio;
   final double topShift;
+  // Per-mesa multiplier on edge jitter amplitude. The foreground mesa uses a
+  // lower value so its silhouette stays crisper than the distant layers.
+  final double roughness;
 }

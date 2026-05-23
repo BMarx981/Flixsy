@@ -51,6 +51,12 @@ class _SkinPickerCarouselState extends ConsumerState<SkinPickerCarousel> {
     super.dispose();
   }
 
+  Future<void> _select(AppSkin skin) async {
+    await ref.read(skinControllerProvider).selectSkin(skin);
+    if (!mounted) return;
+    ref.read(previewSkinProvider.notifier).state = null;
+  }
+
   Future<void> _step(int delta) async {
     final current = _controller.page?.round() ?? 0;
     final next = (current + delta).clamp(0, AppSkin.values.length - 1);
@@ -122,12 +128,17 @@ class _SkinPickerCarouselState extends ConsumerState<SkinPickerCarousel> {
               final config = skinRegistry[skins[i]]!;
               return Theme(
                 data: config.themeData,
-                // Preview is look-only — block taps from driving the TV.
-                child: IgnorePointer(
-                  child: config.buildRemoteSkin(
-                    layout: widget.layout,
-                    imagePaths: widget.imagePaths,
-                    onKeyPressed: (_) {},
+                // Tap the remote to pick this skin; individual key taps are
+                // swallowed so a stray press can't reach the TV mid-preview.
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => _select(skins[i]),
+                  child: IgnorePointer(
+                    child: config.buildRemoteSkin(
+                      layout: widget.layout,
+                      imagePaths: widget.imagePaths,
+                      onKeyPressed: (_) {},
+                    ),
                   ),
                 ),
               );

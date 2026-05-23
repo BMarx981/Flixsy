@@ -8,6 +8,7 @@ import '../../../core/extensions/l10n_extensions.dart';
 import '../../../data/models/layout/layout_block.dart';
 import '../../../data/models/layout/remote_button.dart';
 import '../../../data/models/layout/remote_layout.dart';
+import '../../../shared/widgets/glass_surface.dart';
 import '../../../theming/custom_image_provider.dart';
 import '../../../theming/icons/remote_key_l10n.dart';
 import '../../../theming/layout_provider.dart';
@@ -17,6 +18,11 @@ import '../../../theming/standard/standard_remote.dart';
 import '../providers/layout_editor_provider.dart';
 import '../widgets/block_type_sheet.dart';
 import '../widgets/button_editor_sheet.dart';
+
+/// Whether [block] supports inline add/remove of its buttons in the editor —
+/// true for [ButtonRowBlock] and [GridBlock], false for fixed-slot blocks.
+bool _isVariable(LayoutBlock block) =>
+    block is ButtonRowBlock || block is GridBlock;
 
 /// Edits one custom layout: rename it, add / remove / reorder blocks, and
 /// reassign each button's action, with a live preview (design doc §8).
@@ -31,38 +37,65 @@ class LayoutEditorScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final draft = ref.watch(layoutEditorProvider(layout));
     final notifier = ref.read(layoutEditorProvider(layout).notifier);
+    final foreground = Theme.of(context).colorScheme.onSurface;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(context.l10n.editorTitle),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        flexibleSpace: const GlassSurface(
+          borderRadius: BorderRadius.zero,
+          border: false,
+          shadow: false,
+          child: SizedBox.expand(),
+        ),
+        iconTheme: IconThemeData(color: foreground),
+        title: Text(
+          context.l10n.editorTitle,
+          style: TextStyle(color: foreground),
+        ),
         actions: [
           TextButton(
             onPressed: () => _save(context, ref),
+            style: TextButton.styleFrom(foregroundColor: foreground),
             child: Text(context.l10n.commonSave),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: _GlassFab(
         onPressed: () => _addBlock(context, notifier),
-        icon: const Icon(Icons.add),
-        label: Text(context.l10n.editorAddBlockButton),
+        icon: Icons.add,
+        label: context.l10n.editorAddBlockButton,
       ),
-      body: SafeArea(
-        child: ReorderableListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-          onReorder: notifier.reorderBlocks,
-          header: _EditorHeader(layout: layout, draft: draft),
-          children: [
-            for (final (index, block) in draft.blocks.indexed)
-              _BlockCard(
-                key: ObjectKey(block),
-                index: index,
-                block: block,
-                onDelete: () => notifier.removeBlock(index),
-                onButtonTap: (buttonIndex, button) =>
-                    _editButton(context, notifier, index, buttonIndex, button),
-              ),
-          ],
+      body: GlassBackdrop(
+        child: SafeArea(
+          child: ReorderableListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+            onReorder: notifier.reorderBlocks,
+            header: _EditorHeader(layout: layout, draft: draft),
+            children: [
+              for (final (index, block) in draft.blocks.indexed)
+                _BlockCard(
+                  key: ObjectKey(block),
+                  index: index,
+                  block: block,
+                  onDelete: () => notifier.removeBlock(index),
+                  onButtonTap: (buttonIndex, button) => _editButton(
+                    context,
+                    notifier,
+                    index,
+                    buttonIndex,
+                    button,
+                  ),
+                  onButtonRemove: (buttonIndex) =>
+                      notifier.removeButton(index, buttonIndex),
+                  onAddButton: () => notifier.addButton(index),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -167,14 +200,23 @@ class _NameFieldState extends ConsumerState<_NameField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: _controller,
-      decoration: InputDecoration(
-        labelText: context.l10n.editorNameFieldLabel,
-        border: const OutlineInputBorder(),
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    return GlassSurface(
+      borderRadius: const BorderRadius.all(Radius.circular(16)),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: TextField(
+        controller: _controller,
+        style: TextStyle(color: foreground),
+        decoration: InputDecoration(
+          labelText: context.l10n.editorNameFieldLabel,
+          labelStyle: TextStyle(color: foreground.withValues(alpha: 0.75)),
+          border: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          enabledBorder: InputBorder.none,
+        ),
+        onChanged: (value) =>
+            ref.read(layoutEditorProvider(widget.layout).notifier).rename(value),
       ),
-      onChanged: (value) =>
-          ref.read(layoutEditorProvider(widget.layout).notifier).rename(value),
     );
   }
 }
@@ -189,26 +231,25 @@ class _PreviewBox extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = Theme.of(context).colorScheme;
     final imagePaths = ref.watch(customImagePathsProvider);
-    return Container(
-      width: double.infinity,
+    return GlassSurface(
+      borderRadius: const BorderRadius.all(Radius.circular(16)),
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: colors.outlineVariant),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: layout.blocks.isEmpty
-          ? Text(
-              context.l10n.editorEmptyPreview,
-              style: TextStyle(color: colors.onSurfaceVariant),
-            )
-          : IgnorePointer(
-              child: StandardRemote(
-                layout: layout,
-                renderer: const ClassicSectionRenderer(),
-                onKeyPressed: (_) {},
-                imagePaths: imagePaths,
+      child: SizedBox(
+        width: double.infinity,
+        child: layout.blocks.isEmpty
+            ? Text(
+                context.l10n.editorEmptyPreview,
+                style: TextStyle(color: colors.onSurfaceVariant),
+              )
+            : IgnorePointer(
+                child: StandardRemote(
+                  layout: layout,
+                  renderer: const ClassicSectionRenderer(),
+                  onKeyPressed: (_) {},
+                  imagePaths: imagePaths,
+                ),
               ),
-            ),
+      ),
     );
   }
 }
@@ -222,19 +263,31 @@ class _BlockCard extends StatelessWidget {
     required this.block,
     required this.onDelete,
     required this.onButtonTap,
+    required this.onButtonRemove,
+    required this.onAddButton,
   });
 
   final int index;
   final LayoutBlock block;
   final VoidCallback onDelete;
   final void Function(int buttonIndex, RemoteButton button) onButtonTap;
+  final void Function(int buttonIndex) onButtonRemove;
+  final VoidCallback onAddButton;
 
   @override
   Widget build(BuildContext context) {
     final buttons = block.buttons;
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: Padding(
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    final variable = _isVariable(block);
+    final canRemove = variable && buttons.length > 1;
+    final canAdd = switch (block) {
+      ButtonRowBlock() => buttons.length < buttonRowMax,
+      GridBlock() => buttons.length < gridMax,
+      _ => false,
+    };
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: GlassSurface(
         padding: const EdgeInsets.fromLTRB(12, 8, 4, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,37 +297,45 @@ class _BlockCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     _blockName(context, block),
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: foreground,
+                        ),
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
+                  color: foreground,
                   tooltip: context.l10n.editorRemoveBlockTooltip,
                   onPressed: onDelete,
                 ),
                 ReorderableDragStartListener(
                   index: index,
-                  child: const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Icon(Icons.drag_handle),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(Icons.drag_handle, color: foreground),
                   ),
                 ),
               ],
             ),
-            if (buttons.isNotEmpty)
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final (i, button) in buttons.indexed)
-                    if (button != null)
-                      _ButtonChip(
-                        button: button,
-                        onTap: () => onButtonTap(i, button),
-                      )
-                    else
-                      const _EmptyCellChip(),
-                ],
+            if (buttons.isNotEmpty || canAdd)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final (i, button) in buttons.indexed)
+                      if (button != null)
+                        _ButtonChip(
+                          button: button,
+                          onTap: () => onButtonTap(i, button),
+                          onRemove: canRemove ? () => onButtonRemove(i) : null,
+                        )
+                      else
+                        const _EmptyCellChip(),
+                    if (canAdd) _AddButtonChip(onTap: onAddButton),
+                  ],
+                ),
               ),
           ],
         ),
@@ -286,10 +347,15 @@ class _BlockCard extends StatelessWidget {
 /// A tappable chip for one button — shows its resolved icon/image and label;
 /// tapping it opens the button editor.
 class _ButtonChip extends ConsumerWidget {
-  const _ButtonChip({required this.button, required this.onTap});
+  const _ButtonChip({
+    required this.button,
+    required this.onTap,
+    this.onRemove,
+  });
 
   final RemoteButton button;
   final VoidCallback onTap;
+  final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -313,10 +379,12 @@ class _ButtonChip extends ConsumerWidget {
       ),
       TextGlyph() => const Icon(Icons.text_fields, size: 18),
     };
-    return ActionChip(
-      avatar: avatar,
-      label: Text(presentation.semanticLabel),
-      onPressed: onTap,
+    return _GlassChip(
+      leading: avatar,
+      label: presentation.semanticLabel,
+      onTap: onTap,
+      onRemove: onRemove,
+      removeTooltip: context.l10n.editorRemoveButtonTooltip,
     );
   }
 }
@@ -327,9 +395,154 @@ class _EmptyCellChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Chip(
-      avatar: const Icon(Icons.add, size: 18),
-      label: Text(context.l10n.editorEmptyCell),
+    return _GlassChip(
+      leading: const Icon(Icons.add, size: 18),
+      label: context.l10n.editorEmptyCell,
+      onTap: null,
+    );
+  }
+}
+
+/// Trailing chip that appends a new button to a variable-length block.
+class _AddButtonChip extends StatelessWidget {
+  const _AddButtonChip({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return _GlassChip(
+      leading: const Icon(Icons.add, size: 18),
+      label: context.l10n.editorAddButtonChip,
+      onTap: onTap,
+    );
+  }
+}
+
+/// A glassmorphic pill — the chip primitive used by every button in a block
+/// card.
+class _GlassChip extends StatelessWidget {
+  const _GlassChip({
+    required this.leading,
+    required this.label,
+    required this.onTap,
+    this.onRemove,
+    this.removeTooltip,
+  });
+
+  final Widget leading;
+  final String label;
+  final VoidCallback? onTap;
+  final VoidCallback? onRemove;
+  final String? removeTooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    return GlassSurface(
+      borderRadius: const BorderRadius.all(Radius.circular(999)),
+      shadow: false,
+      child: Material(
+        color: Colors.transparent,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InkWell(
+              onTap: onTap,
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(999),
+                right: Radius.circular(8),
+              ),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  12,
+                  8,
+                  onRemove == null ? 12 : 8,
+                  8,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconTheme.merge(
+                      data: IconThemeData(color: foreground),
+                      child: leading,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      label,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: foreground,
+                            fontWeight: FontWeight.w500,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (onRemove != null)
+              InkWell(
+                onTap: onRemove,
+                customBorder: const CircleBorder(),
+                child: Tooltip(
+                  message: removeTooltip ?? '',
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(2, 6, 10, 6),
+                    child: Icon(
+                      Icons.close,
+                      size: 16,
+                      color: foreground.withValues(alpha: 0.75),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A glassmorphic stand-in for [FloatingActionButton.extended].
+class _GlassFab extends StatelessWidget {
+  const _GlassFab({
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+  });
+
+  final VoidCallback onPressed;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = Theme.of(context).colorScheme.onSurface;
+    return GlassSurface(
+      borderRadius: const BorderRadius.all(Radius.circular(28)),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: const BorderRadius.all(Radius.circular(28)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: foreground),
+                const SizedBox(width: 10),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: foreground,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

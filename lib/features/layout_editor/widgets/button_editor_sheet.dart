@@ -12,6 +12,7 @@ import '../../../theming/icons/remote_key_l10n.dart';
 import '../../../theming/remote_key.dart';
 import '../../../theming/standard/button_presentation.dart';
 import 'action_picker_sheet.dart';
+import 'glass_sheet.dart';
 import 'icon_picker_sheet.dart';
 
 /// Shows a bottom sheet to edit one button — its action, its icon, and its
@@ -24,10 +25,8 @@ Future<RemoteButton?> showButtonEditorSheet(
   BuildContext context, {
   required RemoteButton button,
 }) {
-  return showModalBottomSheet<RemoteButton>(
+  return showGlassModalBottomSheet<RemoteButton>(
     context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
     builder: (sheetContext) => _ButtonEditorSheet(button: button),
   );
 }
@@ -117,14 +116,9 @@ class _ButtonEditorSheetState extends ConsumerState<_ButtonEditorSheet> {
       TextGlyph() => const Icon(Icons.text_fields),
     };
 
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: ListView(
-          shrinkWrap: true,
-          children: [
+    return ListView(
+      shrinkWrap: true,
+      children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
               child: Text(
@@ -182,9 +176,7 @@ class _ButtonEditorSheetState extends ConsumerState<_ButtonEditorSheet> {
                 child: Text(context.l10n.commonDone),
               ),
             ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 

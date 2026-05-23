@@ -11,6 +11,7 @@ import '../../../theming/icons/icon_catalog.dart';
 import '../../../theming/icons/icon_pack.dart';
 import '../../../theming/icons/remote_key_l10n.dart';
 import '../../../theming/remote_key.dart';
+import 'glass_sheet.dart';
 
 /// Shows a bottom sheet to pick a button's *appearance kind* — the catalogue
 /// default, a `Standard`-pack icon, one of the user's images, or text-only —
@@ -24,10 +25,8 @@ Future<ButtonAppearance?> showIconPickerSheet(
   required RemoteKey action,
   required ButtonAppearance current,
 }) {
-  return showModalBottomSheet<ButtonAppearance>(
+  return showGlassModalBottomSheet<ButtonAppearance>(
     context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
     builder: (sheetContext) =>
         _IconPickerSheet(action: action, current: current),
   );
@@ -52,10 +51,9 @@ class _IconPickerSheet extends ConsumerWidget {
     void choose(ButtonAppearance appearance) =>
         Navigator.of(context).pop(appearance);
 
-    return SafeArea(
-      child: ListView(
-        shrinkWrap: true,
-        children: [
+    return ListView(
+      shrinkWrap: true,
+      children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
             child: Text(
@@ -124,8 +122,7 @@ class _IconPickerSheet extends ConsumerWidget {
               ],
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 

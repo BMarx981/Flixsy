@@ -156,6 +156,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get editorEmptyCell => 'Empty';
 
   @override
+  String get editorRemoveButtonTooltip => 'Remove button';
+
+  @override
+  String get editorAddButtonChip => 'Add';
+
+  @override
   String get blockKindDpad => 'D-pad';
 
   @override

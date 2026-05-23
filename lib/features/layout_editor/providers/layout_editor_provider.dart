@@ -12,6 +12,14 @@ import '../../../theming/remote_key.dart';
 /// resolved in `block_type_sheet.dart` — see `lib/l10n/app_en.arb`.
 enum LayoutBlockKind { dpad, buttonRow, volume, grid, spacer }
 
+/// Maximum number of buttons in a [ButtonRowBlock] — five fits comfortably on
+/// a narrow phone without the buttons shrinking into uselessness.
+const int buttonRowMax = 5;
+
+/// Maximum number of cells in a [GridBlock] — a soft cap that keeps a grid
+/// from growing absurdly tall in the editor.
+const int gridMax = 24;
+
 /// Holds the editable draft of one [RemoteLayout].
 ///
 /// The draft is seeded from the layout the editor was opened with; every
@@ -55,6 +63,50 @@ class LayoutEditorNotifier
     if (buttonIndex < 0 || buttonIndex >= block.buttons.length) return;
     final blocks = [...state.blocks];
     blocks[blockIndex] = block.withButtonAt(buttonIndex, button);
+    state = state.copyWith(blocks: blocks);
+  }
+
+  /// Appends a button to a [ButtonRowBlock] (up to [buttonRowMax]) or a cell
+  /// to a [GridBlock] (up to [gridMax]). Other block kinds are left alone.
+  void addButton(int blockIndex) {
+    if (blockIndex < 0 || blockIndex >= state.blocks.length) return;
+    final block = state.blocks[blockIndex];
+    final next = switch (block) {
+      ButtonRowBlock() when block.buttons.length < buttonRowMax =>
+        ButtonRowBlock(
+          buttons: [...block.buttons, const RemoteButton(action: RemoteKey.ok)],
+        ),
+      GridBlock() when block.cells.length < gridMax => GridBlock(
+        columns: block.columns,
+        cells: [...block.cells, const RemoteButton(action: RemoteKey.ok)],
+      ),
+      _ => null,
+    };
+    if (next == null) return;
+    final blocks = [...state.blocks];
+    blocks[blockIndex] = next;
+    state = state.copyWith(blocks: blocks);
+  }
+
+  /// Removes the button at [buttonIndex] from a [ButtonRowBlock] or a cell
+  /// from a [GridBlock]. Each is kept at a minimum of one entry so the row
+  /// never collapses to nothing; other block kinds are left alone.
+  void removeButton(int blockIndex, int buttonIndex) {
+    if (blockIndex < 0 || blockIndex >= state.blocks.length) return;
+    final block = state.blocks[blockIndex];
+    final next = switch (block) {
+      ButtonRowBlock() when block.buttons.length > 1 => ButtonRowBlock(
+        buttons: [...block.buttons]..removeAt(buttonIndex),
+      ),
+      GridBlock() when block.cells.length > 1 => GridBlock(
+        columns: block.columns,
+        cells: [...block.cells]..removeAt(buttonIndex),
+      ),
+      _ => null,
+    };
+    if (next == null) return;
+    final blocks = [...state.blocks];
+    blocks[blockIndex] = next;
     state = state.copyWith(blocks: blocks);
   }
 

@@ -2,27 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../../../core/extensions/l10n_extensions.dart';
 import '../providers/layout_editor_provider.dart';
+import 'glass_sheet.dart';
 
 /// Shows a bottom sheet of the block types and resolves to the chosen kind —
 /// or `null` if the sheet is dismissed.
 Future<LayoutBlockKind?> showBlockTypeSheet(BuildContext context) {
-  return showModalBottomSheet<LayoutBlockKind>(
+  return showGlassModalBottomSheet<LayoutBlockKind>(
     context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
-    builder: (sheetContext) => SafeArea(
-      child: ListView(
-        shrinkWrap: true,
-        children: [
-          for (final kind in LayoutBlockKind.values)
-            ListTile(
-              leading: Icon(_iconFor(kind)),
-              title: Text(_labelFor(sheetContext, kind)),
-              subtitle: Text(_descriptionFor(sheetContext, kind)),
-              onTap: () => Navigator.of(sheetContext).pop(kind),
-            ),
-        ],
-      ),
+    builder: (sheetContext) => ListView(
+      shrinkWrap: true,
+      children: [
+        for (final kind in LayoutBlockKind.values)
+          ListTile(
+            leading: Icon(_iconFor(kind)),
+            title: Text(_labelFor(sheetContext, kind)),
+            subtitle: Text(_descriptionFor(sheetContext, kind)),
+            onTap: () => Navigator.of(sheetContext).pop(kind),
+          ),
+      ],
     ),
   );
 }

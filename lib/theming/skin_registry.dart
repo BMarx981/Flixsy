@@ -15,6 +15,8 @@ import 'skins/main/main_remote_skin.dart';
 import 'skins/main/main_theme.dart';
 import 'skins/ocean/ocean_remote_skin.dart';
 import 'skins/ocean/ocean_theme.dart';
+import 'skins/punk/punk_remote_skin.dart';
+import 'skins/punk/punk_theme.dart';
 import 'skins/waterfall/waterfall_remote_skin.dart';
 import 'skins/waterfall/waterfall_theme.dart';
 import 'standard/standard_remote.dart';
@@ -28,6 +30,7 @@ enum AppSkin {
   campfire,
   honkytonk,
   cityscape,
+  punk,
 }
 
 class SkinConfig {
@@ -145,6 +148,21 @@ final Map<AppSkin, SkinConfig> skinRegistry = {
     buildRemoteSkin:
         ({required onKeyPressed, required layout, required imagePaths}) =>
             CityscapeRemoteSkin(
+              layout: layout,
+              imagePaths: imagePaths,
+              onKeyPressed: onKeyPressed,
+            ),
+  ),
+  // A graffitied alley: dark brick wall with chipped bricks, two torn band
+  // posters stapled crooked, spray-paint splatters and slow drips, and a
+  // hot-magenta Flixsy sparkle-star tag in the upper-centre. Buttons are
+  // notched-corner stencils that breathe magenta with the shared pulse.
+  AppSkin.punk: SkinConfig(
+    themeData: PunkTheme.themeData,
+    edgeToEdge: true,
+    buildRemoteSkin:
+        ({required onKeyPressed, required layout, required imagePaths}) =>
+            PunkRemoteSkin(
               layout: layout,
               imagePaths: imagePaths,
               onKeyPressed: onKeyPressed,

@@ -25,7 +25,8 @@ const String _registerRequestId = 'register_0';
 /// The WebSocket transport and the SSDP discoverer are both injectable for
 /// testing; pairing keys persist through the `loadCredential` /
 /// `saveCredential` callbacks.
-class WebosConnectChannel implements RemoteChannel, PointerControl {
+class WebosConnectChannel
+    implements RemoteChannel, PointerControl, RemoteTextInput {
   WebosConnectChannel({
     WebSocketConnector connector = defaultWebSocketConnector,
     SsdpDiscoverer? discovery,
@@ -228,12 +229,68 @@ class WebosConnectChannel implements RemoteChannel, PointerControl {
       _connectedDeviceId != null && _pointerSocket != null ? this : null;
 
   // --- RemoteTextInput ----------------------------------------------------
-  // Phase 3 will fold WebosConnectChannel into `implements RemoteTextInput`
-  // and back this getter with the SSAP IME service. Until then, advertising
-  // null keeps the keyboard sheet hidden on webOS without breaking the
-  // RemoteChannel contract.
+  //
+  // webOS's SSAP `com.webos.service.ime` service is the documented path for
+  // pushing text into a focused TV field — `insertText` for text (with a
+  // `replace` flag that doubles as a true one-shot clear), `deleteCharacters`
+  // for backspace, `sendEnterKey` for submit. These all go over the main
+  // SSAP socket, not the pointer-input socket (which only handles button
+  // frames). The IME service is only available while the TV has a text
+  // field focused; when it isn't, the SSAP call returns an `error` response
+  // which we surface as a [CommandFailure].
+
   @override
-  RemoteTextInput? get textInput => null;
+  RemoteTextInput? get textInput => _connectedDeviceId == null ? null : this;
+
+  @override
+  Future<void> sendText(String text) async {
+    if (text.isEmpty) return;
+    await _imeRequest(
+      'ssap://com.webos.service.ime/insertText',
+      payload: {'text': text, 'replace': false},
+    );
+  }
+
+  @override
+  Future<void> sendBackspace() async {
+    await _imeRequest(
+      'ssap://com.webos.service.ime/deleteCharacters',
+      payload: {'count': 1},
+    );
+  }
+
+  @override
+  Future<void> submit() async {
+    await _imeRequest('ssap://com.webos.service.ime/sendEnterKey');
+  }
+
+  @override
+  Future<void> clear({int knownLength = 0}) async {
+    // `insertText` with replace:true wipes the field in one frame on webOS;
+    // [knownLength] is ignored — see RemoteTextInput.clear's dartdoc.
+    await _imeRequest(
+      'ssap://com.webos.service.ime/insertText',
+      payload: {'text': '', 'replace': true},
+    );
+  }
+
+  /// Issues an SSAP IME request, remapping the SSAP-level [ConnectionFailure]
+  /// (which `_sendRequest` uses for handshake errors) to a [CommandFailure]
+  /// so the UI layer treats IME failures the same as any other
+  /// post-connect command failure.
+  Future<Map<String, dynamic>> _imeRequest(
+    String uri, {
+    Map<String, dynamic>? payload,
+  }) async {
+    if (_connectedDeviceId == null) {
+      throw const CommandFailure('Not connected to a webOS device');
+    }
+    try {
+      return await _sendRequest(uri, payload: payload);
+    } on ConnectionFailure catch (failure) {
+      throw CommandFailure(failure.message);
+    }
+  }
 
   /// webOS opens the pointer socket as part of [connectToDevice], so this is
   /// a sanity check rather than a setup call.
@@ -348,14 +405,25 @@ class WebosConnectChannel implements RemoteChannel, PointerControl {
   }
 
   /// Sends an SSAP `request` and completes with the matching response.
-  Future<Map<String, dynamic>> _sendRequest(String uri) async {
+  ///
+  /// [payload] becomes the SSAP `payload` field when non-null — required for
+  /// IME service calls (`insertText`, `deleteCharacters`).
+  Future<Map<String, dynamic>> _sendRequest(
+    String uri, {
+    Map<String, dynamic>? payload,
+  }) async {
     if (_socket == null) {
       throw const CommandFailure('Not connected to a webOS device');
     }
     final id = 'req_${_requestCounter++}';
     final completer = Completer<Map<String, dynamic>>();
     _pendingRequests[id] = completer;
-    _send({'id': id, 'type': 'request', 'uri': uri});
+    _send({
+      'id': id,
+      'type': 'request',
+      'uri': uri,
+      'payload': ?payload,
+    });
     try {
       return await completer.future.timeout(_requestTimeout);
     } on TimeoutException {

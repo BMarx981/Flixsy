@@ -12,8 +12,10 @@ import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/glass_popup_menu.dart';
 import '../../../theming/custom_image_provider.dart';
 import '../../../theming/layout_provider.dart';
+import '../../../theming/remote_key.dart';
 import '../../../theming/skin_provider.dart';
 import '../../../theming/skin_registry.dart';
+import '../../keyboard/widgets/keyboard_sheet.dart';
 import '../providers/remote_control_provider.dart';
 import '../widgets/skin_picker_carousel.dart';
 
@@ -71,6 +73,28 @@ class HomeScreen extends ConsumerWidget {
       }
     });
 
+    // Single dispatch for every button press from any skin or custom layout.
+    // RemoteKey.keyboard is UI-only — it opens the in-app keyboard sheet
+    // (when the connected channel exposes a RemoteTextInput) instead of
+    // going to the wire. Every other key flows through to the channel.
+    void handleKeyPressed(String key) {
+      if (key == RemoteKey.keyboard.code) {
+        final textInput = ref.read(remoteChannelProvider).textInput;
+        if (textInput == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.keyboardNotSupported),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
+        showKeyboardSheet(context, textInput: textInput);
+        return;
+      }
+      ref.read(remoteControlProvider.notifier).sendKey(key);
+    }
+
     final remote = isPicking || !skinConfig.edgeToEdge
         ? SafeArea(
             // Don't extend the safe area into the banner ad — the banner has
@@ -86,17 +110,14 @@ class HomeScreen extends ConsumerWidget {
                   : skinConfig.buildRemoteSkin(
                       layout: layout,
                       imagePaths: imagePaths,
-                      onKeyPressed: (key) => ref
-                          .read(remoteControlProvider.notifier)
-                          .sendKey(key),
+                      onKeyPressed: handleKeyPressed,
                     ),
             ),
           )
         : skinConfig.buildRemoteSkin(
             layout: layout,
             imagePaths: imagePaths,
-            onKeyPressed: (key) =>
-                ref.read(remoteControlProvider.notifier).sendKey(key),
+            onKeyPressed: handleKeyPressed,
           );
 
     return Scaffold(

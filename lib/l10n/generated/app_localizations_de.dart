@@ -329,6 +329,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get remoteKeyKeyboard => 'Keyboard';
 
   @override
+  String get keyboardTitle => 'Type to TV';
+
+  @override
+  String get keyboardHint => 'Focus a text field on your TV, then type here.';
+
+  @override
+  String get keyboardSendEnter => 'Send Enter';
+
+  @override
+  String get keyboardClose => 'Done';
+
+  @override
+  String get keyboardNotSupported => 'This TV doesn\'t support remote typing.';
+
+  @override
   String get iconNameUp => 'Up';
 
   @override

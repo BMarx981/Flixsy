@@ -718,6 +718,36 @@ abstract class AppLocalizations {
   /// **'Keyboard'**
   String get remoteKeyKeyboard;
 
+  /// Title of the keyboard bottom sheet — the surface users open to type into a focused text field on their TV.
+  ///
+  /// In en, this message translates to:
+  /// **'Type to TV'**
+  String get keyboardTitle;
+
+  /// Placeholder hint shown inside the keyboard sheet's text input before the user types anything.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus a text field on your TV, then type here.'**
+  String get keyboardHint;
+
+  /// Button on the keyboard sheet that submits the current TV field (ENTER / IME action done) without closing the sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Enter'**
+  String get keyboardSendEnter;
+
+  /// Button on the keyboard sheet that closes it.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get keyboardClose;
+
+  /// Snackbar shown when the user taps the Keyboard button but the connected TV — or no TV at all — doesn't expose a text-input capability.
+  ///
+  /// In en, this message translates to:
+  /// **'This TV doesn\'t support remote typing.'**
+  String get keyboardNotSupported;
+
   /// Icon name in the Standard pack: up arrow.
   ///
   /// In en, this message translates to:

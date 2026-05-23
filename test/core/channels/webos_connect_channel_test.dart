@@ -442,6 +442,163 @@ void main() {
       );
     });
   });
+
+  group('textInput', () {
+    test('is null until connected, then routes to this', () async {
+      final connector = _FakeConnector();
+      final channel = await _discoveredChannel(connector, _CredentialStore());
+      addTearDown(channel.dispose);
+      expect(channel.textInput, isNull);
+
+      final connecting = channel.connectToDevice(_deviceId);
+      await _completeHandshake(connector);
+      await connecting;
+
+      expect(channel.textInput, same(channel));
+
+      await channel.disconnect();
+      expect(channel.textInput, isNull);
+    });
+
+    test('sendText issues an SSAP insertText with replace:false', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      final main = connector.sockets[0];
+      main.sent.clear();
+
+      final pending = channel.textInput!.sendText('hello world');
+      await _settle();
+      final request = jsonDecode(main.sent.single) as Map;
+      expect(request['type'], 'request');
+      expect(request['uri'], 'ssap://com.webos.service.ime/insertText');
+      expect(request['payload'], {'text': 'hello world', 'replace': false});
+
+      // TV acks; the future resolves.
+      main.receive(jsonEncode({
+        'type': 'response',
+        'id': request['id'],
+        'payload': {'returnValue': true},
+      }));
+      await pending;
+    });
+
+    test('sendText on an empty string is a no-op (no frame)', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      final main = connector.sockets[0];
+      main.sent.clear();
+
+      await channel.textInput!.sendText('');
+
+      expect(main.sent, isEmpty);
+    });
+
+    test('sendBackspace issues deleteCharacters with count:1', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      final main = connector.sockets[0];
+      main.sent.clear();
+
+      final pending = channel.textInput!.sendBackspace();
+      await _settle();
+      final request = jsonDecode(main.sent.single) as Map;
+      expect(
+        request['uri'],
+        'ssap://com.webos.service.ime/deleteCharacters',
+      );
+      expect(request['payload'], {'count': 1});
+
+      main.receive(jsonEncode({
+        'type': 'response',
+        'id': request['id'],
+        'payload': {'returnValue': true},
+      }));
+      await pending;
+    });
+
+    test('submit issues sendEnterKey with no payload', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      final main = connector.sockets[0];
+      main.sent.clear();
+
+      final pending = channel.textInput!.submit();
+      await _settle();
+      final request = jsonDecode(main.sent.single) as Map;
+      expect(request['uri'], 'ssap://com.webos.service.ime/sendEnterKey');
+      expect(request.containsKey('payload'), isFalse);
+
+      main.receive(jsonEncode({
+        'type': 'response',
+        'id': request['id'],
+        'payload': {'returnValue': true},
+      }));
+      await pending;
+    });
+
+    test('clear issues insertText with empty text and replace:true', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      final main = connector.sockets[0];
+      main.sent.clear();
+
+      final pending = channel.textInput!.clear(knownLength: 42);
+      await _settle();
+      final request = jsonDecode(main.sent.single) as Map;
+      expect(request['uri'], 'ssap://com.webos.service.ime/insertText');
+      // knownLength is ignored on webOS — `replace:true` does the wipe.
+      expect(request['payload'], {'text': '', 'replace': true});
+
+      main.receive(jsonEncode({
+        'type': 'response',
+        'id': request['id'],
+        'payload': {'returnValue': true},
+      }));
+      await pending;
+    });
+
+    test(
+      'a TV error response surfaces as CommandFailure, not ConnectionFailure',
+      () async {
+        // The IME service returns an `error` SSAP type when no field is
+        // focused. _sendRequest maps that to ConnectionFailure (handshake
+        // semantics); _imeRequest re-throws as CommandFailure so the UI
+        // treats it as a post-connect command failure.
+        final connector = _FakeConnector();
+        final channel = await _connectedChannel(connector);
+        addTearDown(channel.dispose);
+        final main = connector.sockets[0];
+        main.sent.clear();
+
+        final pending = channel.textInput!.sendText('hi');
+        await _settle();
+        final request = jsonDecode(main.sent.single) as Map;
+        main.receive(jsonEncode({
+          'type': 'error',
+          'id': request['id'],
+          'error': 'no input field focused',
+        }));
+
+        await expectLater(pending, throwsA(isA<CommandFailure>()));
+      },
+    );
+
+    test('sendText throws CommandFailure when not connected', () async {
+      final channel = _channel();
+      addTearDown(channel.dispose);
+      // No connection at all — the public method must reject rather than
+      // try to dereference a null socket.
+      await expectLater(
+        channel.sendText('x'),
+        throwsA(isA<CommandFailure>()),
+      );
+    });
+  });
 }
 
 /// Hands out [_FakeWebSocket]s and records every socket opened.

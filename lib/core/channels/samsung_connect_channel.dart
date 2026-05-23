@@ -23,7 +23,7 @@ const String _samsungChannelPath = '/api/v2/channels/samsung.remote.control';
 ///
 /// The pre-2016 legacy raw-TCP protocol (port 55000) is intentionally not
 /// supported.
-class SamsungConnectChannel implements RemoteChannel {
+class SamsungConnectChannel implements RemoteChannel, RemoteTextInput {
   SamsungConnectChannel({
     WebSocketConnector connector = insecureWebSocketConnector,
     SsdpDiscoverer? discovery,
@@ -185,17 +185,18 @@ class SamsungConnectChannel implements RemoteChannel {
 
   @override
   Future<void> sendKeyCommand(String key) async {
-    if (_connectedDeviceId == null) {
-      throw const CommandFailure('Not connected to a Samsung device');
-    }
-    final socket = _socket;
-    if (socket == null) {
-      throw const CommandFailure('Samsung connection is not open');
-    }
     final keyCode = _keyCodes[key.toUpperCase()];
     if (keyCode == null) {
       throw CommandFailure('Unsupported Samsung key: $key');
     }
+    _sendKey(keyCode);
+  }
+
+  /// Pushes a `SendRemoteKey` frame at the connected socket — the shared
+  /// path for both [sendKeyCommand] and the [RemoteTextInput] backspace /
+  /// clear key bursts.
+  void _sendKey(String keyCode) {
+    final socket = _requireSocket();
     socket.send(
       jsonEncode({
         'method': 'ms.remote.control',
@@ -207,6 +208,19 @@ class SamsungConnectChannel implements RemoteChannel {
         },
       }),
     );
+  }
+
+  /// Returns the open socket, or throws [CommandFailure] if no device is
+  /// currently connected.
+  WebSocketConnection _requireSocket() {
+    if (_connectedDeviceId == null) {
+      throw const CommandFailure('Not connected to a Samsung device');
+    }
+    final socket = _socket;
+    if (socket == null) {
+      throw const CommandFailure('Samsung connection is not open');
+    }
+    return socket;
   }
 
   @override
@@ -223,8 +237,63 @@ class SamsungConnectChannel implements RemoteChannel {
   @override
   PointerControl? get pointerControl => null;
 
+  // --- RemoteTextInput ----------------------------------------------------
+  //
+  // Samsung's `ms.remote.control` channel takes a `SendInputString` frame
+  // that carries the text as base64-utf8 in `DataOfCmd` (one frame for the
+  // whole string — no per-character loop needed). Backspace and submit are
+  // ordinary `SendRemoteKey` frames with `KEY_BACK_MZ` and `KEY_ENTER`.
+  //
+  // Unlike webOS, Samsung **does not ack** these frames. A frame sent when
+  // no TV field is focused is silently dropped — we have no way to surface
+  // that as a [CommandFailure] from the channel layer. The keyboard sheet's
+  // UX simply assumes the user has a field up on the TV.
+  //
+  // Clear: deferred to a real-device smoke test. The plan considered an
+  // empty `SendInputString` (would be a true one-shot wipe if Tizen honours
+  // it), but without hardware confirmation we use the conservative fallback
+  // — a [knownLength] burst of `KEY_BACK_MZ` — so `clear` always actually
+  // deletes something. Revisit once the smoke test runs.
+
   @override
-  RemoteTextInput? get textInput => null;
+  RemoteTextInput? get textInput => _connectedDeviceId == null ? null : this;
+
+  @override
+  Future<void> sendText(String text) async {
+    if (text.isEmpty) return;
+    final socket = _requireSocket();
+    final encoded = base64.encode(utf8.encode(text));
+    socket.send(
+      jsonEncode({
+        'method': 'ms.remote.control',
+        'params': {
+          'Cmd': encoded,
+          'DataOfCmd': 'base64',
+          'TypeOfRemote': 'SendInputString',
+        },
+      }),
+    );
+  }
+
+  @override
+  Future<void> sendBackspace() async {
+    _sendKey('KEY_BACK_MZ');
+  }
+
+  @override
+  Future<void> submit() async {
+    _sendKey('KEY_ENTER');
+  }
+
+  @override
+  Future<void> clear({int knownLength = 0}) async {
+    // Validate connection even on a 0-length clear, so the failure
+    // semantics match the other methods.
+    _requireSocket();
+    for (var i = 0; i < knownLength; i++) {
+      _sendKey('KEY_BACK_MZ');
+    }
+  }
 
   @override
   void dispose() {

@@ -365,6 +365,132 @@ void main() {
       );
     });
   });
+
+  group('textInput', () {
+    test('is null until connected, then routes to this', () async {
+      final connector = _FakeConnector();
+      final channel = await _discoveredChannel(connector, _CredentialStore());
+      addTearDown(channel.dispose);
+      expect(channel.textInput, isNull);
+
+      final connecting = channel.connectToDevice(_deviceId);
+      await _completeConnect(connector, token: 'TOK');
+      await connecting;
+      expect(channel.textInput, same(channel));
+
+      await channel.disconnect();
+      expect(channel.textInput, isNull);
+    });
+
+    test(
+      'sendText sends one SendInputString frame with base64-utf8 text',
+      () async {
+        final connector = _FakeConnector();
+        final channel = await _connectedChannel(connector);
+        addTearDown(channel.dispose);
+        connector.sockets.last.sent.clear();
+
+        await channel.textInput!.sendText('hi 😀');
+
+        final frame = jsonDecode(connector.sockets.last.sent.single) as Map;
+        expect(frame['method'], 'ms.remote.control');
+        final params = frame['params'] as Map;
+        expect(params['TypeOfRemote'], 'SendInputString');
+        expect(params['DataOfCmd'], 'base64');
+        // Cmd carries the base64-utf8 of the text.
+        final decoded = utf8.decode(base64.decode(params['Cmd'] as String));
+        expect(decoded, 'hi 😀');
+      },
+    );
+
+    test('sendText on an empty string is a no-op (no frame)', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      connector.sockets.last.sent.clear();
+
+      await channel.textInput!.sendText('');
+
+      expect(connector.sockets.last.sent, isEmpty);
+    });
+
+    test('sendBackspace sends a SendRemoteKey frame with KEY_BACK_MZ',
+        () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      connector.sockets.last.sent.clear();
+
+      await channel.textInput!.sendBackspace();
+
+      final frame = jsonDecode(connector.sockets.last.sent.single) as Map;
+      final params = frame['params'] as Map;
+      expect(params['TypeOfRemote'], 'SendRemoteKey');
+      expect(params['Cmd'], 'Click');
+      expect(params['DataOfCmd'], 'KEY_BACK_MZ');
+    });
+
+    test('submit sends a SendRemoteKey frame with KEY_ENTER', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      connector.sockets.last.sent.clear();
+
+      await channel.textInput!.submit();
+
+      final frame = jsonDecode(connector.sockets.last.sent.single) as Map;
+      final params = frame['params'] as Map;
+      expect(params['DataOfCmd'], 'KEY_ENTER');
+    });
+
+    test('clear sends exactly knownLength KEY_BACK_MZ frames', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      connector.sockets.last.sent.clear();
+
+      await channel.textInput!.clear(knownLength: 3);
+
+      final codes = connector.sockets.last.sent
+          .map((s) => (jsonDecode(s) as Map)['params']['DataOfCmd'])
+          .toList();
+      expect(codes, ['KEY_BACK_MZ', 'KEY_BACK_MZ', 'KEY_BACK_MZ']);
+    });
+
+    test('clear with knownLength: 0 sends no frames', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      connector.sockets.last.sent.clear();
+
+      await channel.textInput!.clear();
+
+      expect(connector.sockets.last.sent, isEmpty);
+    });
+
+    test('sendText throws CommandFailure when not connected', () async {
+      final channel = _channel();
+      addTearDown(channel.dispose);
+
+      await expectLater(
+        channel.sendText('x'),
+        throwsA(isA<CommandFailure>()),
+      );
+    });
+
+    test(
+      'clear throws CommandFailure when not connected, even with knownLength: 0',
+      () async {
+        final channel = _channel();
+        addTearDown(channel.dispose);
+
+        await expectLater(
+          channel.clear(),
+          throwsA(isA<CommandFailure>()),
+        );
+      },
+    );
+  });
 }
 
 /// Hands out [_FakeWebSocket]s and records every URL a connect was attempted

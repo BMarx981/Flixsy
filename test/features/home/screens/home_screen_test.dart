@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flixsy/analytics/analytics_service.dart';
+import 'package:flixsy/core/channels/pointer_control.dart';
 import 'package:flixsy/core/channels/remote_channel.dart';
 import 'package:flixsy/data/models/layout/built_in_layouts.dart';
 import 'package:flixsy/data/models/layout/remote_layout.dart';
@@ -364,6 +365,9 @@ class _FakeRemoteChannel implements RemoteChannel {
 
   @override
   Future<List<Map<String, dynamic>>> getDiscoveredDevices() async => [];
+
+  @override
+  PointerControl? get pointerControl => null;
 
   @override
   void dispose() => _events.close();

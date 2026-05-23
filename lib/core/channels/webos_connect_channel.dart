@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import '../errors/connect_failure.dart';
+import 'pointer_control.dart';
 import 'remote_channel.dart';
 import 'ssdp_discovery.dart';
 import 'web_socket_connection.dart';
@@ -23,7 +24,7 @@ const String _registerRequestId = 'register_0';
 /// The WebSocket transport and the SSDP discoverer are both injectable for
 /// testing; pairing keys persist through the `loadCredential` /
 /// `saveCredential` callbacks.
-class WebosConnectChannel implements RemoteChannel {
+class WebosConnectChannel implements RemoteChannel, PointerControl {
   WebosConnectChannel({
     WebSocketConnector connector = defaultWebSocketConnector,
     SsdpDiscoverer? discovery,
@@ -217,6 +218,48 @@ class WebosConnectChannel implements RemoteChannel {
     throw const ConnectionFailure(
       'webOS pairing is confirmed on the TV, not by code',
     );
+  }
+
+  // --- PointerControl -----------------------------------------------------
+
+  @override
+  PointerControl? get pointerControl =>
+      _connectedDeviceId != null && _pointerSocket != null ? this : null;
+
+  /// webOS opens the pointer socket as part of [connectToDevice], so this is
+  /// a sanity check rather than a setup call.
+  @override
+  Future<void> connectPointer() async {
+    if (_connectedDeviceId == null || _pointerSocket == null) {
+      throw const CommandFailure('webOS pointer socket is not open');
+    }
+  }
+
+  @override
+  Future<void> sendPointerMove(double dx, double dy) async {
+    final pointer = _pointerSocket;
+    if (_connectedDeviceId == null || pointer == null) {
+      throw const CommandFailure('webOS pointer socket is not open');
+    }
+    // webOS pointer-input frame format: integer deltas, `down:0` for a move.
+    pointer.send(
+      'type:move\ndx:${dx.round()}\ndy:${dy.round()}\ndown:0\n\n',
+    );
+  }
+
+  @override
+  Future<void> sendPointerClick() async {
+    final pointer = _pointerSocket;
+    if (_connectedDeviceId == null || pointer == null) {
+      throw const CommandFailure('webOS pointer socket is not open');
+    }
+    pointer.send('type:click\n\n');
+  }
+
+  @override
+  Future<void> disconnectPointer() async {
+    // The pointer socket is owned by the connection itself — torn down by
+    // [disconnect]. Nothing session-scoped to release here.
   }
 
   @override

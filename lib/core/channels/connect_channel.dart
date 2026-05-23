@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../errors/connect_failure.dart';
+import 'pointer_control.dart';
 import 'remote_channel.dart';
 
 const _methodChannel = MethodChannel('com.flixsy.app/connect_sdk');
@@ -60,6 +61,9 @@ class ConnectChannel implements RemoteChannel {
       throw _mapError(e);
     }
   }
+
+  @override
+  PointerControl? get pointerControl => null;
 
   @override
   void dispose() {

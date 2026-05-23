@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import '../errors/connect_failure.dart';
 import 'android_tv_crypto.dart';
 import 'mdns_discovery.dart';
+import 'pointer_control.dart';
 import 'proto_codec.dart';
 import 'proto_socket.dart';
 import 'remote_channel.dart';
@@ -311,6 +312,9 @@ class AndroidTvConnectChannel implements RemoteChannel {
   @override
   Future<List<Map<String, dynamic>>> getDiscoveredDevices() async =>
       _devices.values.map((device) => device.toMap()).toList(growable: false);
+
+  @override
+  PointerControl? get pointerControl => null;
 
   @override
   void dispose() {

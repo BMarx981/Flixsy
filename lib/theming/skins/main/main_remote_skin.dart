@@ -19,6 +19,8 @@ import '../../remote_skin.dart';
 ///
 /// The logo's 4-point sparkle star points exactly N/S/E/W; the points
 /// converge at the centre. Each region carries the [RemoteKey] it sends.
+enum _SpinAxis { none, vertical, horizontal }
+
 enum _LogoRegion {
   up(RemoteKey.up), // North point
   down(RemoteKey.down), // South point
@@ -68,25 +70,25 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
   /// The region currently held down, used only for press feedback.
   _LogoRegion? _active;
 
-  // Rotation state — driven by pan gestures, eased back to 0 after release.
-  double _visualRotation = 0;
+  // Spin state — see `SpinnableStarDpad` for the full rationale behind the
+  // axis-lock + linear-drag design. This skin owns its own copy because its
+  // hit-test geometry and highlight overlay are bound to the logo SVG.
+  _SpinAxis _axis = _SpinAxis.none;
+  double _axisPixels = 0;
+  double _lastTickPixels = 0;
   double _resetFrom = 0;
-  double _accumulatedDelta = 0;
-  double? _spinLastAngle;
+  double _resetVisual = 0;
+  bool _isResetting = false;
   Offset _panStart = Offset.zero;
-  double _panDistanceSq = 0;
+  Offset _axisLockOrigin = Offset.zero;
   bool _isSpinning = false;
   Timer? _resetTimer;
 
+  double get _visualRotation =>
+      _axisPixels * SpinnableStarDpad.tickAngle / SpinnableStarDpad.pixelsPerTick;
+
   void _clearActive() {
     if (_active != null) setState(() => _active = null);
-  }
-
-  double _wrap(double a) {
-    var x = a % (2 * math.pi);
-    if (x > math.pi) x -= 2 * math.pi;
-    if (x <= -math.pi) x += 2 * math.pi;
-    return x;
   }
 
   void _cancelReset() {
@@ -101,8 +103,12 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
   }
 
   void _startReset() {
-    _resetFrom = _wrap(_visualRotation);
-    setState(() => _visualRotation = _resetFrom);
+    _resetFrom = _visualRotation;
+    _axisPixels = 0;
+    _lastTickPixels = 0;
+    _resetVisual = _resetFrom;
+    _isResetting = true;
+    setState(() {});
     _resetController
       ..value = 0
       ..forward();
@@ -110,12 +116,13 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
 
   void _onResetTick() {
     final t = Curves.easeOutCubic.transform(_resetController.value);
-    setState(() => _visualRotation = _resetFrom * (1 - t));
-  }
-
-  double _angleFromCenter(Offset local, double side) {
-    final v = local - Offset(side / 2, side / 2);
-    return math.atan2(v.dy, v.dx);
+    setState(() {
+      _resetVisual = _resetFrom * (1 - t);
+      if (_resetController.isCompleted) {
+        _resetVisual = 0;
+        _isResetting = false;
+      }
+    });
   }
 
   // Pan handlers cover *both* the arm-tap (a short pan that never crosses
@@ -125,50 +132,62 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
   void _onPanStart(DragStartDetails details, double side) {
     _cancelReset();
     _panStart = details.localPosition;
-    _panDistanceSq = 0;
+    _axisLockOrigin = details.localPosition;
+    _axis = _SpinAxis.none;
+    _axisPixels = 0;
+    _lastTickPixels = 0;
+    _resetVisual = 0;
+    _isResetting = false;
     _isSpinning = false;
-    _spinLastAngle = _angleFromCenter(details.localPosition, side);
-    _accumulatedDelta = 0;
     final region = _hitTest(details.localPosition, side);
     setState(() => _active = region);
   }
 
-  void _onPanUpdate(DragUpdateDetails details, double side) {
+  void _onPanUpdate(DragUpdateDetails details, double _) {
     final local = details.localPosition;
-    _panDistanceSq = (local - _panStart).distanceSquared;
 
-    final current = _angleFromCenter(local, side);
-    final last = _spinLastAngle;
-    if (last == null) {
-      _spinLastAngle = current;
-      return;
-    }
-    var delta = current - last;
-    if (delta > math.pi) delta -= 2 * math.pi;
-    if (delta < -math.pi) delta += 2 * math.pi;
-    _spinLastAngle = current;
-
-    if (!_isSpinning &&
-        _panDistanceSq >
-            SpinnableStarDpad.tapSlop * SpinnableStarDpad.tapSlop) {
+    if (_axis == _SpinAxis.none) {
+      final fromStart = local - _panStart;
+      if (fromStart.distanceSquared <
+          SpinnableStarDpad.tapSlop * SpinnableStarDpad.tapSlop) {
+        return;
+      }
+      _axis = fromStart.dx.abs() >= fromStart.dy.abs()
+          ? _SpinAxis.horizontal
+          : _SpinAxis.vertical;
+      _axisLockOrigin = local;
+      _axisPixels = 0;
+      _lastTickPixels = 0;
       _isSpinning = true;
-      // Crossed the spin threshold — the pressed-arm highlight no longer
-      // matches what the gesture will do, so drop it.
+      // Lock-in: the highlight on the arm we started over no longer matches
+      // what the gesture will do, so clear it.
       if (_active != null) _active = null;
     }
 
-    _accumulatedDelta += delta;
-    setState(() => _visualRotation += delta);
+    final fromLock = local - _axisLockOrigin;
+    _axisPixels = _axis == _SpinAxis.vertical ? fromLock.dy : fromLock.dx;
+    setState(() {});
 
-    while (_accumulatedDelta >= SpinnableStarDpad.tickAngle) {
-      _accumulatedDelta -= SpinnableStarDpad.tickAngle;
+    // Map ticks to this skin's east/west semantics: horizontal scroll is
+    // track skip (previous/next), not arrow left/right — matches the arm
+    // tap mapping on the same star points.
+    while (_axisPixels - _lastTickPixels >= SpinnableStarDpad.pixelsPerTick) {
+      _lastTickPixels += SpinnableStarDpad.pixelsPerTick;
       HapticFeedback.selectionClick();
-      widget.onKeyPressed(RemoteKey.up.code);
+      widget.onKeyPressed(
+        _axis == _SpinAxis.vertical
+            ? RemoteKey.down.code
+            : RemoteKey.next.code,
+      );
     }
-    while (_accumulatedDelta <= -SpinnableStarDpad.tickAngle) {
-      _accumulatedDelta += SpinnableStarDpad.tickAngle;
+    while (_lastTickPixels - _axisPixels >= SpinnableStarDpad.pixelsPerTick) {
+      _lastTickPixels -= SpinnableStarDpad.pixelsPerTick;
       HapticFeedback.selectionClick();
-      widget.onKeyPressed(RemoteKey.down.code);
+      widget.onKeyPressed(
+        _axis == _SpinAxis.vertical
+            ? RemoteKey.up.code
+            : RemoteKey.previous.code,
+      );
     }
   }
 
@@ -181,16 +200,28 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
       }
     }
     setState(() => _active = null);
-    _spinLastAngle = null;
     _isSpinning = false;
     _scheduleReset();
   }
 
   void _onPanCancel() {
     _clearActive();
-    _spinLastAngle = null;
     _isSpinning = false;
     _scheduleReset();
+  }
+
+  Matrix4 _tumbleMatrix() {
+    final angle = _isResetting ? _resetVisual : _visualRotation;
+    final m = Matrix4.identity()..setEntry(3, 2, 0.001);
+    switch (_axis) {
+      case _SpinAxis.vertical:
+        m.rotateX(angle);
+      case _SpinAxis.horizontal:
+        m.rotateY(angle);
+      case _SpinAxis.none:
+        break;
+    }
+    return m;
   }
 
   @override
@@ -374,8 +405,9 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
                       },
                     ),
               },
-              child: Transform.rotate(
-                angle: _visualRotation,
+              child: Transform(
+                alignment: Alignment.center,
+                transform: _tumbleMatrix(),
                 child: AnimatedScale(
                   scale: _active == null ? 1.0 : 0.97,
                   duration: const Duration(milliseconds: 90),

@@ -1,4 +1,5 @@
 import '../errors/connect_failure.dart';
+import 'pointer_control.dart';
 
 /// The platform-agnostic contract for discovering and controlling a TV.
 ///
@@ -78,4 +79,10 @@ abstract interface class RemoteChannel {
   ///
   /// Wire this into the owning provider's `ref.onDispose`.
   void dispose();
+
+  /// Free-cursor / accelerometer-pointer capability, if the currently
+  /// connected device supports it. Returns `null` otherwise — widgets check
+  /// this nullability to decide whether to surface the LG-style pointer
+  /// gesture (long-press OK on the D-pad).
+  PointerControl? get pointerControl => null;
 }

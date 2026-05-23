@@ -16,8 +16,9 @@ import 'flixsy_logo.dart';
 /// scroll-wheel spin into one surface.
 ///
 /// The gesture mode is locked at touch-down by the start position:
-///   * inside the centre disc → spin / OK (a still touch fires OK, a circular
-///     motion fires up/down ticks)
+///   * inside the centre disc → spin / OK (a still touch fires OK, a drag
+///     tumbles the wheel and emits scroll ticks along the drag's dominant
+///     axis: vertical drag → up/down, horizontal drag → left/right)
 ///   * inside an arm sector  → tap-only (no spin is possible; dragging off
 ///     the arm cancels the press)
 ///
@@ -34,6 +35,10 @@ class SpinnableStarDpad extends StatefulWidget {
     required this.onOk,
     required this.onScrollUp,
     required this.onScrollDown,
+    required this.onScrollLeft,
+    required this.onScrollRight,
+    this.onOkLongPress,
+    this.onOkLongPressEnd,
   });
 
   /// Side length of the (square) D-pad in logical pixels.
@@ -45,17 +50,41 @@ class SpinnableStarDpad extends StatefulWidget {
   final VoidCallback onRight;
   final VoidCallback onOk;
 
-  /// Fired once per clockwise tick of a spin gesture.
+  /// Fired once per tick of an upward scroll-wheel drag.
   final VoidCallback onScrollUp;
 
-  /// Fired once per counter-clockwise tick of a spin gesture.
+  /// Fired once per tick of a downward scroll-wheel drag.
   final VoidCallback onScrollDown;
 
+  /// Fired once per tick of a leftward scroll-wheel drag.
+  final VoidCallback onScrollLeft;
+
+  /// Fired once per tick of a rightward scroll-wheel drag.
+  final VoidCallback onScrollRight;
+
+  /// Fired when the user holds the centre disc past [longPressDuration]
+  /// without moving. Skin callsites pass non-null only when the connected TV
+  /// advertises pointer support, so a null value disables the gesture.
+  final VoidCallback? onOkLongPress;
+
+  /// Fired when the long-press session ends — either the finger lifts or the
+  /// gesture is cancelled. Pairs 1:1 with [onOkLongPress].
+  final VoidCallback? onOkLongPressEnd;
+
+  /// Hold time on the centre disc before [onOkLongPress] fires.
+  static const Duration longPressDuration = Duration(milliseconds: 500);
+
   /// Rotation between consecutive haptic ticks (~22° — iOS-picker feel).
+  /// Applied to the visual tumble; one tick of drag = this much rotation.
   static const double tickAngle = 22 * math.pi / 180;
 
+  /// Finger travel along the locked axis between consecutive haptic ticks.
+  /// Tuned so a comfortable thumb-flick across the disc fires a few ticks.
+  static const double pixelsPerTick = 32;
+
   /// Movement (px) past which a centre touch starts spinning rather than
-  /// counting as an OK tap.
+  /// counting as an OK tap. Also the threshold at which the gesture's
+  /// dominant axis is locked.
   static const double tapSlop = 10;
 
   /// Idle time after the finger lifts before the wheel eases back upright.
@@ -90,6 +119,8 @@ enum _Region { up, down, left, right, ok }
 
 enum _GestureMode { idle, spin, tap, cancelled }
 
+enum _SpinAxis { none, vertical, horizontal }
+
 double _axisDegFor(_Region r) => switch (r) {
   _Region.up => -90,
   _Region.down => 90,
@@ -107,28 +138,34 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
 
   _Region? _active;
   _GestureMode _mode = _GestureMode.idle;
-  double _visualRotation = 0;
-  double _resetFrom = 0;
-  double _accumulatedDelta = 0;
-  double? _spinLastAngle;
+  _SpinAxis _axis = _SpinAxis.none;
+  // Signed pixel offset of the current finger position relative to where the
+  // axis lock latched, measured along the locked axis. Drives both the
+  // visual tumble (radians = pixels * tickAngle / pixelsPerTick) and the
+  // tick emitter.
+  double _axisPixels = 0;
+  // Pixel value at which the last haptic tick fired. Ticks fire whenever
+  // `_axisPixels` crosses another `pixelsPerTick` increment past this anchor.
+  double _lastTickPixels = 0;
   Offset _panStart = Offset.zero;
-  double _panDistanceSq = 0;
+  Offset _axisLockOrigin = Offset.zero;
   bool _hasFiredTick = false;
   Timer? _resetTimer;
+  Timer? _longPressTimer;
+  bool _inLongPress = false;
 
   Offset get _center => Offset(widget.size / 2, widget.size / 2);
 
-  double _angleAt(Offset local) {
-    final v = local - _center;
-    return math.atan2(v.dy, v.dx);
-  }
+  // Current visual rotation, in radians, derived from `_axisPixels` so the
+  // wheel and the tick emitter share a single source of truth. Used only
+  // while a spin is in progress; the reset animation uses `_resetVisual`.
+  double get _visualRotation =>
+      _axisPixels * SpinnableStarDpad.tickAngle / SpinnableStarDpad.pixelsPerTick;
 
-  double _wrap(double a) {
-    var x = a % (2 * math.pi);
-    if (x > math.pi) x -= 2 * math.pi;
-    if (x <= -math.pi) x += 2 * math.pi;
-    return x;
-  }
+  // Eased rotation written by the reset animation. Independent of
+  // `_axisPixels` so we can fade out a tumble without snapping the source.
+  double _resetVisual = 0;
+  bool _isResetting = false;
 
   void _cancelReset() {
     _resetTimer?.cancel();
@@ -141,9 +178,17 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
     _resetTimer = Timer(SpinnableStarDpad.resetDelay, _startReset);
   }
 
+  double _resetFrom = 0;
+
   void _startReset() {
-    _resetFrom = _wrap(_visualRotation);
-    setState(() => _visualRotation = _resetFrom);
+    // Freeze the live spin value, hand it to the reset animation, and clear
+    // the source so a new pan starts from zero.
+    _resetFrom = _visualRotation;
+    _axisPixels = 0;
+    _lastTickPixels = 0;
+    _isResetting = true;
+    _resetVisual = _resetFrom;
+    setState(() {});
     _resetController
       ..value = 0
       ..forward();
@@ -151,7 +196,13 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
 
   void _onResetTick() {
     final t = Curves.easeOutCubic.transform(_resetController.value);
-    setState(() => _visualRotation = _resetFrom * (1 - t));
+    setState(() {
+      _resetVisual = _resetFrom * (1 - t);
+      if (_resetController.isCompleted) {
+        _resetVisual = 0;
+        _isResetting = false;
+      }
+    });
   }
 
   bool _withinWedge(double deg, double axisDeg) {
@@ -197,10 +248,15 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   void _onPanStart(DragStartDetails details) {
     _cancelReset();
     _panStart = details.localPosition;
-    _panDistanceSq = 0;
+    _axisLockOrigin = details.localPosition;
     _hasFiredTick = false;
-    _accumulatedDelta = 0;
-    _spinLastAngle = null;
+    _axis = _SpinAxis.none;
+    _axisPixels = 0;
+    _lastTickPixels = 0;
+    // Reset visual is also cleared so we don't blend a half-finished ease
+    // into a fresh tumble.
+    _resetVisual = 0;
+    _isResetting = false;
 
     final region = _hitTest(details.localPosition);
     if (region == null) {
@@ -210,16 +266,39 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
     }
     if (region == _Region.ok) {
       _mode = _GestureMode.spin;
-      _spinLastAngle = _angleAt(details.localPosition);
+      if (widget.onOkLongPress != null) {
+        _longPressTimer = Timer(
+          SpinnableStarDpad.longPressDuration,
+          _firePointerLongPress,
+        );
+      }
     } else {
       _mode = _GestureMode.tap;
     }
     setState(() => _active = region);
   }
 
+  void _firePointerLongPress() {
+    _longPressTimer = null;
+    if (_mode != _GestureMode.spin) return;
+    _inLongPress = true;
+    HapticFeedback.mediumImpact();
+    widget.onOkLongPress?.call();
+  }
+
+  void _cancelLongPressTimer() {
+    _longPressTimer?.cancel();
+    _longPressTimer = null;
+  }
+
+  void _endLongPressIfActive() {
+    if (!_inLongPress) return;
+    _inLongPress = false;
+    widget.onOkLongPressEnd?.call();
+  }
+
   void _onPanUpdate(DragUpdateDetails details) {
     final local = details.localPosition;
-    _panDistanceSq = (local - _panStart).distanceSquared;
 
     switch (_mode) {
       case _GestureMode.spin:
@@ -239,50 +318,74 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   }
 
   void _updateSpin(Offset local) {
-    final current = _angleAt(local);
-    final last = _spinLastAngle;
-    if (last == null) {
-      _spinLastAngle = current;
-      return;
-    }
-    var delta = current - last;
-    if (delta > math.pi) delta -= 2 * math.pi;
-    if (delta < -math.pi) delta += 2 * math.pi;
-    _spinLastAngle = current;
+    // While aiming the pointer the user keeps a finger on the centre but the
+    // phone itself does the moving — suppress wheel rotation and tick haptics
+    // so finger jitter doesn't fire scroll events at the TV.
+    if (_inLongPress) return;
 
-    // Once the user has clearly moved (linear distance or any tick fired),
-    // suppress the OK fallback so a circular flick doesn't fire OK on release.
-    if (!_hasFiredTick &&
-        _panDistanceSq >
-            SpinnableStarDpad.tapSlop * SpinnableStarDpad.tapSlop) {
+    // Lock the spin axis at first significant motion, picking whichever
+    // direction the user moved farther in. After lock, only motion along
+    // that axis contributes — sideways drift is ignored, so the wheel feels
+    // like a track instead of a free puck.
+    if (_axis == _SpinAxis.none) {
+      final fromStart = local - _panStart;
+      if (fromStart.distanceSquared <
+          SpinnableStarDpad.tapSlop * SpinnableStarDpad.tapSlop) {
+        return;
+      }
+      _axis = fromStart.dx.abs() >= fromStart.dy.abs()
+          ? _SpinAxis.horizontal
+          : _SpinAxis.vertical;
+      // Anchor pixel travel to where the lock latched, not to the touch-down
+      // point — otherwise the first tick fires after only a couple of pixels
+      // of post-lock motion (the slop itself counts toward the tick).
+      _axisLockOrigin = local;
+      _axisPixels = 0;
+      _lastTickPixels = 0;
       _hasFiredTick = true;
       if (_active != null) _active = null;
+      // A real spin started before the long-press timer fired — cancel it so
+      // the user can't accidentally enter pointer mode mid-flick.
+      _cancelLongPressTimer();
     }
 
-    _accumulatedDelta += delta;
-    setState(() => _visualRotation += delta);
+    final fromLock = local - _axisLockOrigin;
+    _axisPixels = _axis == _SpinAxis.vertical ? fromLock.dy : fromLock.dx;
+    setState(() {});
 
-    while (_accumulatedDelta >= SpinnableStarDpad.tickAngle) {
-      _accumulatedDelta -= SpinnableStarDpad.tickAngle;
+    // Emit one tick for every `pixelsPerTick` of travel away from the last
+    // anchor, in either direction. Positive vertical = down-drag = onScrollDown;
+    // positive horizontal = right-drag = onScrollRight.
+    while (_axisPixels - _lastTickPixels >= SpinnableStarDpad.pixelsPerTick) {
+      _lastTickPixels += SpinnableStarDpad.pixelsPerTick;
       HapticFeedback.selectionClick();
-      _hasFiredTick = true;
-      if (_active != null) _active = null;
-      widget.onScrollUp();
+      if (_axis == _SpinAxis.vertical) {
+        widget.onScrollDown();
+      } else {
+        widget.onScrollRight();
+      }
     }
-    while (_accumulatedDelta <= -SpinnableStarDpad.tickAngle) {
-      _accumulatedDelta += SpinnableStarDpad.tickAngle;
+    while (_lastTickPixels - _axisPixels >= SpinnableStarDpad.pixelsPerTick) {
+      _lastTickPixels -= SpinnableStarDpad.pixelsPerTick;
       HapticFeedback.selectionClick();
-      _hasFiredTick = true;
-      if (_active != null) _active = null;
-      widget.onScrollDown();
+      if (_axis == _SpinAxis.vertical) {
+        widget.onScrollUp();
+      } else {
+        widget.onScrollLeft();
+      }
     }
   }
 
   void _onPanEnd(DragEndDetails _) {
+    _cancelLongPressTimer();
     switch (_mode) {
       case _GestureMode.spin:
-        // Centre touch with no real motion → OK tap.
-        if (!_hasFiredTick && _active == _Region.ok) {
+        if (_inLongPress) {
+          // Lifting after a pointer session: never fire OK as a tap — the
+          // user was aiming, not clicking the centre.
+          _endLongPressIfActive();
+        } else if (!_hasFiredTick && _active == _Region.ok) {
+          // Centre touch with no real motion → OK tap.
           _fire(_Region.ok);
         }
         _scheduleReset();
@@ -294,15 +397,15 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
         break;
     }
     setState(() => _active = null);
-    _spinLastAngle = null;
     _hasFiredTick = false;
     _mode = _GestureMode.idle;
   }
 
   void _onPanCancel() {
+    _cancelLongPressTimer();
+    _endLongPressIfActive();
     if (_mode == _GestureMode.spin) _scheduleReset();
     if (_active != null) setState(() => _active = null);
-    _spinLastAngle = null;
     _hasFiredTick = false;
     _mode = _GestureMode.idle;
   }
@@ -310,8 +413,28 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   @override
   void dispose() {
     _resetTimer?.cancel();
+    _longPressTimer?.cancel();
     _resetController.dispose();
     super.dispose();
+  }
+
+  // The 3D tumble matrix: perspective + a rotation around whichever axis the
+  // current spin is locked to. While resetting, we use the eased value and
+  // the last-active axis so the wheel rolls back along the same path it
+  // came in on (a vertical drag eases back through X-rotation, not Z).
+  Matrix4 _tumbleMatrix() {
+    final angle = _isResetting ? _resetVisual : _visualRotation;
+    final m = Matrix4.identity()..setEntry(3, 2, 0.001);
+    switch (_axis) {
+      case _SpinAxis.vertical:
+        m.rotateX(angle);
+      case _SpinAxis.horizontal:
+        m.rotateY(angle);
+      case _SpinAxis.none:
+        // No spin in progress and nothing to ease back; matrix stays identity.
+        break;
+    }
+    return m;
   }
 
   @override
@@ -391,14 +514,19 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
                   color: chevronColor,
                 ),
               ),
-              // Centre spin disc — the only thing that rotates.
+              // Centre spin disc — the only thing that rotates. The tumble
+              // is 3D: a vertical drag rolls the wheel forward/back around
+              // the X axis; a horizontal drag spins it around the Y axis.
+              // A perspective entry on the matrix gives the rotation depth so
+              // it reads as a barrel turning instead of a squashed ellipse.
               Center(
                 child: AnimatedScale(
                   scale: _active == _Region.ok ? 0.95 : 1.0,
                   duration: const Duration(milliseconds: 90),
                   curve: Curves.easeOut,
-                  child: Transform.rotate(
-                    angle: _visualRotation,
+                  child: Transform(
+                    alignment: Alignment.center,
+                    transform: _tumbleMatrix(),
                     child: FlixsyLogo(
                       size: discDiameter,
                       discColor: discColor,

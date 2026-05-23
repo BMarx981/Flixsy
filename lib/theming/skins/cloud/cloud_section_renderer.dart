@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../core/extensions/l10n_extensions.dart';
 import '../../../data/models/layout/layout_block.dart';
 import '../../../data/models/layout/remote_button.dart';
-import '../../../shared/widgets/spinnable_star_dpad.dart';
+import '../../../shared/widgets/pointer_aware_star_dpad.dart';
 import '../../icons/remote_key_l10n.dart';
 import '../../remote_key.dart';
 import '../../skin_tokens.dart';
@@ -44,7 +44,7 @@ class CloudSectionRenderer implements SectionRenderer {
         ),
         Padding(
           padding: EdgeInsets.all(gap / 2),
-          child: SpinnableStarDpad(
+          child: PointerAwareStarDpad(
             size: 200,
             onUp: () => onKey(block.up.action),
             onDown: () => onKey(block.down.action),
@@ -53,6 +53,8 @@ class CloudSectionRenderer implements SectionRenderer {
             onOk: () => onKey(block.ok.action),
             onScrollUp: () => onKey(RemoteKey.up),
             onScrollDown: () => onKey(RemoteKey.down),
+            onScrollLeft: () => onKey(RemoteKey.left),
+            onScrollRight: () => onKey(RemoteKey.right),
           ),
         ),
         Column(

@@ -54,6 +54,9 @@ dependencies:
   basic_utils: ^5.8.2
   uuid: ^4.5.3
 
+  # Gyroscope stream for the LG webOS free-cursor pointer (long-press OK)
+  sensors_plus: ^6.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

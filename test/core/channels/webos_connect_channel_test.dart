@@ -300,6 +300,68 @@ void main() {
     });
   });
 
+  group('pointerControl', () {
+    test('is null until the pointer socket is open', () async {
+      final channel = _channel();
+      addTearDown(channel.dispose);
+
+      expect(channel.pointerControl, isNull);
+    });
+
+    test('exposes the channel once connected', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+
+      expect(channel.pointerControl, same(channel));
+    });
+
+    test('sendPointerMove writes a webOS move frame', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      final pointer = channel.pointerControl!;
+
+      await pointer.sendPointerMove(12.4, -7.6);
+
+      // Last entry on the pointer socket is the move frame — first is the
+      // dummy receiver from the handshake.
+      expect(
+        connector.pointerSocket.sent.last,
+        'type:move\ndx:12\ndy:-8\ndown:0\n\n',
+      );
+    });
+
+    test('sendPointerClick writes a webOS click frame', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      final pointer = channel.pointerControl!;
+
+      await pointer.sendPointerClick();
+
+      expect(connector.pointerSocket.sent.last, 'type:click\n\n');
+    });
+
+    test('throws CommandFailure after disconnect', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      final pointer = channel.pointerControl!;
+
+      await channel.disconnect();
+
+      await expectLater(
+        pointer.sendPointerMove(1, 1),
+        throwsA(isA<CommandFailure>()),
+      );
+      await expectLater(
+        pointer.sendPointerClick(),
+        throwsA(isA<CommandFailure>()),
+      );
+    });
+  });
+
   group('disconnect', () {
     test(
       'emits disconnected, closes sockets, and blocks further keys',

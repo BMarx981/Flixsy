@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flixsy/core/channels/pointer_control.dart';
 import 'package:flixsy/core/channels/remote_channel.dart';
 import 'package:flixsy/features/device_discovery/providers/device_discovery_provider.dart';
 import 'package:flixsy/shared/providers/app_providers.dart';
@@ -116,6 +117,9 @@ class _FakeChannel implements RemoteChannel {
 
   @override
   Future<List<Map<String, dynamic>>> getDiscoveredDevices() async => [];
+
+  @override
+  PointerControl? get pointerControl => null;
 
   @override
   void dispose() => _events.close();

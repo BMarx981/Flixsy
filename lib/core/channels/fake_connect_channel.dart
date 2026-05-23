@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import 'pointer_control.dart';
 import 'remote_channel.dart';
 
 /// In-memory [RemoteChannel] that simulates TVs on the local network, so the
@@ -80,6 +81,9 @@ class FakeConnectChannel implements RemoteChannel {
   Future<List<Map<String, dynamic>>> getDiscoveredDevices() async {
     return _fakeDevices.map(Map<String, dynamic>.from).toList();
   }
+
+  @override
+  PointerControl? get pointerControl => null;
 
   /// Closes the event stream. Wire this into the overriding provider's
   /// `ref.onDispose`.

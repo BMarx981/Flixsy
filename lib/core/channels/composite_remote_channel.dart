@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../errors/connect_failure.dart';
 import 'multicast_lock.dart';
+import 'pointer_control.dart';
 import 'remote_channel.dart';
 
 /// A [RemoteChannel] that fans across several per-vendor channels at once.
@@ -132,6 +133,9 @@ class CompositeRemoteChannel implements RemoteChannel {
     }
     await active.sendKeyCommand(key);
   }
+
+  @override
+  PointerControl? get pointerControl => _activeChannel?.pointerControl;
 
   @override
   Future<List<Map<String, dynamic>>> getDiscoveredDevices() async {

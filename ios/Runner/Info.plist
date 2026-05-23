@@ -264,6 +264,8 @@
 	<string>Flixsy needs access to your local network to discover and control TVs.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Flixsy needs access to your photos so you can use your own images on remote buttons.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Flixsy uses your phone's motion sensors to aim the on-screen cursor when controlling an LG webOS TV.</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_ssdp._udp</string>

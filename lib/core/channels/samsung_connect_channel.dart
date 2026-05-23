@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import '../errors/connect_failure.dart';
+import 'pointer_control.dart';
 import 'remote_channel.dart';
 import 'ssdp_discovery.dart';
 import 'web_socket_connection.dart';
@@ -217,6 +218,9 @@ class SamsungConnectChannel implements RemoteChannel {
   @override
   Future<List<Map<String, dynamic>>> getDiscoveredDevices() async =>
       _devices.values.map((device) => device.toMap()).toList(growable: false);
+
+  @override
+  PointerControl? get pointerControl => null;
 
   @override
   void dispose() {

@@ -77,7 +77,7 @@ class IoRokuHttpClient implements RokuHttpClient {
 /// `POST /keypress/<key>` on port 8060, and [connectToDevice] is a liveness
 /// check against `/query/device-info`. The HTTP transport and the SSDP
 /// discoverer are both injectable for testing.
-class RokuConnectChannel implements RemoteChannel {
+class RokuConnectChannel implements RemoteChannel, RemoteTextInput {
   RokuConnectChannel({RokuHttpClient? httpClient, SsdpDiscoverer? discovery})
     : _http = httpClient ?? IoRokuHttpClient(),
       _ssdp = discovery ?? SsdpDiscovery(searchTarget: rokuSearchTarget) {
@@ -177,6 +177,22 @@ class RokuConnectChannel implements RemoteChannel {
 
   @override
   Future<void> sendKeyCommand(String key) async {
+    final rokuKey = _rokuKeys[key.toUpperCase()];
+    if (rokuKey == null) {
+      throw CommandFailure('Unsupported Roku key: $key');
+    }
+    await _postKeypress(rokuKey, errorContext: 'key $key');
+  }
+
+  /// POSTs `/keypress/<keypressName>` against the currently-connected device.
+  ///
+  /// [keypressName] is the ECP path segment — already encoded if it carries
+  /// non-ASCII (e.g. `Lit_<urlEncodedChar>`). [errorContext] flavours the
+  /// thrown [CommandFailure] message so callers don't have to wrap it.
+  Future<void> _postKeypress(
+    String keypressName, {
+    required String errorContext,
+  }) async {
     final deviceId = _connectedDeviceId;
     if (deviceId == null) {
       throw const CommandFailure('Not connected to a Roku device');
@@ -185,22 +201,18 @@ class RokuConnectChannel implements RemoteChannel {
     if (device == null) {
       throw const CommandFailure('Connected Roku device is no longer known');
     }
-    final rokuKey = _rokuKeys[key.toUpperCase()];
-    if (rokuKey == null) {
-      throw CommandFailure('Unsupported Roku key: $key');
-    }
     final RokuHttpResponse response;
     try {
       response = await _http.send(
         'POST',
-        device.endpoint('/keypress/$rokuKey'),
+        device.endpoint('/keypress/$keypressName'),
       );
     } on Object catch (error) {
-      throw CommandFailure('Roku key send failed: $error');
+      throw CommandFailure('Roku $errorContext send failed: $error');
     }
     if (!response.isSuccess) {
       throw CommandFailure(
-        'Roku rejected key $key (HTTP ${response.statusCode})',
+        'Roku rejected $errorContext (HTTP ${response.statusCode})',
       );
     }
   }
@@ -217,8 +229,41 @@ class RokuConnectChannel implements RemoteChannel {
   @override
   PointerControl? get pointerControl => null;
 
+  // --- RemoteTextInput ----------------------------------------------------
+  //
+  // Roku's ECP exposes typing as one-char-at-a-time `POST /keypress/Lit_<c>`
+  // requests, plus `Backspace` and `Enter` for control. There is no
+  // field-read API, so [clear] falls back to a [knownLength] backspace
+  // burst — see RemoteTextInput.clear's dartdoc for the limitation.
+
   @override
-  RemoteTextInput? get textInput => null;
+  RemoteTextInput? get textInput => _connectedDeviceId == null ? null : this;
+
+  @override
+  Future<void> sendText(String text) async {
+    if (text.isEmpty) return;
+    // Iterate code points (runes), not UTF-16 code units, so that surrogate
+    // pairs aren't split across two POSTs. Each rune is URL-encoded into
+    // the `Lit_` parameter Roku expects.
+    for (final rune in text.runes) {
+      final encoded = Uri.encodeComponent(String.fromCharCode(rune));
+      await _postKeypress('Lit_$encoded', errorContext: 'text');
+    }
+  }
+
+  @override
+  Future<void> sendBackspace() =>
+      _postKeypress('Backspace', errorContext: 'backspace');
+
+  @override
+  Future<void> submit() => _postKeypress('Enter', errorContext: 'enter');
+
+  @override
+  Future<void> clear({int knownLength = 0}) async {
+    for (var i = 0; i < knownLength; i++) {
+      await _postKeypress('Backspace', errorContext: 'clear');
+    }
+  }
 
   @override
   void dispose() {

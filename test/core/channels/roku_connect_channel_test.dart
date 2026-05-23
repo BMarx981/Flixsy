@@ -346,6 +346,188 @@ void main() {
       );
     });
   });
+
+  group('textInput', () {
+    test('is null until a device is connected, then routes to this', () async {
+      final http = _okHttp();
+      final discoverer = _FakeSsdpDiscoverer();
+      final channel = await _channelWithDevice(http, discoverer);
+      addTearDown(channel.dispose);
+
+      expect(channel.textInput, isNull);
+
+      await channel.connectToDevice(_deviceId);
+      expect(channel.textInput, same(channel));
+
+      await channel.disconnect();
+      expect(channel.textInput, isNull);
+    });
+
+    test('sendText POSTs one Lit_ keypress per code point, in order', () async {
+      final http = _okHttp();
+      final discoverer = _FakeSsdpDiscoverer();
+      final channel = await _channelWithDevice(http, discoverer);
+      addTearDown(channel.dispose);
+      await channel.connectToDevice(_deviceId);
+
+      await channel.textInput!.sendText('Hi!');
+
+      final litCalls = http.calls
+          .where((c) => c.url.path.startsWith('/keypress/Lit_'))
+          .toList();
+      expect(litCalls, hasLength(3));
+      expect(litCalls.map((c) => c.method), everyElement('POST'));
+      expect(litCalls[0].url.path, '/keypress/Lit_H');
+      expect(litCalls[1].url.path, '/keypress/Lit_i');
+      // '!' is in the URI unreserved set (RFC 3986 §2.3), so
+      // Uri.encodeComponent leaves it as-is. Roku accepts either form.
+      expect(litCalls[2].url.path, '/keypress/Lit_!');
+    });
+
+    test('sendText URL-encodes a space character', () async {
+      final http = _okHttp();
+      final discoverer = _FakeSsdpDiscoverer();
+      final channel = await _channelWithDevice(http, discoverer);
+      addTearDown(channel.dispose);
+      await channel.connectToDevice(_deviceId);
+
+      await channel.textInput!.sendText('a b');
+
+      final paths = http.calls
+          .where((c) => c.url.path.startsWith('/keypress/Lit_'))
+          .map((c) => c.url.path)
+          .toList();
+      // Uri.encodeComponent encodes ' ' as %20 (not '+').
+      expect(paths, ['/keypress/Lit_a', '/keypress/Lit_%20', '/keypress/Lit_b']);
+    });
+
+    test('sendText sends one POST per code point for a surrogate pair', () async {
+      // 😀 (U+1F600) is two UTF-16 code units but one Unicode code point —
+      // iterating runes keeps the surrogate pair intact in a single POST.
+      final http = _okHttp();
+      final discoverer = _FakeSsdpDiscoverer();
+      final channel = await _channelWithDevice(http, discoverer);
+      addTearDown(channel.dispose);
+      await channel.connectToDevice(_deviceId);
+
+      await channel.textInput!.sendText('a\u{1F600}b');
+
+      final paths = http.calls
+          .where((c) => c.url.path.startsWith('/keypress/Lit_'))
+          .map((c) => c.url.path)
+          .toList();
+      expect(paths, hasLength(3));
+      expect(paths.first, '/keypress/Lit_a');
+      expect(paths.last, '/keypress/Lit_b');
+    });
+
+    test('sendText on empty string is a no-op (no POSTs)', () async {
+      final http = _okHttp();
+      final discoverer = _FakeSsdpDiscoverer();
+      final channel = await _channelWithDevice(http, discoverer);
+      addTearDown(channel.dispose);
+      await channel.connectToDevice(_deviceId);
+
+      final priorCalls = http.calls.length;
+      await channel.textInput!.sendText('');
+
+      expect(http.calls.length, priorCalls);
+    });
+
+    test('sendBackspace POSTs /keypress/Backspace', () async {
+      final http = _okHttp();
+      final discoverer = _FakeSsdpDiscoverer();
+      final channel = await _channelWithDevice(http, discoverer);
+      addTearDown(channel.dispose);
+      await channel.connectToDevice(_deviceId);
+
+      await channel.textInput!.sendBackspace();
+
+      final call = http.calls.last;
+      expect(call.method, 'POST');
+      expect(call.url.path, '/keypress/Backspace');
+    });
+
+    test('submit POSTs /keypress/Enter', () async {
+      final http = _okHttp();
+      final discoverer = _FakeSsdpDiscoverer();
+      final channel = await _channelWithDevice(http, discoverer);
+      addTearDown(channel.dispose);
+      await channel.connectToDevice(_deviceId);
+
+      await channel.textInput!.submit();
+
+      final call = http.calls.last;
+      expect(call.method, 'POST');
+      expect(call.url.path, '/keypress/Enter');
+    });
+
+    test('clear sends exactly knownLength backspaces', () async {
+      final http = _okHttp();
+      final discoverer = _FakeSsdpDiscoverer();
+      final channel = await _channelWithDevice(http, discoverer);
+      addTearDown(channel.dispose);
+      await channel.connectToDevice(_deviceId);
+      final priorCalls = http.calls.length;
+
+      await channel.textInput!.clear(knownLength: 3);
+
+      final backspaces = http.calls
+          .skip(priorCalls)
+          .where((c) => c.url.path == '/keypress/Backspace')
+          .toList();
+      expect(backspaces, hasLength(3));
+    });
+
+    test('clear with knownLength: 0 is a no-op', () async {
+      final http = _okHttp();
+      final discoverer = _FakeSsdpDiscoverer();
+      final channel = await _channelWithDevice(http, discoverer);
+      addTearDown(channel.dispose);
+      await channel.connectToDevice(_deviceId);
+      final priorCalls = http.calls.length;
+
+      await channel.textInput!.clear();
+
+      expect(http.calls.length, priorCalls);
+    });
+
+    test('sendText throws CommandFailure when not connected', () async {
+      // textInput is null when disconnected — but if a stale reference is
+      // somehow held, every method must still throw rather than POST.
+      final channel = RokuConnectChannel(
+        httpClient: _okHttp(),
+        discovery: _FakeSsdpDiscoverer(),
+      );
+      addTearDown(channel.dispose);
+
+      await expectLater(
+        channel.sendText('hi'),
+        throwsA(isA<CommandFailure>()),
+      );
+    });
+
+    test('sendText surfaces a 500 response as CommandFailure', () async {
+      final http = _FakeRokuHttpClient((method, url) {
+        if (url.path == '/query/device-info') {
+          return const RokuHttpResponse(statusCode: 200, body: _deviceInfoXml);
+        }
+        if (url.path.startsWith('/keypress/Lit_')) {
+          return const RokuHttpResponse(statusCode: 500);
+        }
+        return const RokuHttpResponse(statusCode: 200);
+      });
+      final discoverer = _FakeSsdpDiscoverer();
+      final channel = await _channelWithDevice(http, discoverer);
+      addTearDown(channel.dispose);
+      await channel.connectToDevice(_deviceId);
+
+      await expectLater(
+        channel.textInput!.sendText('x'),
+        throwsA(isA<CommandFailure>()),
+      );
+    });
+  });
 }
 
 /// [RokuHttpClient] whose every request is answered by an injected handler.

@@ -209,6 +209,30 @@ void main() {
       expect(roku.disconnectCount, 1);
       expect(lg.disconnectCount, 0);
     });
+
+    test('textInput returns the active channel\'s textInput', () async {
+      final roku = _FakeRemoteChannel();
+      final lg = _FakeRemoteChannel();
+      final fakeInput = _FakeTextInput();
+      lg.injectedTextInput = fakeInput;
+      final composite = CompositeRemoteChannel([roku, lg]);
+      addTearDown(composite.dispose);
+
+      // Nothing connected → null.
+      expect(composite.textInput, isNull);
+
+      // Connect to a channel without textInput → still null.
+      roku.emitDeviceFound('roku-1');
+      await _settle();
+      await composite.connectToDevice('roku-1');
+      expect(composite.textInput, isNull);
+
+      // Switch to a channel that advertises textInput → routes to it.
+      lg.emitDeviceFound('lg-1');
+      await _settle();
+      await composite.connectToDevice('lg-1');
+      expect(composite.textInput, same(fakeInput));
+    });
   });
 
   group('dispose', () {
@@ -392,14 +416,34 @@ class _FakeRemoteChannel implements RemoteChannel {
   @override
   PointerControl? get pointerControl => null;
 
+  /// Optional [RemoteTextInput] this channel advertises. Tests that exercise
+  /// composite routing inject a fake here.
+  RemoteTextInput? injectedTextInput;
+
   @override
-  RemoteTextInput? get textInput => null;
+  RemoteTextInput? get textInput => injectedTextInput;
 
   @override
   void dispose() {
     disposed = true;
     _events.close();
   }
+}
+
+/// A [RemoteTextInput] sentinel used to verify composite routing — the test
+/// only checks identity, not behaviour, so every method is a no-op.
+class _FakeTextInput implements RemoteTextInput {
+  @override
+  Future<void> sendText(String text) async {}
+
+  @override
+  Future<void> sendBackspace() async {}
+
+  @override
+  Future<void> submit() async {}
+
+  @override
+  Future<void> clear({int knownLength = 0}) async {}
 }
 
 /// A [MulticastLock] that just counts balanced acquire / release calls.

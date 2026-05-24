@@ -22,4 +22,11 @@ abstract interface class IPreferencesRepository {
 
   /// Persists the pairing [credential] issued by [deviceId].
   Future<void> setDeviceCredential(String deviceId, String credential);
+
+  /// Returns the persisted hardware MAC address for [deviceId], or `null` if
+  /// the device has never reported one. Used by Wake-on-LAN.
+  Future<String?> getDeviceMacAddress(String deviceId);
+
+  /// Persists the hardware [macAddress] for [deviceId].
+  Future<void> setDeviceMacAddress(String deviceId, String macAddress);
 }

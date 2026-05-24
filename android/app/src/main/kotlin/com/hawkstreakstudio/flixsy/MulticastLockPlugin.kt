@@ -1,4 +1,4 @@
-package com.example.flixsy
+package com.hawkstreakstudio.flixsy
 
 import android.content.Context
 import android.net.wifi.WifiManager
@@ -15,7 +15,7 @@ import io.flutter.plugin.common.MethodChannel.Result
  * save power. The pure-Dart channels rely on those packets — mDNS replies for
  * Android TV and SSDP `M-SEARCH` responses — so discovery needs this lock held.
  *
- * The Dart [com.example.flixsy] channel layer drives `acquire` / `release` in
+ * The Dart [com.hawkstreakstudio.flixsy] channel layer drives `acquire` / `release` in
  * balanced pairs around discovery. The underlying lock is reference-counted so
  * nested acquire/release calls remain safe.
  */

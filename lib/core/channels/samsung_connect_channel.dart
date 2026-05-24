@@ -25,7 +25,7 @@ const String _samsungChannelPath = '/api/v2/channels/samsung.remote.control';
 /// supported.
 class SamsungConnectChannel implements RemoteChannel, RemoteTextInput {
   SamsungConnectChannel({
-    WebSocketConnector connector = insecureWebSocketConnector,
+    WebSocketConnector connector = tlsTolerantWebSocketConnector,
     SsdpDiscoverer? discovery,
     required Future<String?> Function(String deviceId) loadCredential,
     required Future<void> Function(String deviceId, String credential)

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:multicast_dns/multicast_dns.dart';
 
@@ -93,8 +92,17 @@ class MdnsDiscovery implements MdnsDiscoverer {
     final client = MDnsClient();
     try {
       await client.start();
-    } on SocketException catch (e) {
-      throw DiscoveryFailure('mDNS client failed to start: ${e.message}');
+    } on Object catch (error) {
+      // `OSError` (e.g. "Address already in use" from a stale multicast bind)
+      // is not a SocketException, so we have to catch broadly here — otherwise
+      // it propagates as an unhandled exception and kills the isolate.
+      // Release whatever the client did manage to bind before surfacing.
+      try {
+        client.stop();
+      } on Object {
+        // Best-effort cleanup — the original failure is what matters.
+      }
+      throw DiscoveryFailure('mDNS client failed to start: $error');
     }
     _client = client;
     unawaited(_browse(client));

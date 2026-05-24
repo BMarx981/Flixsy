@@ -1,4 +1,4 @@
-package com.example.flixsy
+package com.hawkstreakstudio.flixsy
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine

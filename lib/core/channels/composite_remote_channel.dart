@@ -51,6 +51,11 @@ class CompositeRemoteChannel implements RemoteChannel {
   /// The sub-channel of the currently connected device, if any.
   RemoteChannel? _activeChannel;
 
+  /// The sub-channel of the most recently connected device — survives a
+  /// [disconnect] or socket close so a Wake-on-LAN POWER press can target the
+  /// TV the user was just on.
+  RemoteChannel? _lastChannel;
+
   /// The sub-channel whose `connectToDevice` is currently in flight — the
   /// target for [submitPairingCode] during code-based pairing.
   RemoteChannel? _pairingChannel;
@@ -107,6 +112,7 @@ class CompositeRemoteChannel implements RemoteChannel {
       _pairingChannel = null;
     }
     _activeChannel = owner;
+    _lastChannel = owner;
   }
 
   @override
@@ -129,10 +135,22 @@ class CompositeRemoteChannel implements RemoteChannel {
   @override
   Future<void> sendKeyCommand(String key) async {
     final active = _activeChannel;
-    if (active == null) {
-      throw const CommandFailure('Not connected to a device');
+    if (active != null) {
+      await active.sendKeyCommand(key);
+      return;
     }
-    await active.sendKeyCommand(key);
+    // No live connection — only POWER is meaningful here (Wake-on-LAN on the
+    // most recently used channel). Other keys would just confuse the user.
+    final upper = key.toUpperCase();
+    if (upper == 'POWER' || upper == 'POWER_ON') {
+      final last = _lastChannel;
+      if (last == null) {
+        throw const CommandFailure('Not connected to a device');
+      }
+      await last.sendKeyCommand(key);
+      return;
+    }
+    throw const CommandFailure('Not connected to a device');
   }
 
   @override

@@ -20,8 +20,7 @@ abstract interface class WebSocketConnection {
 }
 
 /// Opens a [WebSocketConnection] to [url]. Injected into channels so tests can
-/// supply a fake; the production values are [defaultWebSocketConnector] and
-/// [insecureWebSocketConnector].
+/// supply a fake; production uses [tlsTolerantWebSocketConnector].
 typedef WebSocketConnector = Future<WebSocketConnection> Function(String url);
 
 /// [WebSocketConnection] backed by the `web_socket_channel` package.
@@ -41,25 +40,19 @@ class IoWebSocketConnection implements WebSocketConnection {
   Future<void> close() => _channel.sink.close();
 }
 
-/// Production [WebSocketConnector] — opens a real WebSocket and waits for the
-/// handshake to complete before returning.
-Future<WebSocketConnection> defaultWebSocketConnector(String url) async {
-  final channel = WebSocketChannel.connect(Uri.parse(url));
-  await channel.ready;
-  return IoWebSocketConnection(channel);
-}
-
-/// [WebSocketConnector] that accepts self-signed TLS certificates.
-///
-/// Required for Samsung's `wss://<ip>:8002` endpoint: LAN TVs present
-/// self-signed certificates that no certificate authority can validate.
-Future<WebSocketConnection> insecureWebSocketConnector(String url) async {
-  final httpClient = HttpClient()
-    ..badCertificateCallback = (cert, host, port) => true;
-  final channel = IOWebSocketChannel.connect(
-    Uri.parse(url),
-    customClient: httpClient,
-  );
+/// Production [WebSocketConnector]. For `wss://` URLs it accepts self-signed
+/// TLS certs (LAN TVs from LG and Samsung present certs no CA can validate);
+/// for `ws://` it uses the default client.
+Future<WebSocketConnection> tlsTolerantWebSocketConnector(String url) async {
+  final uri = Uri.parse(url);
+  final WebSocketChannel channel;
+  if (uri.scheme == 'wss') {
+    final httpClient = HttpClient()
+      ..badCertificateCallback = (cert, host, port) => true;
+    channel = IOWebSocketChannel.connect(uri, customClient: httpClient);
+  } else {
+    channel = WebSocketChannel.connect(uri);
+  }
   await channel.ready;
   return IoWebSocketConnection(channel);
 }

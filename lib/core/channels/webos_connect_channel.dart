@@ -6,10 +6,15 @@ import 'package:flixsy/core/channels/pointer_control.dart';
 import 'package:flixsy/core/channels/remote_channel.dart';
 import 'package:flixsy/core/channels/ssdp_discovery.dart';
 import 'package:flixsy/core/channels/text_input.dart';
+import 'package:flixsy/core/channels/wake_on_lan.dart';
 import 'package:flixsy/core/channels/web_socket_connection.dart';
 
-/// Default port for the webOS SSAP WebSocket.
-const int _webosPort = 3000;
+/// Insecure SSAP WebSocket port (legacy webOS — `ws://`).
+const int _webosInsecurePort = 3000;
+
+/// Secure SSAP WebSocket port (modern webOS — `wss://` with a self-signed
+/// cert). Required by webOS 4.x+; older TVs may not expose it.
+const int _webosSecurePort = 3001;
 
 /// Id used for the one-shot SSAP `register` handshake message.
 const String _registerRequestId = 'register_0';
@@ -28,17 +33,23 @@ const String _registerRequestId = 'register_0';
 class WebosConnectChannel
     implements RemoteChannel, PointerControl, RemoteTextInput {
   WebosConnectChannel({
-    WebSocketConnector connector = defaultWebSocketConnector,
+    WebSocketConnector connector = tlsTolerantWebSocketConnector,
     SsdpDiscoverer? discovery,
     required Future<String?> Function(String deviceId) loadCredential,
     required Future<void> Function(String deviceId, String credential)
     saveCredential,
+    Future<String?> Function(String deviceId)? loadMacAddress,
+    Future<void> Function(String deviceId, String macAddress)? saveMacAddress,
+    WakeOnLanSender wakeOnLan = sendWakeOnLan,
     Duration pairingTimeout = const Duration(seconds: 60),
     Duration requestTimeout = const Duration(seconds: 8),
   }) : _connector = connector,
        _ssdp = discovery ?? SsdpDiscovery(searchTarget: webosSearchTarget),
        _loadCredential = loadCredential,
        _saveCredential = saveCredential,
+       _loadMacAddress = loadMacAddress,
+       _saveMacAddress = saveMacAddress,
+       _wakeOnLan = wakeOnLan,
        _pairingTimeout = pairingTimeout,
        _requestTimeout = requestTimeout {
     _ssdpSub = _ssdp.responses.listen(
@@ -114,6 +125,10 @@ class WebosConnectChannel
   final Future<String?> Function(String deviceId) _loadCredential;
   final Future<void> Function(String deviceId, String credential)
   _saveCredential;
+  final Future<String?> Function(String deviceId)? _loadMacAddress;
+  final Future<void> Function(String deviceId, String macAddress)?
+  _saveMacAddress;
+  final WakeOnLanSender _wakeOnLan;
   final Duration _pairingTimeout;
   final Duration _requestTimeout;
 
@@ -133,6 +148,10 @@ class WebosConnectChannel
   WebSocketConnection? _pointerSocket;
   StreamSubscription<String>? _pointerSub;
   String? _connectedDeviceId;
+
+  /// The deviceId of the most recently connected TV — survives disconnect so
+  /// a Wake-on-LAN POWER press can target the TV the user was just on.
+  String? _lastConnectedDeviceId;
 
   /// The device a `connectToDevice` is currently pairing with — used to tag
   /// the `pairingRequired` event surfaced while the TV shows its prompt.
@@ -159,7 +178,7 @@ class WebosConnectChannel
     try {
       final WebSocketConnection socket;
       try {
-        socket = await _connector('ws://${device.host}:$_webosPort');
+        socket = await _openSsapSocket(device.host);
       } on Object catch (error) {
         throw ConnectionFailure('webOS connection failed: $error');
       }
@@ -182,7 +201,11 @@ class WebosConnectChannel
       }
 
       _connectedDeviceId = deviceId;
+      _lastConnectedDeviceId = deviceId;
       _emit({'type': 'connectionStateChanged', 'state': 'connected'});
+      // Best-effort: capture the TV's MAC so we can wake it later via WoL.
+      // Failures are silent — WoL is a bonus, not a requirement to connect.
+      unawaited(_captureMacAddress(deviceId));
     } finally {
       _pairingDeviceId = null;
     }
@@ -200,6 +223,24 @@ class WebosConnectChannel
 
   @override
   Future<void> sendKeyCommand(String key) async {
+    final upper = key.toUpperCase();
+    // Power is two different operations depending on connection state:
+    //  - Connected: SSAP `system/turnOff` to put the TV into standby.
+    //  - Disconnected: Wake-on-LAN magic packet to bring it out of standby.
+    // The pointer socket silently drops `name:POWER` on most LG firmware,
+    // so neither half can use the standard button-frame path.
+    if (upper == 'POWER' || upper == 'POWER_OFF' || upper == 'POWER_ON') {
+      if (_connectedDeviceId != null && upper != 'POWER_ON') {
+        try {
+          await _sendRequest('ssap://system/turnOff');
+        } on ConnectionFailure catch (failure) {
+          throw CommandFailure(failure.message);
+        }
+        return;
+      }
+      await _wakeLastDevice();
+      return;
+    }
     if (_connectedDeviceId == null) {
       throw const CommandFailure('Not connected to a webOS device');
     }
@@ -207,12 +248,31 @@ class WebosConnectChannel
     if (pointer == null) {
       throw const CommandFailure('webOS pointer socket is not open');
     }
-    final button = _buttonNames[key.toUpperCase()];
+    final button = _buttonNames[upper];
     if (button == null) {
       throw CommandFailure('Unsupported webOS key: $key');
     }
     // The pointer input socket takes plain-text `field:value` frames.
     pointer.send('type:button\nname:$button\n\n');
+  }
+
+  /// Sends a Wake-on-LAN packet to the most recently connected TV. Throws
+  /// [CommandFailure] when there is no remembered device or no persisted MAC.
+  Future<void> _wakeLastDevice() async {
+    final deviceId = _lastConnectedDeviceId;
+    if (deviceId == null) {
+      throw const CommandFailure(
+        'Connect to the TV once so the app can remember its hardware address',
+      );
+    }
+    final load = _loadMacAddress;
+    final mac = load == null ? null : await load(deviceId);
+    if (mac == null || mac.isEmpty) {
+      throw const CommandFailure(
+        'No saved hardware address for this TV — reconnect while it is on',
+      );
+    }
+    await _wakeOnLan(mac);
   }
 
   @override
@@ -352,6 +412,19 @@ class WebosConnectChannel
 
   // --- SSAP handshake -----------------------------------------------------
 
+  /// Opens the SSAP control socket, preferring `wss://:3001` (required by
+  /// webOS 4.x+) and falling back to `ws://:3000` for older firmware.
+  ///
+  /// On newer TVs the insecure port often accepts the TCP connection then
+  /// closes mid-handshake, so the secure attempt has to come first.
+  Future<WebSocketConnection> _openSsapSocket(String host) async {
+    try {
+      return await _connector('wss://$host:$_webosSecurePort');
+    } on Object {
+      return _connector('ws://$host:$_webosInsecurePort');
+    }
+  }
+
   /// Sends the `register` request and waits for the TV to pair. On a first
   /// pairing the TV shows an on-screen prompt; once accepted it returns a
   /// client-key, which is persisted for next time.
@@ -402,6 +475,33 @@ class WebosConnectChannel
     _pointerSocket = pointer;
     // Drain incoming frames so the socket stays healthy; we only send on it.
     _pointerSub = pointer.messages.listen((_) {}, onError: (Object _) {});
+  }
+
+  /// Best-effort: asks the TV for its wired/Wi-Fi MAC and persists it via
+  /// [_saveMacAddress] so Wake-on-LAN can wake the TV later. Silent on
+  /// failure — the caller fires this without awaiting.
+  Future<void> _captureMacAddress(String deviceId) async {
+    final save = _saveMacAddress;
+    if (save == null) return;
+    try {
+      final response = await _sendRequest(
+        'ssap://com.webos.service.connectionmanager/getInfo',
+      );
+      final payload = response['payload'];
+      if (payload is! Map) return;
+      // Prefer wired MAC — desks tend to wake more reliably over Ethernet.
+      // Fall back to Wi-Fi MAC when the TV is wireless-only.
+      final wiredInfo = payload['wiredInfo'];
+      final wifiInfo = payload['wifiInfo'];
+      final mac = (wiredInfo is Map ? wiredInfo['macAddress'] : null) ??
+          (wifiInfo is Map ? wifiInfo['macAddress'] : null);
+      if (mac is String && mac.isNotEmpty) {
+        await save(deviceId, mac);
+      }
+    } on Object {
+      // Older webOS firmware exposes the info under a different path; not
+      // worth a fallback chain — WoL is a bonus capability.
+    }
   }
 
   /// Sends an SSAP `request` and completes with the matching response.

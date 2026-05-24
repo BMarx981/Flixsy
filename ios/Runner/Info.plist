@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -22,13 +24,25 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<!-- AdMob app ID. Test ID — replace with the production app ID before
-	     shipping to the App Store. -->
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>
-	<!-- SKAdNetwork identifiers for AdMob and its mediation partners.
-	     Source: https://developers.google.com/admob/ios/quick-start#update_your_infoplist
-	     Keep this list in sync with AdMob's published recommendations. -->
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_ssdp._udp</string>
+		<string>_androidtvremote2._tcp</string>
+		<string>_airplay._tcp</string>
+		<string>_raop._tcp</string>
+		<string>_googlecast._tcp</string>
+		<string>_lg-smart-tv._tcp</string>
+	</array>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Flixsy needs access to your local network to discover and control TVs.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Flixsy uses your phone's motion sensors to aim the on-screen cursor when controlling an LG webOS TV.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Flixsy needs access to your photos so you can use your own images on remote buttons.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
@@ -216,12 +230,6 @@
 			<string>3qcr597p9d.skadnetwork</string>
 		</dict>
 	</array>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -233,16 +241,22 @@
 				<dict>
 					<key>UISceneClassName</key>
 					<string>UIWindowScene</string>
-					<key>UISceneDelegateClassName</key>
-					<string>FlutterSceneDelegate</string>
 					<key>UISceneConfigurationName</key>
 					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
 					<key>UISceneStoryboardFile</key>
 					<string>Main</string>
 				</dict>
 			</array>
 		</dict>
 	</dict>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -255,25 +269,6 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>Flixsy needs access to your local network to discover and control TVs.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Flixsy needs access to your photos so you can use your own images on remote buttons.</string>
-	<key>NSMotionUsageDescription</key>
-	<string>Flixsy uses your phone's motion sensors to aim the on-screen cursor when controlling an LG webOS TV.</string>
-	<key>NSBonjourServices</key>
-	<array>
-		<string>_ssdp._udp</string>
-		<string>_androidtvremote2._tcp</string>
-		<string>_airplay._tcp</string>
-		<string>_raop._tcp</string>
-		<string>_googlecast._tcp</string>
-		<string>_lg-smart-tv._tcp</string>
 	</array>
 </dict>
 </plist>

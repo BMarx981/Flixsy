@@ -97,6 +97,8 @@ final remoteChannelProvider = Provider<RemoteChannel>((ref) {
     WebosConnectChannel(
       loadCredential: preferences.getDeviceCredential,
       saveCredential: preferences.setDeviceCredential,
+      loadMacAddress: preferences.getDeviceMacAddress,
+      saveMacAddress: preferences.setDeviceMacAddress,
     ),
     SamsungConnectChannel(
       loadCredential: preferences.getDeviceCredential,

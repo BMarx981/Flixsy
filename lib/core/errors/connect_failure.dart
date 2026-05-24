@@ -1,6 +1,9 @@
 sealed class ConnectFailure {
   const ConnectFailure(this.message);
   final String message;
+
+  @override
+  String toString() => '$runtimeType($message)';
 }
 
 final class DiscoveryFailure extends ConnectFailure {

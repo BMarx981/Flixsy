@@ -52,6 +52,14 @@ class PreferencesRepository implements IPreferencesRepository {
   Future<void> setDeviceCredential(String deviceId, String credential) =>
       _db.preferencesDao.setDeviceCredential(deviceId, credential);
 
+  @override
+  Future<String?> getDeviceMacAddress(String deviceId) =>
+      _db.preferencesDao.getDeviceMacAddress(deviceId);
+
+  @override
+  Future<void> setDeviceMacAddress(String deviceId, String macAddress) =>
+      _db.preferencesDao.setDeviceMacAddress(deviceId, macAddress);
+
   AppSkin _parseSkin(String? value) {
     if (value == null) return AppSkin.classic;
     return AppSkin.values.firstWhere(

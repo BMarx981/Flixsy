@@ -1,4 +1,4 @@
-package com.example.flixsy
+package com.hawkstreakstudio.flixsy
 
 import android.content.Context
 import android.net.wifi.WifiManager

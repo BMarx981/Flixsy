@@ -57,6 +57,19 @@ class PreferencesDao extends DatabaseAccessor<AppDatabase>
   Future<void> setDeviceCredential(String deviceId, String credential) =>
       _setValue('$_deviceCredentialPrefix$deviceId', credential);
 
+  static const _deviceMacPrefix = 'device_mac:';
+
+  /// Returns the persisted hardware MAC address for [deviceId], or `null` if
+  /// the device has never reported one. Used by Wake-on-LAN to power a TV
+  /// back on while it is in standby and the SSAP socket is unreachable.
+  Future<String?> getDeviceMacAddress(String deviceId) =>
+      _getValue('$_deviceMacPrefix$deviceId');
+
+  /// Persists the hardware [macAddress] for [deviceId] (in the canonical
+  /// `aa:bb:cc:dd:ee:ff` form).
+  Future<void> setDeviceMacAddress(String deviceId, String macAddress) =>
+      _setValue('$_deviceMacPrefix$deviceId', macAddress);
+
   Future<String?> _getValue(String key) async {
     final query = select(preferencesTable)..where((t) => t.key.equals(key));
     final row = await query.getSingleOrNull();

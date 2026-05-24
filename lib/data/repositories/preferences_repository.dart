@@ -1,6 +1,6 @@
-import '../../domain/repositories/i_preferences_repository.dart';
-import '../../theming/skin_registry.dart';
-import '../database/app_database.dart';
+import 'package:flixsy/domain/repositories/i_preferences_repository.dart';
+import 'package:flixsy/theming/skin_registry.dart';
+import 'package:flixsy/data/database/app_database.dart';
 
 class PreferencesRepository implements IPreferencesRepository {
   const PreferencesRepository(this._db);

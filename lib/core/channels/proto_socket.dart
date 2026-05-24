@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import '../errors/connect_failure.dart';
-import 'proto_codec.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
+import 'package:flixsy/core/channels/proto_codec.dart';
 
 /// A TLS connection that exchanges varint-length-prefixed protobuf messages —
 /// the transport surface the Android TV Remote v2 channel depends on.

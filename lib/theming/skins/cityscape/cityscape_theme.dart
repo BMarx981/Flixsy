@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../skin_tokens.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
 
 /// Palette and theme for the `Cityscape` skin. The backdrop is a night skyline
 /// — deep indigo sky over layered building silhouettes glittering with lit

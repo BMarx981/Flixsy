@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/layout/remote_layout.dart';
-import '../../remote_skin.dart';
-import '../../standard/standard_remote.dart';
-import 'ocean_background.dart';
-import 'ocean_pulse_scope.dart';
-import 'ocean_section_renderer.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/theming/remote_skin.dart';
+import 'package:flixsy/theming/standard/standard_remote.dart';
+import 'package:flixsy/theming/skins/ocean/ocean_background.dart';
+import 'package:flixsy/theming/skins/ocean/ocean_pulse_scope.dart';
+import 'package:flixsy/theming/skins/ocean/ocean_section_renderer.dart';
 
 /// The `Ocean` skin: a horizon between a sky that cycles through sunrise,
 /// midday, sunset and night, and a calm sea below it. A [StandardRemote]

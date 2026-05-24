@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
-import '../data/models/layout/built_in_layouts.dart';
-import '../data/models/layout/remote_layout.dart';
-import '../shared/providers/app_providers.dart';
+import 'package:flixsy/data/models/layout/built_in_layouts.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/shared/providers/app_providers.dart';
 
 /// Every available layout — built-in templates plus the user's custom
 /// layouts — streamed from the Drift-backed [LayoutRepository].

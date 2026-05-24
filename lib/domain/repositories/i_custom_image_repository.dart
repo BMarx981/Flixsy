@@ -1,4 +1,4 @@
-import '../../data/models/stored_image.dart';
+import 'package:flixsy/data/models/stored_image.dart';
 
 /// Access to user-uploaded button images — the only entry point to image
 /// persistence; the DAO and the file system stay hidden behind it (design

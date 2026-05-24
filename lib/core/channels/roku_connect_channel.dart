@@ -5,11 +5,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:xml/xml.dart';
 
-import '../errors/connect_failure.dart';
-import 'pointer_control.dart';
-import 'remote_channel.dart';
-import 'ssdp_discovery.dart';
-import 'text_input.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
+import 'package:flixsy/core/channels/pointer_control.dart';
+import 'package:flixsy/core/channels/remote_channel.dart';
+import 'package:flixsy/core/channels/ssdp_discovery.dart';
+import 'package:flixsy/core/channels/text_input.dart';
 
 /// Default port for Roku's External Control Protocol (ECP).
 const int _rokuEcpPort = 8060;

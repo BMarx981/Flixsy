@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../skin_tokens.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
 
 abstract final class ClassicTheme {
   static ThemeData get themeData => ThemeData(

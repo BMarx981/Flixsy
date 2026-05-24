@@ -3,18 +3,18 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../core/extensions/l10n_extensions.dart';
-import '../../../data/models/layout/layout_block.dart';
-import '../../../data/models/layout/remote_button.dart';
-import '../../../shared/widgets/pointer_aware_star_dpad.dart';
-import '../../icons/remote_key_l10n.dart';
-import '../../remote_key.dart';
-import '../../skin_tokens.dart';
-import '../../standard/button_presentation.dart';
-import '../../standard/remote_image_scope.dart';
-import '../../standard/section_renderer.dart';
-import 'cityscape_pulse_scope.dart';
-import 'cityscape_theme.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/data/models/layout/layout_block.dart';
+import 'package:flixsy/data/models/layout/remote_button.dart';
+import 'package:flixsy/shared/widgets/pointer_aware_star_dpad.dart';
+import 'package:flixsy/theming/icons/remote_key_l10n.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
+import 'package:flixsy/theming/standard/button_presentation.dart';
+import 'package:flixsy/theming/standard/remote_image_scope.dart';
+import 'package:flixsy/theming/standard/section_renderer.dart';
+import 'package:flixsy/theming/skins/cityscape/cityscape_pulse_scope.dart';
+import 'package:flixsy/theming/skins/cityscape/cityscape_theme.dart';
 
 /// Renders the `Cityscape` skin's blocks: midnight-blue panels with a cool
 /// cyan window-glow rim that breathes with the shared pulse, echoing the lit

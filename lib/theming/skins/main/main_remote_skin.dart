@@ -9,11 +9,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../core/extensions/l10n_extensions.dart';
-import '../../../shared/widgets/spinnable_star_dpad.dart';
-import '../../icons/remote_key_l10n.dart';
-import '../../remote_key.dart';
-import '../../remote_skin.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/shared/widgets/spinnable_star_dpad.dart';
+import 'package:flixsy/theming/icons/remote_key_l10n.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/theming/remote_skin.dart';
 
 /// The five interactive regions of the Flixsy logo remote.
 ///

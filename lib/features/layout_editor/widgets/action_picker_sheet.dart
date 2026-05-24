@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/extensions/l10n_extensions.dart';
-import '../../../theming/icons/icon_catalog.dart';
-import '../../../theming/icons/remote_key_l10n.dart';
-import '../../../theming/remote_key.dart';
-import 'glass_sheet.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/theming/icons/icon_catalog.dart';
+import 'package:flixsy/theming/icons/remote_key_l10n.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/features/layout_editor/widgets/glass_sheet.dart';
 
 /// Shows a bottom sheet of every [RemoteKey], grouped by role, and resolves
 /// to the chosen key — or `null` if the sheet is dismissed.

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/layout/remote_layout.dart';
-import '../../remote_skin.dart';
-import '../../standard/standard_remote.dart';
-import 'campfire_background.dart';
-import 'campfire_pulse_scope.dart';
-import 'campfire_section_renderer.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/theming/remote_skin.dart';
+import 'package:flixsy/theming/standard/standard_remote.dart';
+import 'package:flixsy/theming/skins/campfire/campfire_background.dart';
+import 'package:flixsy/theming/skins/campfire/campfire_pulse_scope.dart';
+import 'package:flixsy/theming/skins/campfire/campfire_section_renderer.dart';
 
 /// The `Campfire` skin: a desert-night scene — starlit sky, crescent moon,
 /// layered mesa silhouettes, and an animated campfire at the base — with a

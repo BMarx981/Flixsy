@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-import 'app.dart';
-import 'core/channels/fake_connect_channel.dart';
-import 'shared/providers/app_providers.dart';
+import 'package:flixsy/app.dart';
+import 'package:flixsy/core/channels/fake_connect_channel.dart';
+import 'package:flixsy/shared/providers/app_providers.dart';
 
 /// When true, the app runs against simulated TVs instead of the real LAN
 /// remote channels — useful for running in a simulator/emulator.

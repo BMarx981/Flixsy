@@ -1,5 +1,5 @@
-import '../../l10n/generated/app_localizations.dart';
-import '../remote_key.dart';
+import 'package:flixsy/l10n/generated/app_localizations.dart';
+import 'package:flixsy/theming/remote_key.dart';
 
 /// Localized presentation strings for the capability axis ([RemoteKey]).
 ///

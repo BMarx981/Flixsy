@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
-import 'pointer_control.dart';
-import 'remote_channel.dart';
-import 'text_input.dart';
+import 'package:flixsy/core/channels/pointer_control.dart';
+import 'package:flixsy/core/channels/remote_channel.dart';
+import 'package:flixsy/core/channels/text_input.dart';
 
 /// In-memory [RemoteChannel] that simulates TVs on the local network, so the
 /// app can be run in a simulator/emulator with no native side and no real

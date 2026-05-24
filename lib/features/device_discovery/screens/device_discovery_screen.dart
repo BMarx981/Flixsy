@@ -4,10 +4,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/extensions/l10n_extensions.dart';
-import '../../../data/models/tv_device.dart';
-import '../../../router/app_router.dart';
-import '../providers/device_discovery_provider.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/data/models/tv_device.dart';
+import 'package:flixsy/router/app_router.dart';
+import 'package:flixsy/features/device_discovery/providers/device_discovery_provider.dart';
 
 @RoutePage()
 class DeviceDiscoveryScreen extends ConsumerWidget {

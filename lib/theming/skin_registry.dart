@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 
-import 'remote_skin.dart';
-import 'skins/classic/classic_section_renderer.dart';
-import 'skins/classic/classic_theme.dart';
-import 'skins/campfire/campfire_remote_skin.dart';
-import 'skins/campfire/campfire_theme.dart';
-import 'skins/cityscape/cityscape_remote_skin.dart';
-import 'skins/cityscape/cityscape_theme.dart';
-import 'skins/cloud/cloud_remote_skin.dart';
-import 'skins/cloud/cloud_theme.dart';
-import 'skins/honkytonk/honkytonk_remote_skin.dart';
-import 'skins/honkytonk/honkytonk_theme.dart';
-import 'skins/main/main_remote_skin.dart';
-import 'skins/main/main_theme.dart';
-import 'skins/ocean/ocean_remote_skin.dart';
-import 'skins/ocean/ocean_theme.dart';
-import 'skins/punk/punk_remote_skin.dart';
-import 'skins/punk/punk_theme.dart';
-import 'skins/waterfall/waterfall_remote_skin.dart';
-import 'skins/waterfall/waterfall_theme.dart';
-import 'standard/standard_remote.dart';
+import 'package:flixsy/theming/remote_skin.dart';
+import 'package:flixsy/theming/skins/classic/classic_section_renderer.dart';
+import 'package:flixsy/theming/skins/classic/classic_theme.dart';
+import 'package:flixsy/theming/skins/campfire/campfire_remote_skin.dart';
+import 'package:flixsy/theming/skins/campfire/campfire_theme.dart';
+import 'package:flixsy/theming/skins/cityscape/cityscape_remote_skin.dart';
+import 'package:flixsy/theming/skins/cityscape/cityscape_theme.dart';
+import 'package:flixsy/theming/skins/cloud/cloud_remote_skin.dart';
+import 'package:flixsy/theming/skins/cloud/cloud_theme.dart';
+import 'package:flixsy/theming/skins/honkytonk/honkytonk_remote_skin.dart';
+import 'package:flixsy/theming/skins/honkytonk/honkytonk_theme.dart';
+import 'package:flixsy/theming/skins/main/main_remote_skin.dart';
+import 'package:flixsy/theming/skins/main/main_theme.dart';
+import 'package:flixsy/theming/skins/ocean/ocean_remote_skin.dart';
+import 'package:flixsy/theming/skins/ocean/ocean_theme.dart';
+import 'package:flixsy/theming/skins/punk/punk_remote_skin.dart';
+import 'package:flixsy/theming/skins/punk/punk_theme.dart';
+import 'package:flixsy/theming/skins/waterfall/waterfall_remote_skin.dart';
+import 'package:flixsy/theming/skins/waterfall/waterfall_theme.dart';
+import 'package:flixsy/theming/standard/standard_remote.dart';
 
 enum AppSkin {
   classic,

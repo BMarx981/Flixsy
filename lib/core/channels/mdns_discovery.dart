@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:multicast_dns/multicast_dns.dart';
 
-import '../errors/connect_failure.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
 
 /// A single service instance resolved via mDNS / DNS-SD.
 class MdnsService {

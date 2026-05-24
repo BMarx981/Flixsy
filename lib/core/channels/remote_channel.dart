@@ -1,6 +1,6 @@
-import '../errors/connect_failure.dart';
-import 'pointer_control.dart';
-import 'text_input.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
+import 'package:flixsy/core/channels/pointer_control.dart';
+import 'package:flixsy/core/channels/text_input.dart';
 
 /// The platform-agnostic contract for discovering and controlling a TV.
 ///

@@ -1,7 +1,7 @@
-import '../../../theming/remote_key.dart';
-import 'layout_block.dart';
-import 'remote_button.dart';
-import 'remote_layout.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/data/models/layout/layout_block.dart';
+import 'package:flixsy/data/models/layout/remote_button.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
 
 /// Reserved id prefix marking a layout as a read-only built-in template.
 ///

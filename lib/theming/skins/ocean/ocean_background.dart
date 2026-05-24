@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'ocean_palette.dart';
+import 'package:flixsy/theming/skins/ocean/ocean_palette.dart';
 
 /// Sky-and-water backdrop for the `Ocean` skin: a horizon line, a sun that
 /// arcs across by day and a moon that does the same by night, plus a few

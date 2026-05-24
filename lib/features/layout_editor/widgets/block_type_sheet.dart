@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/extensions/l10n_extensions.dart';
-import '../providers/layout_editor_provider.dart';
-import 'glass_sheet.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/features/layout_editor/providers/layout_editor_provider.dart';
+import 'package:flixsy/features/layout_editor/widgets/glass_sheet.dart';
 
 /// Shows a bottom sheet of the block types and resolves to the chosen kind —
 /// or `null` if the sheet is dismissed.

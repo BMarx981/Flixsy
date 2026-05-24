@@ -1,4 +1,4 @@
-import '../../data/models/layout/remote_layout.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
 
 /// Access to remote layouts — the built-in `const` templates plus the user's
 /// stored custom layouts. The only entry point to layout persistence; DAOs

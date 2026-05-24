@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../skin_tokens.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
 
 /// Theme for the "Main" skin — colours sampled from the Flixsy logo mark.
 abstract final class MainTheme {

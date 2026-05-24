@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/home/providers/pointer_session_provider.dart';
-import 'spinnable_star_dpad.dart';
+import 'package:flixsy/features/home/providers/pointer_session_provider.dart';
+import 'package:flixsy/shared/widgets/spinnable_star_dpad.dart';
 
 /// [SpinnableStarDpad] wrapper that wires the long-press-OK gesture to the
 /// app-wide [pointerSessionProvider] when the connected TV supports a free

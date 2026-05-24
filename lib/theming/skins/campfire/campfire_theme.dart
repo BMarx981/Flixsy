@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../skin_tokens.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
 
 /// Palette and theme for the `Campfire` skin. A desert-night scene paints the
 /// backdrop, so the chrome leans into warm dark earth tones with an ember

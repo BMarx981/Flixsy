@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/layout/remote_layout.dart';
-import '../../remote_skin.dart';
-import '../../standard/standard_remote.dart';
-import 'honkytonk_background.dart';
-import 'honkytonk_pulse_scope.dart';
-import 'honkytonk_section_renderer.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/theming/remote_skin.dart';
+import 'package:flixsy/theming/standard/standard_remote.dart';
+import 'package:flixsy/theming/skins/honkytonk/honkytonk_background.dart';
+import 'package:flixsy/theming/skins/honkytonk/honkytonk_pulse_scope.dart';
+import 'package:flixsy/theming/skins/honkytonk/honkytonk_section_renderer.dart';
 
 /// The `Honkytonk` skin: a dim country-bar interior — wood-plank walls, a
 /// row of warm pendant bulbs, a neon guitar sign behind, drifting smoke and

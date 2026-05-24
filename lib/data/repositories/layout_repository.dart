@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import '../../domain/repositories/i_layout_repository.dart';
-import '../database/app_database.dart';
-import '../models/layout/built_in_layouts.dart';
-import '../models/layout/remote_layout.dart';
+import 'package:flixsy/domain/repositories/i_layout_repository.dart';
+import 'package:flixsy/data/database/app_database.dart';
+import 'package:flixsy/data/models/layout/built_in_layouts.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
 
 class LayoutRepository implements ILayoutRepository {
   const LayoutRepository(this._db);

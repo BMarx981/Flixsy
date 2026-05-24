@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:in_app_purchase/in_app_purchase.dart';
 
-import '../../analytics/analytics_service.dart';
-import '../../domain/repositories/i_preferences_repository.dart';
-import 'iap_failure.dart';
+import 'package:flixsy/analytics/analytics_service.dart';
+import 'package:flixsy/domain/repositories/i_preferences_repository.dart';
+import 'package:flixsy/shared/iap/iap_failure.dart';
 
 /// Owns the [InAppPurchase] connection and translates store events into
 /// updates on the "Remove Ads" entitlement stored in [IPreferencesRepository].

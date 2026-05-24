@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'waterfall_theme.dart';
+import 'package:flixsy/theming/skins/waterfall/waterfall_theme.dart';
 
 /// Slow-moving wavy blue bands that drift downward — the ambient backdrop
 /// for the `Waterfall` skin. Self-contained: owns its ticker and clips its

@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
-import '../../../core/channels/pointer_control.dart';
-import '../../../core/errors/connect_failure.dart';
-import '../../../shared/providers/app_providers.dart';
+import 'package:flixsy/core/channels/pointer_control.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
+import 'package:flixsy/shared/providers/app_providers.dart';
 
 /// [PointerControl] for the currently connected TV, or `null` when the device
 /// has no free-cursor capability (anything other than webOS today).

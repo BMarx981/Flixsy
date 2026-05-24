@@ -1,5 +1,5 @@
-import 'button_appearance.dart';
-import 'layout_block.dart';
+import 'package:flixsy/data/models/layout/button_appearance.dart';
+import 'package:flixsy/data/models/layout/layout_block.dart';
 
 /// A complete remote layout — the *user-authored* axis of the three-axis
 /// model (capability / layout / skin); see `docs/custom_layouts_design.md`.

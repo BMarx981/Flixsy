@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-import '../../data/models/layout/layout_block.dart';
-import '../remote_key.dart';
+import 'package:flixsy/data/models/layout/layout_block.dart';
+import 'package:flixsy/theming/remote_key.dart';
 
 /// Invoked when a rendered button is pressed, with the [RemoteKey] it carries.
 typedef KeyPressHandler = void Function(RemoteKey key);

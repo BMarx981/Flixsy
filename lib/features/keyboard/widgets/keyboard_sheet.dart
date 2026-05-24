@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/channels/text_input.dart';
-import '../../../core/errors/connect_failure.dart';
-import '../../../core/extensions/l10n_extensions.dart';
-import '../providers/keyboard_session_provider.dart';
+import 'package:flixsy/core/channels/text_input.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/features/keyboard/providers/keyboard_session_provider.dart';
 
 /// Opens the keyboard bottom sheet against [textInput]. The OS keyboard
 /// handles the actual character entry; this sheet just funnels the resulting

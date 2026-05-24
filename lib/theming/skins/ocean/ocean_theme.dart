@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../skin_tokens.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
 
 /// Palette and theme for the `Ocean` skin. The sky cycles through times of
 /// day at runtime, so this theme picks a neutral dark navy chrome that holds

@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../data/models/layout/remote_layout.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
 
 /// Contract that every skin widget must satisfy.
 /// Skin widgets are plain Flutter widgets that also expose their

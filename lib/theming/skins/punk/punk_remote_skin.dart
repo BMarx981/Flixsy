@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/layout/remote_layout.dart';
-import '../../remote_skin.dart';
-import '../../standard/standard_remote.dart';
-import 'punk_background.dart';
-import 'punk_pulse_scope.dart';
-import 'punk_section_renderer.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/theming/remote_skin.dart';
+import 'package:flixsy/theming/standard/standard_remote.dart';
+import 'package:flixsy/theming/skins/punk/punk_background.dart';
+import 'package:flixsy/theming/skins/punk/punk_pulse_scope.dart';
+import 'package:flixsy/theming/skins/punk/punk_section_renderer.dart';
 
 /// The `Punk` skin: a graffitied alley — dark brick wall, two torn band
 /// posters stapled crooked, spray-paint splatters and slow drips, and a

@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:basic_utils/basic_utils.dart';
 
-import '../errors/connect_failure.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
 
 /// A self-signed client identity — the certificate and key Flixsy presents to
 /// an Android TV on both the pairing (6467) and remote-control (6466) TLS

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/layout/remote_layout.dart';
-import '../../remote_skin.dart';
-import '../../standard/standard_remote.dart';
-import 'waterfall_background.dart';
-import 'waterfall_pulse_scope.dart';
-import 'waterfall_section_renderer.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/theming/remote_skin.dart';
+import 'package:flixsy/theming/standard/standard_remote.dart';
+import 'package:flixsy/theming/skins/waterfall/waterfall_background.dart';
+import 'package:flixsy/theming/skins/waterfall/waterfall_pulse_scope.dart';
+import 'package:flixsy/theming/skins/waterfall/waterfall_section_renderer.dart';
 
 /// The `Waterfall` skin: animated wavy blue bands drifting behind a [StandardRemote]
 /// whose buttons pulse gently in sync with a single shared animation.

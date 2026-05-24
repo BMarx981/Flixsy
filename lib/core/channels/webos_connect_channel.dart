@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
-import '../errors/connect_failure.dart';
-import 'pointer_control.dart';
-import 'remote_channel.dart';
-import 'ssdp_discovery.dart';
-import 'text_input.dart';
-import 'web_socket_connection.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
+import 'package:flixsy/core/channels/pointer_control.dart';
+import 'package:flixsy/core/channels/remote_channel.dart';
+import 'package:flixsy/core/channels/ssdp_discovery.dart';
+import 'package:flixsy/core/channels/text_input.dart';
+import 'package:flixsy/core/channels/web_socket_connection.dart';
 
 /// Default port for the webOS SSAP WebSocket.
 const int _webosPort = 3000;

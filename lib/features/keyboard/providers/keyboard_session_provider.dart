@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/channels/text_input.dart';
-import '../../../core/errors/connect_failure.dart';
+import 'package:flixsy/core/channels/text_input.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
 
 /// Diff between two consecutive text snapshots, expressed as the work needed
 /// to bring the TV-side field in sync: delete [backspaces] code points, then

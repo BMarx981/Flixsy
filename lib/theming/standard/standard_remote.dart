@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../data/models/layout/layout_block.dart';
-import '../../data/models/layout/remote_layout.dart';
-import '../remote_key.dart';
-import '../remote_skin.dart';
-import 'remote_image_scope.dart';
-import 'section_renderer.dart';
+import 'package:flixsy/data/models/layout/layout_block.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/theming/remote_skin.dart';
+import 'package:flixsy/theming/standard/remote_image_scope.dart';
+import 'package:flixsy/theming/standard/section_renderer.dart';
 
 /// Renders a [RemoteLayout] by walking its blocks and handing each to the
 /// active skin's [SectionRenderer].

@@ -3,16 +3,16 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../data/models/layout/layout_block.dart';
-import '../../../data/models/layout/remote_button.dart';
-import '../../../core/extensions/l10n_extensions.dart';
-import '../../../shared/widgets/pointer_aware_star_dpad.dart';
-import '../../icons/remote_key_l10n.dart';
-import '../../remote_key.dart';
-import '../../skin_tokens.dart';
-import '../../standard/button_presentation.dart';
-import '../../standard/remote_image_scope.dart';
-import '../../standard/section_renderer.dart';
+import 'package:flixsy/data/models/layout/layout_block.dart';
+import 'package:flixsy/data/models/layout/remote_button.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/shared/widgets/pointer_aware_star_dpad.dart';
+import 'package:flixsy/theming/icons/remote_key_l10n.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
+import 'package:flixsy/theming/standard/button_presentation.dart';
+import 'package:flixsy/theming/standard/remote_image_scope.dart';
+import 'package:flixsy/theming/standard/section_renderer.dart';
 
 /// The `Classic` skin as a [SectionRenderer]: plain rounded [ElevatedButton]s
 /// styled entirely by `ClassicTheme`. Together with that theme it forms the

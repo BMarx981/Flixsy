@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/models/stored_image.dart';
-import '../shared/providers/app_providers.dart';
+import 'package:flixsy/data/models/stored_image.dart';
+import 'package:flixsy/shared/providers/app_providers.dart';
 
 /// Every user-uploaded image, most recently added first, streamed from the
 /// Drift- and file-backed `CustomImageRepository`.

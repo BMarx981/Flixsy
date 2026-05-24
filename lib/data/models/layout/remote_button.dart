@@ -1,5 +1,5 @@
-import '../../../theming/remote_key.dart';
-import 'button_appearance.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/data/models/layout/button_appearance.dart';
 
 /// A single button in a layout.
 ///

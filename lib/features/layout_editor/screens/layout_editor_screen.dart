@@ -4,20 +4,20 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/extensions/l10n_extensions.dart';
-import '../../../data/models/layout/layout_block.dart';
-import '../../../data/models/layout/remote_button.dart';
-import '../../../data/models/layout/remote_layout.dart';
-import '../../../shared/widgets/glass_surface.dart';
-import '../../../theming/custom_image_provider.dart';
-import '../../../theming/icons/remote_key_l10n.dart';
-import '../../../theming/layout_provider.dart';
-import '../../../theming/skins/classic/classic_section_renderer.dart';
-import '../../../theming/standard/button_presentation.dart';
-import '../../../theming/standard/standard_remote.dart';
-import '../providers/layout_editor_provider.dart';
-import '../widgets/block_type_sheet.dart';
-import '../widgets/button_editor_sheet.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/data/models/layout/layout_block.dart';
+import 'package:flixsy/data/models/layout/remote_button.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/shared/widgets/glass_surface.dart';
+import 'package:flixsy/theming/custom_image_provider.dart';
+import 'package:flixsy/theming/icons/remote_key_l10n.dart';
+import 'package:flixsy/theming/layout_provider.dart';
+import 'package:flixsy/theming/skins/classic/classic_section_renderer.dart';
+import 'package:flixsy/theming/standard/button_presentation.dart';
+import 'package:flixsy/theming/standard/standard_remote.dart';
+import 'package:flixsy/features/layout_editor/providers/layout_editor_provider.dart';
+import 'package:flixsy/features/layout_editor/widgets/block_type_sheet.dart';
+import 'package:flixsy/features/layout_editor/widgets/button_editor_sheet.dart';
 
 /// Whether [block] supports inline add/remove of its buttons in the editor —
 /// true for [ButtonRowBlock] and [GridBlock], false for fixed-slot blocks.

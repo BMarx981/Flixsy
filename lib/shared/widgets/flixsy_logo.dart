@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../core/extensions/l10n_extensions.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
 
 /// The Flixsy brand mark, rendered from a vector asset so it stays crisp
 /// at any size.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../skin_tokens.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
 
 /// Palette and theme for the `Cloud` skin — a bright sky with white clouds.
 /// Brightness flips to [Brightness.light] so the foreground (buttons, icons,

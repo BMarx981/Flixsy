@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'cloud_theme.dart';
+import 'package:flixsy/theming/skins/cloud/cloud_theme.dart';
 
 /// Slow, peaceful drift of soft clouds across a sky-blue gradient — the
 /// backdrop for the `Cloud` skin. Self-contained: owns its ticker and isolates

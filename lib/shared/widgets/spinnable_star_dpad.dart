@@ -8,9 +8,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../core/extensions/l10n_extensions.dart';
-import '../../theming/skin_tokens.dart';
-import 'flixsy_logo.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
+import 'package:flixsy/shared/widgets/flixsy_logo.dart';
 
 /// A D-pad control that fuses four directional tap regions, an OK tap, and a
 /// scroll-wheel spin into one surface.

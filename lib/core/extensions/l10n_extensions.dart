@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-import '../../l10n/generated/app_localizations.dart';
-import '../errors/connect_failure.dart';
+import 'package:flixsy/l10n/generated/app_localizations.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
 
 /// Localization helpers shared across the app.
 ///

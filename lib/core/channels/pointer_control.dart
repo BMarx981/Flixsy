@@ -1,4 +1,4 @@
-import '../errors/connect_failure.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
 
 /// Free-cursor / accelerometer-pointer capability exposed by transports that
 /// support an LG Magic Remote-style arrow (currently webOS).

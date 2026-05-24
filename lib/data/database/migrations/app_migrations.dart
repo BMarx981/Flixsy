@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 
-import '../app_database.dart';
+import 'package:flixsy/data/database/app_database.dart';
 
 /// Builds the [AppDatabase] migration strategy.
 ///

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../shared/widgets/glass_surface.dart';
+import 'package:flixsy/shared/widgets/glass_surface.dart';
 
 /// Shows a modal bottom sheet whose surface is a glass panel — same visual
 /// language as [GlassSurface] used by the editor screen.

@@ -1,4 +1,4 @@
-import '../errors/connect_failure.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
 
 /// Remote text-injection capability exposed by transports whose TVs accept
 /// inserted text into a focused field (currently planned: Roku, webOS,

@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../data/models/layout/button_appearance.dart';
-import '../../../data/models/layout/layout_block.dart';
-import '../../../data/models/layout/remote_button.dart';
-import '../../../data/models/layout/remote_layout.dart';
-import '../../../theming/remote_key.dart';
+import 'package:flixsy/data/models/layout/button_appearance.dart';
+import 'package:flixsy/data/models/layout/layout_block.dart';
+import 'package:flixsy/data/models/layout/remote_button.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/theming/remote_key.dart';
 
 /// The kinds of block the editor can add.
 ///

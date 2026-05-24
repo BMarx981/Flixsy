@@ -5,13 +5,13 @@ import 'package:drift/native.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-import 'daos/custom_images_dao.dart';
-import 'daos/layouts_dao.dart';
-import 'daos/preferences_dao.dart';
-import 'migrations/app_migrations.dart';
-import 'tables/custom_images_table.dart';
-import 'tables/custom_layouts_table.dart';
-import 'tables/preferences_table.dart';
+import 'package:flixsy/data/database/daos/custom_images_dao.dart';
+import 'package:flixsy/data/database/daos/layouts_dao.dart';
+import 'package:flixsy/data/database/daos/preferences_dao.dart';
+import 'package:flixsy/data/database/migrations/app_migrations.dart';
+import 'package:flixsy/data/database/tables/custom_images_table.dart';
+import 'package:flixsy/data/database/tables/custom_layouts_table.dart';
+import 'package:flixsy/data/database/tables/preferences_table.dart';
 
 part 'app_database.g.dart';
 

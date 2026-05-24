@@ -5,18 +5,18 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
-import 'app_localizations_ar.dart';
-import 'app_localizations_de.dart';
-import 'app_localizations_en.dart';
-import 'app_localizations_es.dart';
-import 'app_localizations_fr.dart';
-import 'app_localizations_hi.dart';
-import 'app_localizations_it.dart';
-import 'app_localizations_ja.dart';
-import 'app_localizations_ko.dart';
-import 'app_localizations_pt.dart';
-import 'app_localizations_ru.dart';
-import 'app_localizations_zh.dart';
+import 'package:flixsy/l10n/generated/app_localizations_ar.dart';
+import 'package:flixsy/l10n/generated/app_localizations_de.dart';
+import 'package:flixsy/l10n/generated/app_localizations_en.dart';
+import 'package:flixsy/l10n/generated/app_localizations_es.dart';
+import 'package:flixsy/l10n/generated/app_localizations_fr.dart';
+import 'package:flixsy/l10n/generated/app_localizations_hi.dart';
+import 'package:flixsy/l10n/generated/app_localizations_it.dart';
+import 'package:flixsy/l10n/generated/app_localizations_ja.dart';
+import 'package:flixsy/l10n/generated/app_localizations_ko.dart';
+import 'package:flixsy/l10n/generated/app_localizations_pt.dart';
+import 'package:flixsy/l10n/generated/app_localizations_ru.dart';
+import 'package:flixsy/l10n/generated/app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
 

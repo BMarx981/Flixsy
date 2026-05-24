@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../skin_tokens.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
 
 /// Palette and theme for the `Punk` skin. The backdrop is a graffitied brick
 /// alley — dark brick, torn posters, spray-paint tags and a glitching neon

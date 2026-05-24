@@ -9,10 +9,10 @@ library;
 
 import 'package:flutter/widgets.dart';
 
-import '../../data/models/layout/button_appearance.dart';
-import '../../data/models/layout/remote_button.dart';
-import '../icons/icon_catalog.dart';
-import '../remote_key.dart';
+import 'package:flixsy/data/models/layout/button_appearance.dart';
+import 'package:flixsy/data/models/layout/remote_button.dart';
+import 'package:flixsy/theming/icons/icon_catalog.dart';
+import 'package:flixsy/theming/remote_key.dart';
 
 /// What a standard renderer paints as a button's primary mark.
 sealed class ButtonGlyph {

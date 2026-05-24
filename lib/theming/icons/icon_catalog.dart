@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../remote_key.dart';
-import 'icon_pack.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/theming/icons/icon_pack.dart';
 
 /// The icon catalogue: the built-in `Standard` pack plus each [RemoteKey]'s
 /// default icon and label.

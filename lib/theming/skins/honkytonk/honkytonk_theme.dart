@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../skin_tokens.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
 
 /// Palette and theme for the `Honkytonk` skin. The backdrop is a dim country
 /// bar interior — warm wood, hanging bulbs, and a neon stage sign — so the

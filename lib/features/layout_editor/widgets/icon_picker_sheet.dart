@@ -3,15 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/extensions/l10n_extensions.dart';
-import '../../../data/models/layout/button_appearance.dart';
-import '../../../data/models/stored_image.dart';
-import '../../../theming/custom_image_provider.dart';
-import '../../../theming/icons/icon_catalog.dart';
-import '../../../theming/icons/icon_pack.dart';
-import '../../../theming/icons/remote_key_l10n.dart';
-import '../../../theming/remote_key.dart';
-import 'glass_sheet.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/data/models/layout/button_appearance.dart';
+import 'package:flixsy/data/models/stored_image.dart';
+import 'package:flixsy/theming/custom_image_provider.dart';
+import 'package:flixsy/theming/icons/icon_catalog.dart';
+import 'package:flixsy/theming/icons/icon_pack.dart';
+import 'package:flixsy/theming/icons/remote_key_l10n.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/features/layout_editor/widgets/glass_sheet.dart';
 
 /// Shows a bottom sheet to pick a button's *appearance kind* — the catalogue
 /// default, a `Standard`-pack icon, one of the user's images, or text-only —

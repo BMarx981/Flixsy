@@ -1,5 +1,5 @@
-import '../../../theming/remote_key.dart';
-import 'remote_button.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/data/models/layout/remote_button.dart';
 
 /// One section of a [RemoteLayout]. A layout is an ordered list of blocks;
 /// each block type renders itself responsively, so a layout is valid at any

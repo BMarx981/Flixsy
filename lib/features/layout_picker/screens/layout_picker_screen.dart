@@ -2,14 +2,14 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/extensions/l10n_extensions.dart';
-import '../../../data/models/layout/remote_layout.dart';
-import '../../../router/app_router.dart';
-import '../../../shared/ads/remote_banner_ad.dart';
-import '../../../shared/providers/app_providers.dart';
-import '../../../shared/widgets/glass_popup_menu.dart';
-import '../../../shared/widgets/glass_surface.dart';
-import '../../../theming/layout_provider.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/router/app_router.dart';
+import 'package:flixsy/shared/ads/remote_banner_ad.dart';
+import 'package:flixsy/shared/providers/app_providers.dart';
+import 'package:flixsy/shared/widgets/glass_popup_menu.dart';
+import 'package:flixsy/shared/widgets/glass_surface.dart';
+import 'package:flixsy/theming/layout_provider.dart';
 
 /// Lists the built-in templates and the user's custom layouts, and lets the
 /// user choose, duplicate, or delete one (design doc §8).

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-import '../../analytics/analytics_service.dart';
+import 'package:flixsy/analytics/analytics_service.dart';
 
 /// Drives Google's User Messaging Platform (UMP) consent flow.
 ///

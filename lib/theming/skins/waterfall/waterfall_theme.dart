@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../skin_tokens.dart';
+import 'package:flixsy/theming/skin_tokens.dart';
 
 /// Palette and theme for the `Waterfall` skin — deep ocean blues with a
 /// foam-pale foreground. The background is painted by [WaterfallBackground],

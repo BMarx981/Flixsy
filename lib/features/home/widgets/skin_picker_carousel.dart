@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/extensions/l10n_extensions.dart';
-import '../../../data/models/layout/remote_layout.dart';
-import '../../../theming/skin_provider.dart';
-import '../../../theming/skin_registry.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/theming/skin_provider.dart';
+import 'package:flixsy/theming/skin_registry.dart';
 
 /// Swipe-to-pick carousel that the user enters from the home screen.
 ///

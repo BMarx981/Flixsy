@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import '../errors/connect_failure.dart';
-import 'multicast_lock.dart';
-import 'pointer_control.dart';
-import 'text_input.dart';
-import 'remote_channel.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
+import 'package:flixsy/core/channels/multicast_lock.dart';
+import 'package:flixsy/core/channels/pointer_control.dart';
+import 'package:flixsy/core/channels/text_input.dart';
+import 'package:flixsy/core/channels/remote_channel.dart';
 
 /// A [RemoteChannel] that fans across several per-vendor channels at once.
 ///

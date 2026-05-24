@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 
-import '../app_database.dart';
-import '../tables/preferences_table.dart';
+import 'package:flixsy/data/database/app_database.dart';
+import 'package:flixsy/data/database/tables/preferences_table.dart';
 
 part 'preferences_dao.g.dart';
 

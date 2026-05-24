@@ -1,4 +1,4 @@
-import '../../theming/skin_registry.dart';
+import 'package:flixsy/theming/skin_registry.dart';
 
 abstract interface class IPreferencesRepository {
   Stream<AppSkin> watchActiveSkin();

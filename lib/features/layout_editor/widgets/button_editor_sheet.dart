@@ -3,17 +3,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/extensions/l10n_extensions.dart';
-import '../../../data/models/layout/button_appearance.dart';
-import '../../../data/models/layout/remote_button.dart';
-import '../../../theming/custom_image_provider.dart';
-import '../../../theming/icons/icon_catalog.dart';
-import '../../../theming/icons/remote_key_l10n.dart';
-import '../../../theming/remote_key.dart';
-import '../../../theming/standard/button_presentation.dart';
-import 'action_picker_sheet.dart';
-import 'glass_sheet.dart';
-import 'icon_picker_sheet.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/data/models/layout/button_appearance.dart';
+import 'package:flixsy/data/models/layout/remote_button.dart';
+import 'package:flixsy/theming/custom_image_provider.dart';
+import 'package:flixsy/theming/icons/icon_catalog.dart';
+import 'package:flixsy/theming/icons/remote_key_l10n.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/theming/standard/button_presentation.dart';
+import 'package:flixsy/features/layout_editor/widgets/action_picker_sheet.dart';
+import 'package:flixsy/features/layout_editor/widgets/glass_sheet.dart';
+import 'package:flixsy/features/layout_editor/widgets/icon_picker_sheet.dart';
 
 /// Shows a bottom sheet to edit one button — its action, its icon, and its
 /// label — and resolves to the edited [RemoteButton], or `null` if dismissed

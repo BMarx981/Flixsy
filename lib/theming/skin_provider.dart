@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../shared/providers/app_providers.dart';
-import 'skin_registry.dart';
+import 'package:flixsy/shared/providers/app_providers.dart';
+import 'package:flixsy/theming/skin_registry.dart';
 
 /// Streams the active [AppSkin] from the Drift-backed preferences repository.
 final activeSkinProvider = StreamProvider<AppSkin>((ref) {

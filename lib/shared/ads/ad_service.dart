@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-import '../../analytics/analytics_service.dart';
-import 'consent_service.dart';
+import 'package:flixsy/analytics/analytics_service.dart';
+import 'package:flixsy/shared/ads/consent_service.dart';
 
 class AdService {
   AdService(this._analyticsService, this._consentService);

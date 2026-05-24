@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/errors/connect_failure.dart';
-import '../../../data/models/tv_device.dart';
-import '../../../shared/providers/app_providers.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
+import 'package:flixsy/data/models/tv_device.dart';
+import 'package:flixsy/shared/providers/app_providers.dart';
 
 enum DiscoveryStatus { scanning, idle, error }
 

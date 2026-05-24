@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import '../errors/connect_failure.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
 
 /// A single parsed response to an SSDP `M-SEARCH` query.
 ///

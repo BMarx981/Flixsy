@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/layout/remote_layout.dart';
-import '../../remote_skin.dart';
-import '../../standard/standard_remote.dart';
-import 'cloud_background.dart';
-import 'cloud_pulse_scope.dart';
-import 'cloud_section_renderer.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/theming/remote_skin.dart';
+import 'package:flixsy/theming/standard/standard_remote.dart';
+import 'package:flixsy/theming/skins/cloud/cloud_background.dart';
+import 'package:flixsy/theming/skins/cloud/cloud_pulse_scope.dart';
+import 'package:flixsy/theming/skins/cloud/cloud_section_renderer.dart';
 
 /// The `Cloud` skin: soft clouds drifting across a sky-blue gradient behind a
 /// [StandardRemote] whose white panels breathe with a shared, slow pulse.

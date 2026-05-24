@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/extensions/l10n_extensions.dart';
-import 'l10n/generated/app_localizations.dart';
-import 'shared/providers/app_providers.dart';
-import 'theming/skin_provider.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/l10n/generated/app_localizations.dart';
+import 'package:flixsy/shared/providers/app_providers.dart';
+import 'package:flixsy/theming/skin_provider.dart';
 
 class FlixsyApp extends ConsumerWidget {
   const FlixsyApp({super.key});

@@ -2,22 +2,22 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/errors/connect_failure.dart';
-import '../../../core/extensions/l10n_extensions.dart';
-import '../../../router/app_router.dart';
-import '../../../shared/ads/remote_banner_ad.dart';
-import '../../../shared/iap/iap_failure.dart';
-import '../../../shared/iap/iap_failure_l10n.dart';
-import '../../../shared/providers/app_providers.dart';
-import '../../../shared/widgets/glass_popup_menu.dart';
-import '../../../theming/custom_image_provider.dart';
-import '../../../theming/layout_provider.dart';
-import '../../../theming/remote_key.dart';
-import '../../../theming/skin_provider.dart';
-import '../../../theming/skin_registry.dart';
-import '../../keyboard/widgets/keyboard_sheet.dart';
-import '../providers/remote_control_provider.dart';
-import '../widgets/skin_picker_carousel.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/router/app_router.dart';
+import 'package:flixsy/shared/ads/remote_banner_ad.dart';
+import 'package:flixsy/shared/iap/iap_failure.dart';
+import 'package:flixsy/shared/iap/iap_failure_l10n.dart';
+import 'package:flixsy/shared/providers/app_providers.dart';
+import 'package:flixsy/shared/widgets/glass_popup_menu.dart';
+import 'package:flixsy/theming/custom_image_provider.dart';
+import 'package:flixsy/theming/layout_provider.dart';
+import 'package:flixsy/theming/remote_key.dart';
+import 'package:flixsy/theming/skin_provider.dart';
+import 'package:flixsy/theming/skin_registry.dart';
+import 'package:flixsy/features/keyboard/widgets/keyboard_sheet.dart';
+import 'package:flixsy/features/home/providers/remote_control_provider.dart';
+import 'package:flixsy/features/home/widgets/skin_picker_carousel.dart';
 
 enum _HomeMenuAction { removeAds, restorePurchases }
 

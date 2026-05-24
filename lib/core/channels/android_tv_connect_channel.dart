@@ -2,14 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import '../errors/connect_failure.dart';
-import 'android_tv_crypto.dart';
-import 'mdns_discovery.dart';
-import 'pointer_control.dart';
-import 'proto_codec.dart';
-import 'proto_socket.dart';
-import 'remote_channel.dart';
-import 'text_input.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
+import 'package:flixsy/core/channels/android_tv_crypto.dart';
+import 'package:flixsy/core/channels/mdns_discovery.dart';
+import 'package:flixsy/core/channels/pointer_control.dart';
+import 'package:flixsy/core/channels/proto_codec.dart';
+import 'package:flixsy/core/channels/proto_socket.dart';
+import 'package:flixsy/core/channels/remote_channel.dart';
+import 'package:flixsy/core/channels/text_input.dart';
 
 // --- Protocol constants -----------------------------------------------------
 //

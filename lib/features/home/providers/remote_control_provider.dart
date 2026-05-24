@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/errors/connect_failure.dart';
-import '../../../shared/providers/app_providers.dart';
+import 'package:flixsy/core/errors/connect_failure.dart';
+import 'package:flixsy/shared/providers/app_providers.dart';
 
 /// Sends remote key commands to the connected TV and records analytics.
 ///

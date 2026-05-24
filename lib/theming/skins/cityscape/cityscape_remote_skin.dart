@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/layout/remote_layout.dart';
-import '../../remote_skin.dart';
-import '../../standard/standard_remote.dart';
-import 'cityscape_background.dart';
-import 'cityscape_pulse_scope.dart';
-import 'cityscape_section_renderer.dart';
+import 'package:flixsy/data/models/layout/remote_layout.dart';
+import 'package:flixsy/theming/remote_skin.dart';
+import 'package:flixsy/theming/standard/standard_remote.dart';
+import 'package:flixsy/theming/skins/cityscape/cityscape_background.dart';
+import 'package:flixsy/theming/skins/cityscape/cityscape_pulse_scope.dart';
+import 'package:flixsy/theming/skins/cityscape/cityscape_section_renderer.dart';
 
 /// The `Cityscape` skin: a night skyline — deep indigo sky, layered building
 /// silhouettes speckled with lit windows, a soft moon, and blinking aircraft

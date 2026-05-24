@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 
-import '../app_database.dart';
-import '../tables/custom_layouts_table.dart';
+import 'package:flixsy/data/database/app_database.dart';
+import 'package:flixsy/data/database/tables/custom_layouts_table.dart';
 
 part 'layouts_dao.g.dart';
 

@@ -5,9 +5,9 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../domain/repositories/i_custom_image_repository.dart';
-import '../database/app_database.dart';
-import '../models/stored_image.dart';
+import 'package:flixsy/domain/repositories/i_custom_image_repository.dart';
+import 'package:flixsy/data/database/app_database.dart';
+import 'package:flixsy/data/models/stored_image.dart';
 
 /// Picks one image from the device. Injected so tests supply a fake instead
 /// of touching the platform image picker.

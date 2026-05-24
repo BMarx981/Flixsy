@@ -147,6 +147,29 @@ Future<void> _driveToAwaitingCode(_FakeConnector connector) async {
   await _settle();
 }
 
+/// Builds a channel that already has a connected remote-control socket.
+/// Pre-seeds the credential store so pairing is skipped — the remote socket
+/// ends up at `connector.sockets[0]`.
+Future<AndroidTvConnectChannel> _connectedChannel(
+  _FakeConnector connector,
+) async {
+  final credentials = _CredentialStore();
+  await credentials.save(
+    _deviceId,
+    jsonEncode({'cert': 'CLIENT-CERT', 'key': 'CLIENT-KEY'}),
+  );
+  final channel = await _discoveredChannel(
+    connector: connector,
+    discoverer: _FakeMdnsDiscoverer(),
+    credentials: credentials,
+  );
+  final connecting = channel.connectToDevice(_deviceId);
+  await _settle();
+  await _driveRemoteHandshake(connector, socketIndex: 0);
+  await connecting;
+  return channel;
+}
+
 /// Drives the remote-control handshake on the socket at [socketIndex].
 Future<void> _driveRemoteHandshake(
   _FakeConnector connector, {
@@ -458,29 +481,9 @@ void main() {
   });
 
   group('control', () {
-    Future<AndroidTvConnectChannel> connectedChannel(
-      _FakeConnector connector,
-    ) async {
-      final credentials = _CredentialStore();
-      await credentials.save(
-        _deviceId,
-        jsonEncode({'cert': 'CLIENT-CERT', 'key': 'CLIENT-KEY'}),
-      );
-      final channel = await _discoveredChannel(
-        connector: connector,
-        discoverer: _FakeMdnsDiscoverer(),
-        credentials: credentials,
-      );
-      final connecting = channel.connectToDevice(_deviceId);
-      await _settle();
-      await _driveRemoteHandshake(connector, socketIndex: 0);
-      await connecting;
-      return channel;
-    }
-
     test('sendKeyCommand injects the mapped key code', () async {
       final connector = _FakeConnector();
-      final channel = await connectedChannel(connector);
+      final channel = await _connectedChannel(connector);
       addTearDown(channel.dispose);
 
       final socket = connector.sockets[0];
@@ -495,7 +498,7 @@ void main() {
 
     test('sendKeyCommand rejects an unsupported key', () async {
       final connector = _FakeConnector();
-      final channel = await connectedChannel(connector);
+      final channel = await _connectedChannel(connector);
       addTearDown(channel.dispose);
 
       await expectLater(
@@ -519,7 +522,7 @@ void main() {
 
     test('answers a ping request with a matching ping response', () async {
       final connector = _FakeConnector();
-      final channel = await connectedChannel(connector);
+      final channel = await _connectedChannel(connector);
       addTearDown(channel.dispose);
 
       final socket = connector.sockets[0];
@@ -534,7 +537,7 @@ void main() {
 
     test('disconnect emits disconnected and blocks further keys', () async {
       final connector = _FakeConnector();
-      final channel = await connectedChannel(connector);
+      final channel = await _connectedChannel(connector);
       addTearDown(channel.dispose);
 
       final disconnected = channel.deviceEvents.firstWhere(
@@ -547,6 +550,147 @@ void main() {
 
       await expectLater(
         channel.sendKeyCommand('HOME'),
+        throwsA(isA<CommandFailure>()),
+      );
+    });
+  });
+
+  group('textInput', () {
+    test('is null until a device is connected', () async {
+      final connector = _FakeConnector();
+      final channel = _channel(
+        connector: connector,
+        discoverer: _FakeMdnsDiscoverer(),
+      );
+      addTearDown(channel.dispose);
+      expect(channel.textInput, isNull);
+    });
+
+    test('returns the channel once connected, and null again after '
+        'disconnect', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+
+      expect(channel.textInput, same(channel));
+
+      await channel.disconnect();
+      expect(channel.textInput, isNull);
+    });
+
+    test(
+      'sendText emits one RemoteImeBatchEdit frame with a commit_text op',
+      () async {
+        final connector = _FakeConnector();
+        final channel = await _connectedChannel(connector);
+        addTearDown(channel.dispose);
+
+        final socket = connector.sockets[0];
+        socket.sent.clear();
+        await channel.textInput!.sendText('hi 😀');
+
+        final message = ProtoReader.parse(socket.sent.single);
+        final batchEdit = message.readMessage(11)!; // remote_ime_batch_edit
+        final op = batchEdit.readMessage(2)!; // BatchEdit op
+        expect(utf8.decode(op.readBytes(1)!), 'hi 😀'); // commit_text
+      },
+    );
+
+    test('sendText on an empty string is a no-op (no frame)', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+
+      final socket = connector.sockets[0];
+      socket.sent.clear();
+      await channel.textInput!.sendText('');
+
+      expect(socket.sent, isEmpty);
+    });
+
+    test(
+      'sendBackspace emits a delete_surrounding_text(before:1, after:0) op',
+      () async {
+        final connector = _FakeConnector();
+        final channel = await _connectedChannel(connector);
+        addTearDown(channel.dispose);
+
+        final socket = connector.sockets[0];
+        socket.sent.clear();
+        await channel.textInput!.sendBackspace();
+
+        final message = ProtoReader.parse(socket.sent.single);
+        final batchEdit = message.readMessage(11)!;
+        final op = batchEdit.readMessage(2)!;
+        final delete = op.readMessage(2)!; // delete_surrounding_text
+        expect(delete.readInt(1), 1); // before_length
+        expect(delete.readInt(2), 0); // after_length
+      },
+    );
+
+    test('submit falls back to a KEYCODE_ENTER key inject', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+
+      final socket = connector.sockets[0];
+      socket.sent.clear();
+      await channel.textInput!.submit();
+
+      final message = ProtoReader.parse(socket.sent.single);
+      final inject = message.readMessage(10)!; // remote_key_inject
+      expect(inject.readInt(1), 23); // KEYCODE_DPAD_CENTER for 'ENTER' alias
+      expect(inject.readInt(2), 3); // RemoteDirection.SHORT
+    });
+
+    test(
+      'clear emits a delete_surrounding_text spanning the whole field, '
+      'ignoring knownLength',
+      () async {
+        final connector = _FakeConnector();
+        final channel = await _connectedChannel(connector);
+        addTearDown(channel.dispose);
+
+        final socket = connector.sockets[0];
+        socket.sent.clear();
+        await channel.textInput!.clear(knownLength: 3);
+
+        // One frame, regardless of knownLength.
+        expect(socket.sent, hasLength(1));
+        final message = ProtoReader.parse(socket.sent.single);
+        final batchEdit = message.readMessage(11)!;
+        final op = batchEdit.readMessage(2)!;
+        final delete = op.readMessage(2)!;
+        // Both spans are far larger than any real field — the IME caps them
+        // at the actual length.
+        expect(delete.readInt(1), greaterThan(1000));
+        expect(delete.readInt(2), greaterThan(1000));
+      },
+    );
+
+    test('sendText throws CommandFailure when not connected', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      // Capture the capability handle while connected, then disconnect.
+      final textInput = channel.textInput!;
+      await channel.disconnect();
+
+      await expectLater(
+        textInput.sendText('x'),
+        throwsA(isA<CommandFailure>()),
+      );
+    });
+
+    test('clear throws CommandFailure when not connected', () async {
+      final connector = _FakeConnector();
+      final channel = await _connectedChannel(connector);
+      addTearDown(channel.dispose);
+      final textInput = channel.textInput!;
+      await channel.disconnect();
+
+      await expectLater(
+        textInput.clear(),
         throwsA(isA<CommandFailure>()),
       );
     });

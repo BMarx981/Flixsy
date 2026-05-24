@@ -47,6 +47,8 @@ const RemoteLayout classicLayout = RemoteLayout(
         RemoteButton(action: RemoteKey.fastForward),
       ],
     ),
+    SpacerBlock(height: 24),
+    ButtonRowBlock(buttons: [RemoteButton(action: RemoteKey.keyboard)]),
   ],
 );
 

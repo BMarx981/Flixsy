@@ -131,10 +131,7 @@ double _axisDegFor(_Region r) => switch (r) {
 
 class _SpinnableStarDpadState extends State<SpinnableStarDpad>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _resetController = AnimationController(
-    vsync: this,
-    duration: SpinnableStarDpad.resetDuration,
-  )..addListener(_onResetTick);
+  late final AnimationController _resetController;
 
   _Region? _active;
   _GestureMode _mode = _GestureMode.idle;
@@ -155,6 +152,15 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   bool _inLongPress = false;
 
   Offset get _center => Offset(widget.size / 2, widget.size / 2);
+
+  @override
+  void initState() {
+    super.initState();
+    _resetController = AnimationController(
+      vsync: this,
+      duration: SpinnableStarDpad.resetDuration,
+    )..addListener(_onResetTick);
+  }
 
   // Current visual rotation, in radians, derived from `_axisPixels` so the
   // wheel and the tick emitter share a single source of truth. Used only

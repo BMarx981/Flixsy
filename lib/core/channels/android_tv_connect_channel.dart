@@ -65,8 +65,37 @@ const int _fRemotePingResponse = 9;
 /// `RemoteMessage.remote_key_inject`.
 const int _fRemoteKeyInject = 10;
 
+/// `RemoteMessage.remote_ime_batch_edit` — the text-injection envelope. Carries
+/// an editInfo plus a list of commit/delete operations applied to the focused
+/// TV field in one frame.
+const int _fRemoteImeBatchEdit = 11;
+
 /// `RemoteMessage.remote_start`.
 const int _fRemoteStart = 40;
+
+/// `RemoteImeBatchEdit.BatchEdit.commit_text` — inserts a string at the cursor.
+const int _fBatchEditCommitText = 1;
+
+/// `RemoteImeBatchEdit.BatchEdit.delete_surrounding_text` — deletes characters
+/// around the cursor. The nested message carries `before_length` and
+/// `after_length` field 1 / 2.
+const int _fBatchEditDeleteSurrounding = 2;
+
+/// `DeleteSurroundingText.before_length` — characters to delete to the left
+/// of the cursor.
+const int _fDeleteBeforeLength = 1;
+
+/// `DeleteSurroundingText.after_length` — characters to delete to the right
+/// of the cursor.
+const int _fDeleteAfterLength = 2;
+
+/// `RemoteImeBatchEdit.batch_edit` — repeated field carrying the ordered list
+/// of commit/delete operations applied to the focused field.
+const int _fBatchEditOps = 2;
+
+/// A "clear the whole field" delete amount the Android IME framework caps at
+/// the actual field length — one frame, no caller-supplied length needed.
+const int _clearDeleteSpan = 9999;
 
 /// `RemoteDirection.SHORT` — a normal key tap (as opposed to a long-press).
 const int _directionShort = 3;
@@ -108,7 +137,7 @@ const int _requestedFeatures =
 /// through the `loadCredential` / `saveCredential` callbacks, so a paired TV
 /// reconnects without showing the code again. The TLS transport, the mDNS
 /// discoverer, and the crypto are all injectable for testing.
-class AndroidTvConnectChannel implements RemoteChannel {
+class AndroidTvConnectChannel implements RemoteChannel, RemoteTextInput {
   AndroidTvConnectChannel({
     ProtoSocketConnector connector = secureProtoSocketConnector,
     MdnsDiscoverer? discovery,
@@ -318,7 +347,59 @@ class AndroidTvConnectChannel implements RemoteChannel {
   PointerControl? get pointerControl => null;
 
   @override
-  RemoteTextInput? get textInput => null;
+  RemoteTextInput? get textInput => _connectedDeviceId == null ? null : this;
+
+  // --- RemoteTextInput ----------------------------------------------------
+  //
+  // Android TV exposes a dedicated text path on the remote-control socket:
+  // `RemoteImeBatchEdit` frames carry commit/delete operations the IME applies
+  // to whatever field currently has focus. Submit falls back to `KEYCODE_ENTER`
+  // through the existing key-inject path — works for any focused field, and
+  // sidesteps the under-documented `RemoteImeShowAction` editor-action codes.
+
+  @override
+  Future<void> sendText(String text) async {
+    if (text.isEmpty) return;
+    final socket = _requireRemoteSocket();
+    socket.send(_imeBatchEditMessage(_commitTextOp(text)));
+  }
+
+  @override
+  Future<void> sendBackspace() async {
+    final socket = _requireRemoteSocket();
+    socket.send(_imeBatchEditMessage(_deleteSurroundingOp(before: 1, after: 0)));
+  }
+
+  @override
+  Future<void> submit() async {
+    final socket = _requireRemoteSocket();
+    final keyCode = _keyCodes['ENTER']!;
+    socket.send(_keyInjectMessage(keyCode));
+  }
+
+  @override
+  Future<void> clear({int knownLength = 0}) async {
+    final socket = _requireRemoteSocket();
+    // The IME framework caps delete-surrounding at the actual field length,
+    // so a single span far larger than any real field clears it in one frame.
+    // [knownLength] is intentionally ignored — Android TV doesn't need it.
+    socket.send(
+      _imeBatchEditMessage(
+        _deleteSurroundingOp(before: _clearDeleteSpan, after: _clearDeleteSpan),
+      ),
+    );
+  }
+
+  ProtoSocket _requireRemoteSocket() {
+    if (_connectedDeviceId == null) {
+      throw const CommandFailure('Not connected to an Android TV');
+    }
+    final socket = _remoteSocket;
+    if (socket == null) {
+      throw const CommandFailure('Android TV connection is not open');
+    }
+    return socket;
+  }
 
   @override
   void dispose() {
@@ -600,6 +681,29 @@ class AndroidTvConnectChannel implements RemoteChannel {
       ..writeVarint(1, keyCode) // key_code
       ..writeVarint(2, _directionShort); // direction
     return (ProtoWriter()..writeMessage(_fRemoteKeyInject, inject)).toBytes();
+  }
+
+  /// One `RemoteImeBatchEdit.BatchEdit` carrying a `commit_text` operation.
+  ProtoWriter _commitTextOp(String text) =>
+      ProtoWriter()..writeString(_fBatchEditCommitText, text);
+
+  /// One `RemoteImeBatchEdit.BatchEdit` carrying a `delete_surrounding_text`
+  /// operation.
+  ProtoWriter _deleteSurroundingOp({required int before, required int after}) {
+    final delete = ProtoWriter()
+      ..writeVarint(_fDeleteBeforeLength, before)
+      ..writeVarint(_fDeleteAfterLength, after);
+    return ProtoWriter()..writeMessage(_fBatchEditDeleteSurrounding, delete);
+  }
+
+  /// Wraps a single batch-edit operation in a `RemoteMessage` envelope. We
+  /// emit one op per frame today — Android TV accepts repeated ops in one
+  /// frame, but per-op framing keeps the diff/queue model in
+  /// [`KeyboardSessionNotifier`] honest about which op succeeded vs failed.
+  Uint8List _imeBatchEditMessage(ProtoWriter op) {
+    final batchEdit = ProtoWriter()..writeMessage(_fBatchEditOps, op);
+    return (ProtoWriter()..writeMessage(_fRemoteImeBatchEdit, batchEdit))
+        .toBytes();
   }
 
   // --- Credential bundle --------------------------------------------------

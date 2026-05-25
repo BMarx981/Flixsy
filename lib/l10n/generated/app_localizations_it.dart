@@ -12,477 +12,508 @@ class AppLocalizationsIt extends AppLocalizations {
   String get appTitle => 'Flixsy';
 
   @override
-  String get discoveryHeaderTitle => 'Find Your TV';
+  String get discoveryHeaderTitle => 'Trova la tua TV';
 
   @override
   String get discoveryHeaderSubtitle =>
-      'Make sure your TV is on and connected to the same Wi-Fi network.';
+      'Assicurati che la TV sia accesa e collegata alla stessa rete Wi-Fi.';
 
   @override
-  String get discoveryErrorTitle => 'Could not start search';
+  String get discoveryErrorTitle => 'Impossibile avviare la ricerca';
 
   @override
   String get discoveryErrorBody =>
-      'Check your network connection and try again.';
+      'Controlla la tua connessione di rete e riprova.';
 
   @override
-  String get discoveryRetryButton => 'Try Again';
+  String get discoveryRetryButton => 'Riprova';
 
   @override
-  String get discoverySearching => 'Searching your network…';
+  String get discoverySearching => 'Ricerca nella tua rete…';
 
   @override
-  String get discoverySearchingHint => 'This can take a few seconds.';
+  String get discoverySearchingHint => 'Potrebbe richiedere alcuni secondi.';
 
   @override
   String discoveryDevicesFound(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count devices found',
-      one: '1 device found',
+      other: '$count dispositivi trovati',
+      one: '1 dispositivo trovato',
     );
     return '$_temp0';
   }
 
   @override
-  String get discoveryDeviceFallbackName => 'your TV';
+  String get discoveryDeviceFallbackName => 'la tua TV';
 
   @override
-  String get discoveryPairingEnterCodeTitle => 'Enter the code';
+  String get discoveryPairingEnterCodeTitle => 'Inserisci il codice';
 
   @override
-  String get discoveryPairingCheckTvTitle => 'Check your TV';
+  String get discoveryPairingCheckTvTitle => 'Guarda la tua TV';
 
   @override
   String discoveryPairingEnterCodeBody(String deviceName) {
-    return '$deviceName is showing a 6-digit code. Type it below to finish pairing.';
+    return '$deviceName sta mostrando un codice a 6 cifre. Digitalo qui sotto per completare l\'associazione.';
   }
 
   @override
   String discoveryPairingCheckTvBody(String deviceName) {
-    return 'Accept the connection request on $deviceName using its remote.';
+    return 'Accetta la richiesta di connessione su $deviceName con il suo telecomando.';
   }
 
   @override
   String get discoveryPairingCodeHint => '000000';
 
   @override
-  String get discoveryPairButton => 'Pair';
+  String get discoveryPairButton => 'Associa';
 
   @override
-  String get homeTitle => 'Remote';
+  String get homeTitle => 'Telecomando';
 
   @override
-  String get homeLayoutsTooltip => 'Layouts';
+  String get homeBackToRadarTooltip => 'Scegli un\'altra TV';
 
   @override
-  String get homeChangeSkinTooltip => 'Change skin';
+  String get renameDeviceDialogTitle => 'Rinomina TV';
 
   @override
-  String get skinPickerApply => 'Apply';
+  String get renameDeviceFieldLabel => 'Nome';
 
   @override
-  String get skinPickerCancel => 'Cancel';
+  String get renameDeviceSaveButton => 'Salva';
 
   @override
-  String get skinPickerPreviousTooltip => 'Previous skin';
+  String get renameDeviceCancelButton => 'Annulla';
 
   @override
-  String get skinPickerNextTooltip => 'Next skin';
+  String get renameDeviceResetButton => 'Ripristina';
 
   @override
-  String get layoutPickerTitle => 'Layouts';
+  String get homeLayoutsTooltip => 'Layout';
+
+  @override
+  String get homeChangeSkinTooltip => 'Cambia tema';
+
+  @override
+  String get skinPickerApply => 'Applica';
+
+  @override
+  String get skinPickerCancel => 'Annulla';
+
+  @override
+  String get skinPickerPreviousTooltip => 'Tema precedente';
+
+  @override
+  String get skinPickerNextTooltip => 'Tema successivo';
+
+  @override
+  String get layoutPickerTitle => 'Layout';
 
   @override
   String layoutPickerLoadError(String error) {
-    return 'Could not load layouts.\n$error';
+    return 'Impossibile caricare i layout.\n$error';
   }
 
   @override
-  String get layoutTypeTemplate => 'Built-in template';
+  String get layoutTypeTemplate => 'Modello integrato';
 
   @override
-  String get layoutTypeCustom => 'Custom layout';
+  String get layoutTypeCustom => 'Layout personalizzato';
 
   @override
-  String get layoutActionsTooltip => 'Layout actions';
+  String get layoutActionsTooltip => 'Azioni layout';
 
   @override
-  String get layoutActionDuplicate => 'Duplicate';
+  String get layoutActionDuplicate => 'Duplica';
 
   @override
-  String get layoutActionEdit => 'Edit';
+  String get layoutActionEdit => 'Modifica';
 
   @override
-  String get layoutDeleteDialogTitle => 'Delete layout?';
+  String get layoutDeleteDialogTitle => 'Eliminare il layout?';
 
   @override
   String layoutDeleteDialogBody(String name) {
-    return '\"$name\" will be permanently removed.';
+    return '\"$name\" verrà rimosso definitivamente.';
   }
 
   @override
-  String get editorTitle => 'Edit layout';
+  String get editorTitle => 'Modifica layout';
 
   @override
-  String get editorAddBlockButton => 'Add block';
+  String get editorAddBlockButton => 'Aggiungi blocco';
 
   @override
-  String get editorValidationName => 'Give the layout a name.';
+  String get editorValidationName => 'Assegna un nome al layout.';
 
   @override
-  String get editorValidationBlocks => 'Add at least one block before saving.';
+  String get editorValidationBlocks =>
+      'Aggiungi almeno un blocco prima di salvare.';
 
   @override
-  String get editorSavedSnack => 'Layout saved.';
+  String get editorSavedSnack => 'Layout salvato.';
 
   @override
-  String get editorPreviewLabel => 'Preview';
+  String get editorPreviewLabel => 'Anteprima';
 
   @override
-  String get editorBlocksLabel => 'Blocks';
+  String get editorBlocksLabel => 'Blocchi';
 
   @override
-  String get editorNameFieldLabel => 'Layout name';
+  String get editorNameFieldLabel => 'Nome del layout';
 
   @override
-  String get editorEmptyPreview => 'Add a block to see a preview';
+  String get editorEmptyPreview =>
+      'Aggiungi un blocco per vedere un\'anteprima';
 
   @override
-  String get editorRemoveBlockTooltip => 'Remove block';
+  String get editorRemoveBlockTooltip => 'Rimuovi blocco';
 
   @override
-  String get editorEmptyCell => 'Empty';
+  String get editorEmptyCell => 'Vuoto';
 
   @override
-  String get editorRemoveButtonTooltip => 'Remove button';
+  String get editorRemoveButtonTooltip => 'Rimuovi pulsante';
 
   @override
-  String get editorAddButtonChip => 'Add';
+  String get editorAddButtonChip => 'Aggiungi';
 
   @override
-  String get blockKindDpad => 'D-pad';
+  String get blockKindDpad => 'Croce direzionale';
 
   @override
-  String get blockKindButtonRow => 'Button row';
+  String get blockKindButtonRow => 'Riga di pulsanti';
 
   @override
-  String get blockKindVolume => 'Volume rocker';
+  String get blockKindVolume => 'Bilanciere volume';
 
   @override
-  String get blockKindGrid => 'Grid';
+  String get blockKindGrid => 'Griglia';
 
   @override
-  String get blockKindSpacer => 'Spacer';
+  String get blockKindSpacer => 'Spaziatore';
 
   @override
-  String get blockDescDpad => 'A five-button directional cross';
+  String get blockDescDpad => 'Una croce direzionale a cinque pulsanti';
 
   @override
-  String get blockDescButtonRow => 'An evenly spaced row of buttons';
+  String get blockDescButtonRow => 'Una riga di pulsanti equidistanti';
 
   @override
-  String get blockDescVolume => 'Volume down / mute / volume up';
+  String get blockDescVolume => 'Volume giù / muto / volume su';
 
   @override
-  String get blockDescGrid => 'A grid of buttons';
+  String get blockDescGrid => 'Una griglia di pulsanti';
 
   @override
-  String get blockDescSpacer => 'Blank vertical space between blocks';
+  String get blockDescSpacer => 'Spazio verticale vuoto tra i blocchi';
 
   @override
-  String get buttonEditorTitle => 'Edit button';
+  String get buttonEditorTitle => 'Modifica pulsante';
 
   @override
-  String get buttonEditorActionLabel => 'Action';
+  String get buttonEditorActionLabel => 'Azione';
 
   @override
-  String get buttonEditorIconLabel => 'Icon';
+  String get buttonEditorIconLabel => 'Icona';
 
   @override
-  String get buttonEditorShowLabel => 'Show label';
+  String get buttonEditorShowLabel => 'Mostra etichetta';
 
   @override
-  String get buttonEditorShowLabelOn => 'A caption is shown on the button';
+  String get buttonEditorShowLabelOn =>
+      'Sul pulsante viene mostrata una didascalia';
 
   @override
-  String get buttonEditorShowLabelOff => 'The button shows no caption';
+  String get buttonEditorShowLabelOff =>
+      'Il pulsante non mostra alcuna didascalia';
 
   @override
-  String get buttonEditorLabelField => 'Label';
+  String get buttonEditorLabelField => 'Etichetta';
 
   @override
   String buttonEditorLabelHelper(String defaultLabel) {
-    return 'Empty — using the default: $defaultLabel';
+    return 'Vuoto — utilizzo del predefinito: $defaultLabel';
   }
 
   @override
-  String get iconPickerTitle => 'Choose icon';
+  String get iconPickerTitle => 'Scegli icona';
 
   @override
-  String get iconPickerDefaultSubtitle => 'The standard icon for this action';
+  String get iconPickerDefaultSubtitle => 'L\'icona standard per questa azione';
 
   @override
-  String get iconPickerTextOnlySubtitle => 'Show the label, no icon';
+  String get iconPickerTextOnlySubtitle => 'Mostra l\'etichetta, senza icona';
 
   @override
-  String get iconPickerYourImages => 'Your images';
+  String get iconPickerYourImages => 'Le tue immagini';
 
   @override
-  String get iconPickerAddImage => 'Add';
+  String get iconPickerAddImage => 'Aggiungi';
 
   @override
   String get iconPackStandardName => 'Standard';
 
   @override
-  String get appearanceDefault => 'Default';
+  String get appearanceDefault => 'Predefinito';
 
   @override
-  String get appearanceTextOnly => 'Text only';
+  String get appearanceTextOnly => 'Solo testo';
 
   @override
-  String get appearancePackIcon => 'Pack icon';
+  String get appearancePackIcon => 'Icona del pacchetto';
 
   @override
-  String get appearanceCustomImage => 'Custom image';
+  String get appearanceCustomImage => 'Immagine personalizzata';
 
   @override
-  String get appearanceCustomIcon => 'Custom icon';
+  String get appearanceCustomIcon => 'Icona personalizzata';
 
   @override
-  String get keyRoleDpad => 'Directional';
+  String get keyRoleDpad => 'Direzionale';
 
   @override
-  String get keyRoleNavigation => 'Navigation';
+  String get keyRoleNavigation => 'Navigazione';
 
   @override
-  String get keyRoleTransport => 'Playback';
+  String get keyRoleTransport => 'Riproduzione';
 
   @override
   String get keyRoleVolume => 'Volume';
 
   @override
-  String get keyRoleChannel => 'Channel';
+  String get keyRoleChannel => 'Canale';
 
   @override
-  String get keyRoleSystem => 'System';
+  String get keyRoleSystem => 'Sistema';
 
   @override
-  String get remoteKeyUp => 'Up';
+  String get remoteKeyUp => 'Su';
 
   @override
-  String get remoteKeyDown => 'Down';
+  String get remoteKeyDown => 'Giù';
 
   @override
-  String get remoteKeyLeft => 'Left';
+  String get remoteKeyLeft => 'Sinistra';
 
   @override
-  String get remoteKeyRight => 'Right';
+  String get remoteKeyRight => 'Destra';
 
   @override
   String get remoteKeyOk => 'OK';
 
   @override
-  String get remoteKeyBack => 'Back';
+  String get remoteKeyBack => 'Indietro';
 
   @override
   String get remoteKeyHome => 'Home';
 
   @override
-  String get remoteKeyRewind => 'Rewind';
+  String get remoteKeyRewind => 'Riavvolgi';
 
   @override
-  String get remoteKeyPlayPause => 'Play/Pause';
+  String get remoteKeyPlayPause => 'Play/Pausa';
 
   @override
-  String get remoteKeyFastForward => 'Fast Forward';
+  String get remoteKeyFastForward => 'Avanti veloce';
 
   @override
-  String get remoteKeyNext => 'Next';
+  String get remoteKeyNext => 'Avanti';
 
   @override
-  String get remoteKeyPrevious => 'Previous';
+  String get remoteKeyPrevious => 'Precedente';
 
   @override
-  String get remoteKeyVolumeUp => 'Volume Up';
+  String get remoteKeyVolumeUp => 'Volume +';
 
   @override
-  String get remoteKeyVolumeDown => 'Volume Down';
+  String get remoteKeyVolumeDown => 'Volume -';
 
   @override
-  String get remoteKeyMute => 'Mute';
+  String get remoteKeyMute => 'Muto';
 
   @override
-  String get remoteKeyChannelUp => 'Channel Up';
+  String get remoteKeyChannelUp => 'Canale +';
 
   @override
-  String get remoteKeyChannelDown => 'Channel Down';
+  String get remoteKeyChannelDown => 'Canale -';
 
   @override
-  String get remoteKeyPower => 'Power';
+  String get remoteKeyPower => 'Accensione';
 
   @override
-  String get remoteKeySettings => 'Settings';
+  String get remoteKeySettings => 'Impostazioni';
 
   @override
-  String get remoteKeyKeyboard => 'Keyboard';
+  String get remoteKeyKeyboard => 'Tastiera';
 
   @override
-  String get keyboardTitle => 'Type to TV';
+  String get keyboardTitle => 'Scrivi sulla TV';
 
   @override
-  String get keyboardHint => 'Focus a text field on your TV, then type here.';
+  String get keyboardHint =>
+      'Seleziona un campo di testo sulla TV, poi digita qui.';
 
   @override
-  String get keyboardSendEnter => 'Send Enter';
+  String get keyboardSendEnter => 'Invia Invio';
 
   @override
-  String get keyboardClose => 'Done';
+  String get keyboardClose => 'Fine';
 
   @override
-  String get keyboardNotSupported => 'This TV doesn\'t support remote typing.';
+  String get keyboardNotSupported =>
+      'Questa TV non supporta la digitazione remota.';
 
   @override
-  String get iconNameUp => 'Up';
+  String get iconNameUp => 'Su';
 
   @override
-  String get iconNameDown => 'Down';
+  String get iconNameDown => 'Giù';
 
   @override
-  String get iconNameLeft => 'Left';
+  String get iconNameLeft => 'Sinistra';
 
   @override
-  String get iconNameRight => 'Right';
+  String get iconNameRight => 'Destra';
 
   @override
   String get iconNameOk => 'OK';
 
   @override
-  String get iconNameBack => 'Back';
+  String get iconNameBack => 'Indietro';
 
   @override
   String get iconNameHome => 'Home';
 
   @override
-  String get iconNameRewind => 'Rewind';
+  String get iconNameRewind => 'Riavvolgi';
 
   @override
-  String get iconNameFastForward => 'Fast forward';
+  String get iconNameFastForward => 'Avanti veloce';
 
   @override
-  String get iconNamePlayPause => 'Play / Pause';
+  String get iconNamePlayPause => 'Play / Pausa';
 
   @override
   String get iconNamePlay => 'Play';
 
   @override
-  String get iconNamePause => 'Pause';
+  String get iconNamePause => 'Pausa';
 
   @override
   String get iconNameStop => 'Stop';
 
   @override
-  String get iconNameNext => 'Next';
+  String get iconNameNext => 'Avanti';
 
   @override
-  String get iconNamePrevious => 'Previous';
+  String get iconNamePrevious => 'Precedente';
 
   @override
-  String get iconNameVolumeUp => 'Volume up';
+  String get iconNameVolumeUp => 'Volume +';
 
   @override
-  String get iconNameVolumeDown => 'Volume down';
+  String get iconNameVolumeDown => 'Volume -';
 
   @override
-  String get iconNameMute => 'Mute';
+  String get iconNameMute => 'Muto';
 
   @override
-  String get iconNameChannelUp => 'Channel up';
+  String get iconNameChannelUp => 'Canale +';
 
   @override
-  String get iconNameChannelDown => 'Channel down';
+  String get iconNameChannelDown => 'Canale -';
 
   @override
-  String get iconNamePower => 'Power';
+  String get iconNamePower => 'Accensione';
 
   @override
   String get iconNameMenu => 'Menu';
 
   @override
-  String get iconNameSettings => 'Settings';
+  String get iconNameSettings => 'Impostazioni';
 
   @override
   String get iconNameInfo => 'Info';
 
   @override
-  String get iconNameMic => 'Microphone';
+  String get iconNameMic => 'Microfono';
 
   @override
-  String get iconNameKeyboard => 'Keyboard';
+  String get iconNameKeyboard => 'Tastiera';
 
   @override
   String get failureDiscovery =>
-      'Couldn\'t search for TVs. Check your Wi-Fi and try again.';
+      'Impossibile cercare TV. Controlla il Wi-Fi e riprova.';
 
   @override
   String get failureConnection =>
-      'Couldn\'t connect to the TV. Make sure it\'s on and nearby.';
+      'Impossibile connettersi alla TV. Assicurati che sia accesa e nelle vicinanze.';
 
   @override
-  String get failureCommand =>
-      'That button didn\'t go through. Please try again.';
+  String get failureCommand => 'Quel pulsante non è arrivato. Riprova.';
 
   @override
-  String get failureUnknown => 'Something went wrong. Please try again.';
+  String get failureUnknown => 'Qualcosa è andato storto. Riprova.';
 
   @override
-  String get logoSemanticLabel => 'Flixsy logo';
+  String get logoSemanticLabel => 'Logo Flixsy';
 
   @override
-  String get mainRemoteSemanticLabel => 'Flixsy remote';
+  String get mainRemoteSemanticLabel => 'Telecomando Flixsy';
 
   @override
-  String get commonCancel => 'Cancel';
+  String get commonCancel => 'Annulla';
 
   @override
-  String get commonDelete => 'Delete';
+  String get commonDelete => 'Elimina';
 
   @override
-  String get commonSave => 'Save';
+  String get commonSave => 'Salva';
 
   @override
-  String get commonDone => 'Done';
+  String get commonDone => 'Fine';
 
   @override
-  String get removeAdsAction => 'Remove Ads';
+  String get removeAdsAction => 'Rimuovi pubblicità';
 
   @override
   String removeAdsActionWithPrice(String price) {
-    return 'Remove Ads — $price';
+    return 'Rimuovi pubblicità — $price';
   }
 
   @override
-  String get restorePurchasesAction => 'Restore Purchases';
+  String get restorePurchasesAction => 'Ripristina acquisti';
 
   @override
-  String get removeAdsSuccess => 'Ads removed. Thanks for your support!';
+  String get removeAdsSuccess =>
+      'Pubblicità rimosse. Grazie per il tuo supporto!';
 
   @override
-  String get removeAdsFailureCancelled => 'Purchase cancelled.';
+  String get removeAdsFailureCancelled => 'Acquisto annullato.';
 
   @override
   String get removeAdsFailureProductNotFound =>
-      'This product isn\'t available right now. Please try again later.';
+      'Questo prodotto non è disponibile al momento. Riprova più tardi.';
 
   @override
   String get removeAdsFailureNetwork =>
-      'Couldn\'t reach the store. Check your connection and try again.';
+      'Impossibile raggiungere lo store. Controlla la connessione e riprova.';
 
   @override
-  String get removeAdsFailureNothingToRestore => 'No previous purchases found.';
+  String get removeAdsFailureNothingToRestore =>
+      'Nessun acquisto precedente trovato.';
 
   @override
-  String get removeAdsFailureUnknown =>
-      'Something went wrong. Please try again.';
+  String get removeAdsFailureUnknown => 'Qualcosa è andato storto. Riprova.';
+
+  @override
+  String get magicMouseLabel => 'Magic Mouse';
+
+  @override
+  String get magicMouseUnsupportedTooltip =>
+      'Magic Mouse è disponibile solo sulle TV LG webOS.';
 }

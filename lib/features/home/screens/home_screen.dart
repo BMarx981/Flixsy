@@ -6,8 +6,11 @@ import 'package:flixsy/core/errors/connect_failure.dart';
 import 'package:flixsy/core/extensions/l10n_extensions.dart';
 import 'package:flixsy/router/app_router.dart';
 import 'package:flixsy/shared/ads/remote_banner_ad.dart';
+import 'package:flixsy/features/device_discovery/providers/device_display_names_provider.dart';
+import 'package:flixsy/features/device_discovery/widgets/rename_device_dialog.dart';
 import 'package:flixsy/shared/iap/iap_failure.dart';
 import 'package:flixsy/shared/iap/iap_failure_l10n.dart';
+import 'package:flixsy/shared/providers/active_device_provider.dart';
 import 'package:flixsy/shared/providers/app_providers.dart';
 import 'package:flixsy/shared/widgets/glass_popup_menu.dart';
 import 'package:flixsy/theming/custom_image_provider.dart';
@@ -120,9 +123,27 @@ class HomeScreen extends ConsumerWidget {
             onKeyPressed: handleKeyPressed,
           );
 
+    final activeDevice = ref.watch(activeDeviceProvider);
+    final displayNames = ref.watch(deviceDisplayNamesProvider);
+    final connectedTitle = activeDevice == null
+        ? context.l10n.homeTitle
+        : displayNames[activeDevice.id] ?? activeDevice.name;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.l10n.homeTitle),
+        title: activeDevice == null || isPicking
+            ? Text(connectedTitle)
+            : InkWell(
+                onTap: () =>
+                    showRenameDeviceDialog(context, ref, activeDevice),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 4,
+                  ),
+                  child: Text(connectedTitle),
+                ),
+              ),
         leading: isPicking
             ? IconButton(
                 icon: const Icon(Icons.close),
@@ -130,7 +151,12 @@ class HomeScreen extends ConsumerWidget {
                 onPressed: () =>
                     ref.read(previewSkinProvider.notifier).state = null,
               )
-            : null,
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: context.l10n.homeBackToRadarTooltip,
+                onPressed: () =>
+                    context.router.replace(const DeviceDiscoveryRoute()),
+              ),
         actions: isPicking
             ? [
                 TextButton(

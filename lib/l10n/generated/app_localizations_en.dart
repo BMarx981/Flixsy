@@ -74,6 +74,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeTitle => 'Remote';
 
   @override
+  String get homeBackToRadarTooltip => 'Choose a different TV';
+
+  @override
+  String get renameDeviceDialogTitle => 'Rename TV';
+
+  @override
+  String get renameDeviceFieldLabel => 'Name';
+
+  @override
+  String get renameDeviceSaveButton => 'Save';
+
+  @override
+  String get renameDeviceCancelButton => 'Cancel';
+
+  @override
+  String get renameDeviceResetButton => 'Reset';
+
+  @override
   String get homeLayoutsTooltip => 'Layouts';
 
   @override
@@ -485,4 +503,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get removeAdsFailureUnknown =>
       'Something went wrong. Please try again.';
+
+  @override
+  String get magicMouseLabel => 'Magic Mouse';
+
+  @override
+  String get magicMouseUnsupportedTooltip =>
+      'Magic Mouse is only available on LG webOS TVs.';
 }

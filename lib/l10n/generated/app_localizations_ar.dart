@@ -12,477 +12,504 @@ class AppLocalizationsAr extends AppLocalizations {
   String get appTitle => 'Flixsy';
 
   @override
-  String get discoveryHeaderTitle => 'Find Your TV';
+  String get discoveryHeaderTitle => 'ابحث عن تلفازك';
 
   @override
   String get discoveryHeaderSubtitle =>
-      'Make sure your TV is on and connected to the same Wi-Fi network.';
+      'تأكد من أن التلفاز يعمل ومتصل بنفس شبكة Wi-Fi.';
 
   @override
-  String get discoveryErrorTitle => 'Could not start search';
+  String get discoveryErrorTitle => 'تعذر بدء البحث';
 
   @override
-  String get discoveryErrorBody =>
-      'Check your network connection and try again.';
+  String get discoveryErrorBody => 'تحقق من اتصال الشبكة وحاول مرة أخرى.';
 
   @override
-  String get discoveryRetryButton => 'Try Again';
+  String get discoveryRetryButton => 'إعادة المحاولة';
 
   @override
-  String get discoverySearching => 'Searching your network…';
+  String get discoverySearching => 'جارٍ البحث في شبكتك…';
 
   @override
-  String get discoverySearchingHint => 'This can take a few seconds.';
+  String get discoverySearchingHint => 'قد يستغرق ذلك بضع ثوانٍ.';
 
   @override
   String discoveryDevicesFound(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count devices found',
-      one: '1 device found',
+      other: 'تم العثور على $count جهاز',
+      many: 'تم العثور على $count جهازًا',
+      few: 'تم العثور على $count أجهزة',
+      two: 'تم العثور على جهازين',
+      one: 'تم العثور على جهاز واحد',
+      zero: 'لم يتم العثور على أجهزة',
     );
     return '$_temp0';
   }
 
   @override
-  String get discoveryDeviceFallbackName => 'your TV';
+  String get discoveryDeviceFallbackName => 'تلفازك';
 
   @override
-  String get discoveryPairingEnterCodeTitle => 'Enter the code';
+  String get discoveryPairingEnterCodeTitle => 'أدخل الرمز';
 
   @override
-  String get discoveryPairingCheckTvTitle => 'Check your TV';
+  String get discoveryPairingCheckTvTitle => 'انظر إلى تلفازك';
 
   @override
   String discoveryPairingEnterCodeBody(String deviceName) {
-    return '$deviceName is showing a 6-digit code. Type it below to finish pairing.';
+    return 'يعرض $deviceName رمزًا مكونًا من 6 أرقام. أدخله أدناه لإكمال الإقران.';
   }
 
   @override
   String discoveryPairingCheckTvBody(String deviceName) {
-    return 'Accept the connection request on $deviceName using its remote.';
+    return 'اقبل طلب الاتصال على $deviceName باستخدام جهاز التحكم الخاص به.';
   }
 
   @override
   String get discoveryPairingCodeHint => '000000';
 
   @override
-  String get discoveryPairButton => 'Pair';
+  String get discoveryPairButton => 'إقران';
 
   @override
-  String get homeTitle => 'Remote';
+  String get homeTitle => 'جهاز التحكم';
 
   @override
-  String get homeLayoutsTooltip => 'Layouts';
+  String get homeBackToRadarTooltip => 'اختيار تلفاز آخر';
 
   @override
-  String get homeChangeSkinTooltip => 'Change skin';
+  String get renameDeviceDialogTitle => 'إعادة تسمية التلفاز';
 
   @override
-  String get skinPickerApply => 'Apply';
+  String get renameDeviceFieldLabel => 'الاسم';
 
   @override
-  String get skinPickerCancel => 'Cancel';
+  String get renameDeviceSaveButton => 'حفظ';
 
   @override
-  String get skinPickerPreviousTooltip => 'Previous skin';
+  String get renameDeviceCancelButton => 'إلغاء';
 
   @override
-  String get skinPickerNextTooltip => 'Next skin';
+  String get renameDeviceResetButton => 'إعادة تعيين';
 
   @override
-  String get layoutPickerTitle => 'Layouts';
+  String get homeLayoutsTooltip => 'التخطيطات';
+
+  @override
+  String get homeChangeSkinTooltip => 'تغيير المظهر';
+
+  @override
+  String get skinPickerApply => 'تطبيق';
+
+  @override
+  String get skinPickerCancel => 'إلغاء';
+
+  @override
+  String get skinPickerPreviousTooltip => 'المظهر السابق';
+
+  @override
+  String get skinPickerNextTooltip => 'المظهر التالي';
+
+  @override
+  String get layoutPickerTitle => 'التخطيطات';
 
   @override
   String layoutPickerLoadError(String error) {
-    return 'Could not load layouts.\n$error';
+    return 'تعذر تحميل التخطيطات.\n$error';
   }
 
   @override
-  String get layoutTypeTemplate => 'Built-in template';
+  String get layoutTypeTemplate => 'قالب مدمج';
 
   @override
-  String get layoutTypeCustom => 'Custom layout';
+  String get layoutTypeCustom => 'تخطيط مخصص';
 
   @override
-  String get layoutActionsTooltip => 'Layout actions';
+  String get layoutActionsTooltip => 'إجراءات التخطيط';
 
   @override
-  String get layoutActionDuplicate => 'Duplicate';
+  String get layoutActionDuplicate => 'تكرار';
 
   @override
-  String get layoutActionEdit => 'Edit';
+  String get layoutActionEdit => 'تعديل';
 
   @override
-  String get layoutDeleteDialogTitle => 'Delete layout?';
+  String get layoutDeleteDialogTitle => 'حذف التخطيط؟';
 
   @override
   String layoutDeleteDialogBody(String name) {
-    return '\"$name\" will be permanently removed.';
+    return 'سيتم حذف «$name» نهائيًا.';
   }
 
   @override
-  String get editorTitle => 'Edit layout';
+  String get editorTitle => 'تعديل التخطيط';
 
   @override
-  String get editorAddBlockButton => 'Add block';
+  String get editorAddBlockButton => 'إضافة كتلة';
 
   @override
-  String get editorValidationName => 'Give the layout a name.';
+  String get editorValidationName => 'أعطِ التخطيط اسمًا.';
 
   @override
-  String get editorValidationBlocks => 'Add at least one block before saving.';
+  String get editorValidationBlocks => 'أضف كتلة واحدة على الأقل قبل الحفظ.';
 
   @override
-  String get editorSavedSnack => 'Layout saved.';
+  String get editorSavedSnack => 'تم حفظ التخطيط.';
 
   @override
-  String get editorPreviewLabel => 'Preview';
+  String get editorPreviewLabel => 'معاينة';
 
   @override
-  String get editorBlocksLabel => 'Blocks';
+  String get editorBlocksLabel => 'الكتل';
 
   @override
-  String get editorNameFieldLabel => 'Layout name';
+  String get editorNameFieldLabel => 'اسم التخطيط';
 
   @override
-  String get editorEmptyPreview => 'Add a block to see a preview';
+  String get editorEmptyPreview => 'أضف كتلة لعرض المعاينة';
 
   @override
-  String get editorRemoveBlockTooltip => 'Remove block';
+  String get editorRemoveBlockTooltip => 'إزالة الكتلة';
 
   @override
-  String get editorEmptyCell => 'Empty';
+  String get editorEmptyCell => 'فارغ';
 
   @override
-  String get editorRemoveButtonTooltip => 'Remove button';
+  String get editorRemoveButtonTooltip => 'إزالة الزر';
 
   @override
-  String get editorAddButtonChip => 'Add';
+  String get editorAddButtonChip => 'إضافة';
 
   @override
-  String get blockKindDpad => 'D-pad';
+  String get blockKindDpad => 'أزرار اتجاهية';
 
   @override
-  String get blockKindButtonRow => 'Button row';
+  String get blockKindButtonRow => 'صف أزرار';
 
   @override
-  String get blockKindVolume => 'Volume rocker';
+  String get blockKindVolume => 'متحكم الصوت';
 
   @override
-  String get blockKindGrid => 'Grid';
+  String get blockKindGrid => 'شبكة';
 
   @override
-  String get blockKindSpacer => 'Spacer';
+  String get blockKindSpacer => 'فاصل';
 
   @override
-  String get blockDescDpad => 'A five-button directional cross';
+  String get blockDescDpad => 'صليب اتجاهي بخمسة أزرار';
 
   @override
-  String get blockDescButtonRow => 'An evenly spaced row of buttons';
+  String get blockDescButtonRow => 'صف من الأزرار متساوية المسافات';
 
   @override
-  String get blockDescVolume => 'Volume down / mute / volume up';
+  String get blockDescVolume => 'خفض الصوت / كتم / رفع الصوت';
 
   @override
-  String get blockDescGrid => 'A grid of buttons';
+  String get blockDescGrid => 'شبكة من الأزرار';
 
   @override
-  String get blockDescSpacer => 'Blank vertical space between blocks';
+  String get blockDescSpacer => 'مسافة عمودية فارغة بين الكتل';
 
   @override
-  String get buttonEditorTitle => 'Edit button';
+  String get buttonEditorTitle => 'تعديل الزر';
 
   @override
-  String get buttonEditorActionLabel => 'Action';
+  String get buttonEditorActionLabel => 'الإجراء';
 
   @override
-  String get buttonEditorIconLabel => 'Icon';
+  String get buttonEditorIconLabel => 'الأيقونة';
 
   @override
-  String get buttonEditorShowLabel => 'Show label';
+  String get buttonEditorShowLabel => 'إظهار التسمية';
 
   @override
-  String get buttonEditorShowLabelOn => 'A caption is shown on the button';
+  String get buttonEditorShowLabelOn => 'يتم عرض تسمية على الزر';
 
   @override
-  String get buttonEditorShowLabelOff => 'The button shows no caption';
+  String get buttonEditorShowLabelOff => 'لا يتم عرض تسمية على الزر';
 
   @override
-  String get buttonEditorLabelField => 'Label';
+  String get buttonEditorLabelField => 'التسمية';
 
   @override
   String buttonEditorLabelHelper(String defaultLabel) {
-    return 'Empty — using the default: $defaultLabel';
+    return 'فارغ — يستخدم الافتراضي: $defaultLabel';
   }
 
   @override
-  String get iconPickerTitle => 'Choose icon';
+  String get iconPickerTitle => 'اختر أيقونة';
 
   @override
-  String get iconPickerDefaultSubtitle => 'The standard icon for this action';
+  String get iconPickerDefaultSubtitle => 'الأيقونة القياسية لهذا الإجراء';
 
   @override
-  String get iconPickerTextOnlySubtitle => 'Show the label, no icon';
+  String get iconPickerTextOnlySubtitle => 'إظهار التسمية فقط، بدون أيقونة';
 
   @override
-  String get iconPickerYourImages => 'Your images';
+  String get iconPickerYourImages => 'صورك';
 
   @override
-  String get iconPickerAddImage => 'Add';
+  String get iconPickerAddImage => 'إضافة';
 
   @override
-  String get iconPackStandardName => 'Standard';
+  String get iconPackStandardName => 'قياسي';
 
   @override
-  String get appearanceDefault => 'Default';
+  String get appearanceDefault => 'افتراضي';
 
   @override
-  String get appearanceTextOnly => 'Text only';
+  String get appearanceTextOnly => 'نص فقط';
 
   @override
-  String get appearancePackIcon => 'Pack icon';
+  String get appearancePackIcon => 'أيقونة من الحزمة';
 
   @override
-  String get appearanceCustomImage => 'Custom image';
+  String get appearanceCustomImage => 'صورة مخصصة';
 
   @override
-  String get appearanceCustomIcon => 'Custom icon';
+  String get appearanceCustomIcon => 'أيقونة مخصصة';
 
   @override
-  String get keyRoleDpad => 'Directional';
+  String get keyRoleDpad => 'اتجاهي';
 
   @override
-  String get keyRoleNavigation => 'Navigation';
+  String get keyRoleNavigation => 'تنقل';
 
   @override
-  String get keyRoleTransport => 'Playback';
+  String get keyRoleTransport => 'تشغيل';
 
   @override
-  String get keyRoleVolume => 'Volume';
+  String get keyRoleVolume => 'الصوت';
 
   @override
-  String get keyRoleChannel => 'Channel';
+  String get keyRoleChannel => 'القناة';
 
   @override
-  String get keyRoleSystem => 'System';
+  String get keyRoleSystem => 'النظام';
 
   @override
-  String get remoteKeyUp => 'Up';
+  String get remoteKeyUp => 'أعلى';
 
   @override
-  String get remoteKeyDown => 'Down';
+  String get remoteKeyDown => 'أسفل';
 
   @override
-  String get remoteKeyLeft => 'Left';
+  String get remoteKeyLeft => 'يسار';
 
   @override
-  String get remoteKeyRight => 'Right';
+  String get remoteKeyRight => 'يمين';
 
   @override
-  String get remoteKeyOk => 'OK';
+  String get remoteKeyOk => 'موافق';
 
   @override
-  String get remoteKeyBack => 'Back';
+  String get remoteKeyBack => 'رجوع';
 
   @override
-  String get remoteKeyHome => 'Home';
+  String get remoteKeyHome => 'الرئيسية';
 
   @override
-  String get remoteKeyRewind => 'Rewind';
+  String get remoteKeyRewind => 'إرجاع';
 
   @override
-  String get remoteKeyPlayPause => 'Play/Pause';
+  String get remoteKeyPlayPause => 'تشغيل/إيقاف مؤقت';
 
   @override
-  String get remoteKeyFastForward => 'Fast Forward';
+  String get remoteKeyFastForward => 'تقديم سريع';
 
   @override
-  String get remoteKeyNext => 'Next';
+  String get remoteKeyNext => 'التالي';
 
   @override
-  String get remoteKeyPrevious => 'Previous';
+  String get remoteKeyPrevious => 'السابق';
 
   @override
-  String get remoteKeyVolumeUp => 'Volume Up';
+  String get remoteKeyVolumeUp => 'رفع الصوت';
 
   @override
-  String get remoteKeyVolumeDown => 'Volume Down';
+  String get remoteKeyVolumeDown => 'خفض الصوت';
 
   @override
-  String get remoteKeyMute => 'Mute';
+  String get remoteKeyMute => 'كتم الصوت';
 
   @override
-  String get remoteKeyChannelUp => 'Channel Up';
+  String get remoteKeyChannelUp => 'القناة +';
 
   @override
-  String get remoteKeyChannelDown => 'Channel Down';
+  String get remoteKeyChannelDown => 'القناة -';
 
   @override
-  String get remoteKeyPower => 'Power';
+  String get remoteKeyPower => 'الطاقة';
 
   @override
-  String get remoteKeySettings => 'Settings';
+  String get remoteKeySettings => 'الإعدادات';
 
   @override
-  String get remoteKeyKeyboard => 'Keyboard';
+  String get remoteKeyKeyboard => 'لوحة المفاتيح';
 
   @override
-  String get keyboardTitle => 'Type to TV';
+  String get keyboardTitle => 'اكتب إلى التلفاز';
 
   @override
-  String get keyboardHint => 'Focus a text field on your TV, then type here.';
+  String get keyboardHint => 'حدد حقل نص على التلفاز ثم اكتب هنا.';
 
   @override
-  String get keyboardSendEnter => 'Send Enter';
+  String get keyboardSendEnter => 'إرسال Enter';
 
   @override
-  String get keyboardClose => 'Done';
+  String get keyboardClose => 'تم';
 
   @override
-  String get keyboardNotSupported => 'This TV doesn\'t support remote typing.';
+  String get keyboardNotSupported => 'هذا التلفاز لا يدعم الكتابة عن بُعد.';
 
   @override
-  String get iconNameUp => 'Up';
+  String get iconNameUp => 'أعلى';
 
   @override
-  String get iconNameDown => 'Down';
+  String get iconNameDown => 'أسفل';
 
   @override
-  String get iconNameLeft => 'Left';
+  String get iconNameLeft => 'يسار';
 
   @override
-  String get iconNameRight => 'Right';
+  String get iconNameRight => 'يمين';
 
   @override
-  String get iconNameOk => 'OK';
+  String get iconNameOk => 'موافق';
 
   @override
-  String get iconNameBack => 'Back';
+  String get iconNameBack => 'رجوع';
 
   @override
-  String get iconNameHome => 'Home';
+  String get iconNameHome => 'الرئيسية';
 
   @override
-  String get iconNameRewind => 'Rewind';
+  String get iconNameRewind => 'إرجاع';
 
   @override
-  String get iconNameFastForward => 'Fast forward';
+  String get iconNameFastForward => 'تقديم سريع';
 
   @override
-  String get iconNamePlayPause => 'Play / Pause';
+  String get iconNamePlayPause => 'تشغيل / إيقاف مؤقت';
 
   @override
-  String get iconNamePlay => 'Play';
+  String get iconNamePlay => 'تشغيل';
 
   @override
-  String get iconNamePause => 'Pause';
+  String get iconNamePause => 'إيقاف مؤقت';
 
   @override
-  String get iconNameStop => 'Stop';
+  String get iconNameStop => 'إيقاف';
 
   @override
-  String get iconNameNext => 'Next';
+  String get iconNameNext => 'التالي';
 
   @override
-  String get iconNamePrevious => 'Previous';
+  String get iconNamePrevious => 'السابق';
 
   @override
-  String get iconNameVolumeUp => 'Volume up';
+  String get iconNameVolumeUp => 'رفع الصوت';
 
   @override
-  String get iconNameVolumeDown => 'Volume down';
+  String get iconNameVolumeDown => 'خفض الصوت';
 
   @override
-  String get iconNameMute => 'Mute';
+  String get iconNameMute => 'كتم الصوت';
 
   @override
-  String get iconNameChannelUp => 'Channel up';
+  String get iconNameChannelUp => 'القناة +';
 
   @override
-  String get iconNameChannelDown => 'Channel down';
+  String get iconNameChannelDown => 'القناة -';
 
   @override
-  String get iconNamePower => 'Power';
+  String get iconNamePower => 'الطاقة';
 
   @override
-  String get iconNameMenu => 'Menu';
+  String get iconNameMenu => 'القائمة';
 
   @override
-  String get iconNameSettings => 'Settings';
+  String get iconNameSettings => 'الإعدادات';
 
   @override
-  String get iconNameInfo => 'Info';
+  String get iconNameInfo => 'معلومات';
 
   @override
-  String get iconNameMic => 'Microphone';
+  String get iconNameMic => 'ميكروفون';
 
   @override
-  String get iconNameKeyboard => 'Keyboard';
+  String get iconNameKeyboard => 'لوحة المفاتيح';
 
   @override
   String get failureDiscovery =>
-      'Couldn\'t search for TVs. Check your Wi-Fi and try again.';
+      'تعذر البحث عن التلفازات. تحقق من Wi-Fi وحاول مرة أخرى.';
 
   @override
   String get failureConnection =>
-      'Couldn\'t connect to the TV. Make sure it\'s on and nearby.';
+      'تعذر الاتصال بالتلفاز. تأكد من أنه يعمل وقريب منك.';
 
   @override
-  String get failureCommand =>
-      'That button didn\'t go through. Please try again.';
+  String get failureCommand => 'لم يصل ذلك الزر. الرجاء المحاولة مرة أخرى.';
 
   @override
-  String get failureUnknown => 'Something went wrong. Please try again.';
+  String get failureUnknown => 'حدث خطأ ما. الرجاء المحاولة مرة أخرى.';
 
   @override
-  String get logoSemanticLabel => 'Flixsy logo';
+  String get logoSemanticLabel => 'شعار Flixsy';
 
   @override
-  String get mainRemoteSemanticLabel => 'Flixsy remote';
+  String get mainRemoteSemanticLabel => 'جهاز تحكم Flixsy';
 
   @override
-  String get commonCancel => 'Cancel';
+  String get commonCancel => 'إلغاء';
 
   @override
-  String get commonDelete => 'Delete';
+  String get commonDelete => 'حذف';
 
   @override
-  String get commonSave => 'Save';
+  String get commonSave => 'حفظ';
 
   @override
-  String get commonDone => 'Done';
+  String get commonDone => 'تم';
 
   @override
-  String get removeAdsAction => 'Remove Ads';
+  String get removeAdsAction => 'إزالة الإعلانات';
 
   @override
   String removeAdsActionWithPrice(String price) {
-    return 'Remove Ads — $price';
+    return 'إزالة الإعلانات — $price';
   }
 
   @override
-  String get restorePurchasesAction => 'Restore Purchases';
+  String get restorePurchasesAction => 'استعادة المشتريات';
 
   @override
-  String get removeAdsSuccess => 'Ads removed. Thanks for your support!';
+  String get removeAdsSuccess => 'تمت إزالة الإعلانات. شكرًا لدعمك!';
 
   @override
-  String get removeAdsFailureCancelled => 'Purchase cancelled.';
+  String get removeAdsFailureCancelled => 'تم إلغاء الشراء.';
 
   @override
   String get removeAdsFailureProductNotFound =>
-      'This product isn\'t available right now. Please try again later.';
+      'هذا المنتج غير متوفر حاليًا. الرجاء المحاولة لاحقًا.';
 
   @override
   String get removeAdsFailureNetwork =>
-      'Couldn\'t reach the store. Check your connection and try again.';
+      'تعذر الوصول إلى المتجر. تحقق من اتصالك وحاول مرة أخرى.';
 
   @override
-  String get removeAdsFailureNothingToRestore => 'No previous purchases found.';
+  String get removeAdsFailureNothingToRestore =>
+      'لم يتم العثور على مشتريات سابقة.';
 
   @override
-  String get removeAdsFailureUnknown =>
-      'Something went wrong. Please try again.';
+  String get removeAdsFailureUnknown => 'حدث خطأ ما. الرجاء المحاولة مرة أخرى.';
+
+  @override
+  String get magicMouseLabel => 'Magic Mouse';
+
+  @override
+  String get magicMouseUnsupportedTooltip =>
+      'تتوفر Magic Mouse على تلفازات LG webOS فقط.';
 }

@@ -37,8 +37,6 @@ class SpinnableStarDpad extends StatefulWidget {
     required this.onScrollDown,
     required this.onScrollLeft,
     required this.onScrollRight,
-    this.onOkLongPress,
-    this.onOkLongPressEnd,
   });
 
   /// Side length of the (square) D-pad in logical pixels.
@@ -61,18 +59,6 @@ class SpinnableStarDpad extends StatefulWidget {
 
   /// Fired once per tick of a rightward scroll-wheel drag.
   final VoidCallback onScrollRight;
-
-  /// Fired when the user holds the centre disc past [longPressDuration]
-  /// without moving. Skin callsites pass non-null only when the connected TV
-  /// advertises pointer support, so a null value disables the gesture.
-  final VoidCallback? onOkLongPress;
-
-  /// Fired when the long-press session ends — either the finger lifts or the
-  /// gesture is cancelled. Pairs 1:1 with [onOkLongPress].
-  final VoidCallback? onOkLongPressEnd;
-
-  /// Hold time on the centre disc before [onOkLongPress] fires.
-  static const Duration longPressDuration = Duration(milliseconds: 500);
 
   /// Rotation between consecutive haptic ticks (~22° — iOS-picker feel).
   /// Applied to the visual tumble; one tick of drag = this much rotation.
@@ -130,8 +116,18 @@ double _axisDegFor(_Region r) => switch (r) {
 };
 
 class _SpinnableStarDpadState extends State<SpinnableStarDpad>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _resetController;
+  // Slow, continuous controller that drives an ambient rock when the wheel
+  // is otherwise still. Hints to the user that the disc rotates.
+  late final AnimationController _idleController;
+
+  /// Period of one full back-and-forth rock cycle.
+  static const Duration _idleRockPeriod = Duration(milliseconds: 3600);
+
+  /// Peak tilt of the ambient rock, in radians (~5°). Small enough to read
+  /// as a hint, not as motion the user has to track.
+  static const double _idleRockAmplitude = 15 * math.pi / 180;
 
   _Region? _active;
   _GestureMode _mode = _GestureMode.idle;
@@ -148,8 +144,6 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   Offset _axisLockOrigin = Offset.zero;
   bool _hasFiredTick = false;
   Timer? _resetTimer;
-  Timer? _longPressTimer;
-  bool _inLongPress = false;
 
   Offset get _center => Offset(widget.size / 2, widget.size / 2);
 
@@ -160,13 +154,28 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
       vsync: this,
       duration: SpinnableStarDpad.resetDuration,
     )..addListener(_onResetTick);
+    _idleController =
+        AnimationController(vsync: this, duration: _idleRockPeriod)
+          ..addListener(_onIdleTick)
+          ..repeat();
+  }
+
+  // Repaint whenever the idle rock advances, but only while the wheel is
+  // actually idle — during a real spin or reset, the gesture-driven rotation
+  // is the source of truth and the rock is suppressed in `_tumbleMatrix`.
+  void _onIdleTick() {
+    if (_axisPixels == 0 && !_isResetting && _mode != _GestureMode.spin) {
+      setState(() {});
+    }
   }
 
   // Current visual rotation, in radians, derived from `_axisPixels` so the
   // wheel and the tick emitter share a single source of truth. Used only
   // while a spin is in progress; the reset animation uses `_resetVisual`.
   double get _visualRotation =>
-      _axisPixels * SpinnableStarDpad.tickAngle / SpinnableStarDpad.pixelsPerTick;
+      _axisPixels *
+      SpinnableStarDpad.tickAngle /
+      SpinnableStarDpad.pixelsPerTick;
 
   // Eased rotation written by the reset animation. Independent of
   // `_axisPixels` so we can fade out a tumble without snapping the source.
@@ -272,35 +281,10 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
     }
     if (region == _Region.ok) {
       _mode = _GestureMode.spin;
-      if (widget.onOkLongPress != null) {
-        _longPressTimer = Timer(
-          SpinnableStarDpad.longPressDuration,
-          _firePointerLongPress,
-        );
-      }
     } else {
       _mode = _GestureMode.tap;
     }
     setState(() => _active = region);
-  }
-
-  void _firePointerLongPress() {
-    _longPressTimer = null;
-    if (_mode != _GestureMode.spin) return;
-    _inLongPress = true;
-    HapticFeedback.mediumImpact();
-    widget.onOkLongPress?.call();
-  }
-
-  void _cancelLongPressTimer() {
-    _longPressTimer?.cancel();
-    _longPressTimer = null;
-  }
-
-  void _endLongPressIfActive() {
-    if (!_inLongPress) return;
-    _inLongPress = false;
-    widget.onOkLongPressEnd?.call();
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
@@ -324,11 +308,6 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   }
 
   void _updateSpin(Offset local) {
-    // While aiming the pointer the user keeps a finger on the centre but the
-    // phone itself does the moving — suppress wheel rotation and tick haptics
-    // so finger jitter doesn't fire scroll events at the TV.
-    if (_inLongPress) return;
-
     // Lock the spin axis at first significant motion, picking whichever
     // direction the user moved farther in. After lock, only motion along
     // that axis contributes — sideways drift is ignored, so the wheel feels
@@ -350,9 +329,6 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
       _lastTickPixels = 0;
       _hasFiredTick = true;
       if (_active != null) _active = null;
-      // A real spin started before the long-press timer fired — cancel it so
-      // the user can't accidentally enter pointer mode mid-flick.
-      _cancelLongPressTimer();
     }
 
     final fromLock = local - _axisLockOrigin;
@@ -383,14 +359,9 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   }
 
   void _onPanEnd(DragEndDetails _) {
-    _cancelLongPressTimer();
     switch (_mode) {
       case _GestureMode.spin:
-        if (_inLongPress) {
-          // Lifting after a pointer session: never fire OK as a tap — the
-          // user was aiming, not clicking the centre.
-          _endLongPressIfActive();
-        } else if (!_hasFiredTick && _active == _Region.ok) {
+        if (!_hasFiredTick && _active == _Region.ok) {
           // Centre touch with no real motion → OK tap.
           _fire(_Region.ok);
         }
@@ -408,8 +379,6 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   }
 
   void _onPanCancel() {
-    _cancelLongPressTimer();
-    _endLongPressIfActive();
     if (_mode == _GestureMode.spin) _scheduleReset();
     if (_active != null) setState(() => _active = null);
     _hasFiredTick = false;
@@ -419,8 +388,8 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   @override
   void dispose() {
     _resetTimer?.cancel();
-    _longPressTimer?.cancel();
     _resetController.dispose();
+    _idleController.dispose();
     super.dispose();
   }
 
@@ -437,8 +406,12 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
       case _SpinAxis.horizontal:
         m.rotateY(angle);
       case _SpinAxis.none:
-        // No spin in progress and nothing to ease back; matrix stays identity.
-        break;
+        // No active spin and nothing to ease back — apply the ambient rock
+        // so the wheel reads as scrollable even at rest. Suppressed the
+        // moment a real spin or reset is in flight.
+        final rock =
+            math.sin(_idleController.value * 2 * math.pi) * _idleRockAmplitude;
+        m.rotateX(rock);
     }
     return m;
   }
@@ -533,9 +506,24 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
                   child: Transform(
                     alignment: Alignment.center,
                     transform: _tumbleMatrix(),
-                    child: FlixsyLogo(
-                      size: discDiameter,
-                      discColor: discColor,
+                    child: SizedBox.square(
+                      dimension: discDiameter,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          FlixsyLogo(size: discDiameter, discColor: discColor),
+                          // Dome shading lives inside the tumble Transform so
+                          // it rotates with the surface during a spin (selling
+                          // it as a textured ball rolling) and returns to the
+                          // upright dome look once the reset animation eases
+                          // the wheel back to identity.
+                          IgnorePointer(
+                            child: CustomPaint(
+                              painter: const _DomeShadingPainter(),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -623,4 +611,101 @@ class _DpadPainter extends CustomPainter {
       oldDelegate.active != active ||
       oldDelegate.borderColor != borderColor ||
       oldDelegate.highlightColor != highlightColor;
+}
+
+// Radius of the pink disc fill inside the Flixsy SVG, expressed as a
+// fraction of the full SVG side. The SVG draws the disc at r=356 in a
+// 1024-unit viewbox.
+const double _logoDiscRadiusFraction = 356.0 / 1024.0;
+
+// Radius of the dark outer ring in the same SVG (r=424 in 1024 units).
+// The dome shading is clipped to this so highlight/shadow can softly
+// reach the ring without spilling onto the surrounding D-pad.
+const double _logoRingRadiusFraction = 424.0 / 1024.0;
+
+/// Paints a fixed (non-rotating) dome shading on top of the spinning disc:
+/// a top-side highlight, a bottom shadow, and a thin specular arc. Combined
+/// with the underlying [Transform] tumble, this makes the disc read as a
+/// 3D sphere instead of a flat circle.
+class _DomeShadingPainter extends CustomPainter {
+  const _DomeShadingPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final side = size.shortestSide;
+    final center = Offset(size.width / 2, size.height / 2);
+    final ringRadius = side * _logoRingRadiusFraction;
+    final discRadius = side * _logoDiscRadiusFraction;
+
+    // Clip everything to the outer ring so shading never spills past the
+    // logo into the surrounding D-pad sectors.
+    canvas.save();
+    canvas.clipPath(
+      Path()..addOval(Rect.fromCircle(center: center, radius: ringRadius)),
+    );
+
+    // 1. Bottom shadow — a radial gradient anchored below the disc, darker
+    //    at the bottom edge, fading out toward the centre.
+    final shadowRect = Rect.fromCircle(
+      center: center + Offset(0, discRadius * 0.55),
+      radius: discRadius * 1.05,
+    );
+    final shadowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          Colors.black.withValues(alpha: 0.32),
+          Colors.black.withValues(alpha: 0.0),
+        ],
+        stops: const [0.0, 1.0],
+      ).createShader(shadowRect);
+    canvas.drawCircle(center, discRadius, shadowPaint);
+
+    // 2. Top highlight — radial gradient anchored above the disc, brightest
+    //    at the top edge, fading out toward the centre. Gives the dome its
+    //    "lit from above" feel.
+    final highlightRect = Rect.fromCircle(
+      center: center + Offset(0, -discRadius * 0.55),
+      radius: discRadius * 1.05,
+    );
+    final highlightPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          Colors.white.withValues(alpha: 0.38),
+          Colors.white.withValues(alpha: 0.0),
+        ],
+        stops: const [0.0, 1.0],
+      ).createShader(highlightRect);
+    canvas.drawCircle(center, discRadius, highlightPaint);
+
+    // 3. Specular arc — a thin crescent of brighter white near the top,
+    //    selling the glossy-sphere illusion. Drawn by stroking an oval
+    //    that's slightly smaller than the disc and offset upward.
+    final specRect = Rect.fromCenter(
+      center: center + Offset(0, -discRadius * 0.18),
+      width: discRadius * 1.55,
+      height: discRadius * 1.55,
+    );
+    final specPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = discRadius * 0.06
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.white.withValues(alpha: 0.55),
+          Colors.white.withValues(alpha: 0.0),
+        ],
+        stops: const [0.0, 0.55],
+      ).createShader(specRect)
+      ..maskFilter = MaskFilter.blur(BlurStyle.normal, discRadius * 0.04);
+    // Sweep across the upper arc only (≈ 200° → 340°, going clockwise).
+    const startRad = 200 * math.pi / 180;
+    const sweepRad = 140 * math.pi / 180;
+    canvas.drawArc(specRect, startRad, sweepRad, false, specPaint);
+
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_DomeShadingPainter oldDelegate) => false;
 }

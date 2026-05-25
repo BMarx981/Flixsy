@@ -8,6 +8,9 @@ import 'package:flixsy/core/extensions/l10n_extensions.dart';
 import 'package:flixsy/data/models/tv_device.dart';
 import 'package:flixsy/router/app_router.dart';
 import 'package:flixsy/features/device_discovery/providers/device_discovery_provider.dart';
+import 'package:flixsy/features/device_discovery/providers/device_display_names_provider.dart';
+import 'package:flixsy/features/device_discovery/widgets/rename_device_dialog.dart';
+import 'package:flixsy/shared/providers/active_device_provider.dart';
 
 @RoutePage()
 class DeviceDiscoveryScreen extends ConsumerWidget {
@@ -17,6 +20,8 @@ class DeviceDiscoveryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(deviceDiscoveryProvider);
     final notifier = ref.read(deviceDiscoveryProvider.notifier);
+    final displayNames = ref.watch(deviceDisplayNamesProvider);
+    final activeDevice = ref.watch(activeDeviceProvider);
 
     ref.listen<DiscoveryState>(deviceDiscoveryProvider, (prev, next) {
       // Navigate to remote once a device connects successfully.
@@ -35,6 +40,18 @@ class DeviceDiscoveryScreen extends ConsumerWidget {
       }
     });
 
+    void handleTargetTap(TvDevice device) {
+      if (activeDevice?.id == device.id) {
+        // Already connected — just resume the remote without re-pairing.
+        context.router.replace(const HomeRoute());
+        return;
+      }
+      notifier.connectToDevice(device);
+    }
+
+    Future<void> handleTargetLongPress(TvDevice device) =>
+        showRenameDeviceDialog(context, ref, device);
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -48,7 +65,7 @@ class DeviceDiscoveryScreen extends ConsumerWidget {
               if (state.pairing != null) ...[
                 _PairingBanner(
                   request: state.pairing!,
-                  deviceName:
+                  deviceName: displayNames[state.pairing!.deviceId] ??
                       _deviceNameFor(state, state.pairing!.deviceId) ??
                       context.l10n.discoveryDeviceFallbackName,
                   onSubmitCode: notifier.submitPairingCode,
@@ -60,9 +77,12 @@ class DeviceDiscoveryScreen extends ConsumerWidget {
                     ? _ErrorBody(onRetry: notifier.retry)
                     : _RadarView(
                         devices: state.devices,
+                        displayNames: displayNames,
+                        activeDeviceId: activeDevice?.id,
                         connectingDeviceId: state.connectingDeviceId,
                         isConnecting: state.isConnecting,
-                        onConnect: notifier.connectToDevice,
+                        onTap: handleTargetTap,
+                        onLongPress: handleTargetLongPress,
                       ),
               ),
               const SizedBox(height: 16),
@@ -207,15 +227,21 @@ const int _placementAttempts = 80;
 class _RadarView extends StatefulWidget {
   const _RadarView({
     required this.devices,
+    required this.displayNames,
+    required this.activeDeviceId,
     required this.connectingDeviceId,
     required this.isConnecting,
-    required this.onConnect,
+    required this.onTap,
+    required this.onLongPress,
   });
 
   final List<TvDevice> devices;
+  final Map<String, String> displayNames;
+  final String? activeDeviceId;
   final String? connectingDeviceId;
   final bool isConnecting;
-  final ValueChanged<TvDevice> onConnect;
+  final ValueChanged<TvDevice> onTap;
+  final ValueChanged<TvDevice> onLongPress;
 
   @override
   State<_RadarView> createState() => _RadarViewState();
@@ -323,6 +349,8 @@ class _RadarViewState extends State<_RadarView>
                       if (_positions[device.id] case final pos?)
                         _RadarTarget(
                           device: device,
+                          displayName:
+                              widget.displayNames[device.id] ?? device.name,
                           position: pos,
                           // Angle from center, used to drive the sweep afterglow.
                           targetAngle: math.atan2(
@@ -332,10 +360,12 @@ class _RadarViewState extends State<_RadarView>
                           sweepAngle: sweepAngle,
                           isConnecting:
                               widget.connectingDeviceId == device.id,
+                          isActive: widget.activeDeviceId == device.id,
                           isDisabled: widget.isConnecting &&
                               widget.connectingDeviceId != device.id,
                           color: color,
-                          onTap: () => widget.onConnect(device),
+                          onTap: () => widget.onTap(device),
+                          onLongPress: () => widget.onLongPress(device),
                         ),
                   ],
                 );
@@ -475,23 +505,29 @@ class _RadarBackgroundPainter extends CustomPainter {
 class _RadarTarget extends StatelessWidget {
   const _RadarTarget({
     required this.device,
+    required this.displayName,
     required this.position,
     required this.targetAngle,
     required this.sweepAngle,
     required this.isConnecting,
+    required this.isActive,
     required this.isDisabled,
     required this.color,
     required this.onTap,
+    required this.onLongPress,
   });
 
   final TvDevice device;
+  final String displayName;
   final Offset position;
   final double targetAngle;
   final double sweepAngle;
   final bool isConnecting;
+  final bool isActive;
   final bool isDisabled;
   final Color color;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -515,6 +551,7 @@ class _RadarTarget extends StatelessWidget {
         opacity: isDisabled ? 0.35 : 1.0,
         child: GestureDetector(
           onTap: isDisabled ? null : onTap,
+          onLongPress: onLongPress,
           behavior: HitTestBehavior.opaque,
           child: SizedBox(
             width: hitSize,
@@ -533,6 +570,15 @@ class _RadarTarget extends StatelessWidget {
                     color: color.withAlpha((130 * glow).round()),
                   ),
                 ),
+                if (isActive)
+                  Container(
+                    width: dotSize + 22,
+                    height: dotSize + 22,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: color, width: 2),
+                    ),
+                  ),
                 if (isConnecting)
                   SizedBox(
                     width: dotSize + 10,
@@ -560,7 +606,7 @@ class _RadarTarget extends StatelessWidget {
                   top: hitSize / 2 + dotSize / 2 + 2,
                   width: labelWidth,
                   child: Text(
-                    device.name,
+                    displayName,
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

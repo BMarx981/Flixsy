@@ -78,7 +78,31 @@
 
   "homeTitle": "Remote",
   "@homeTitle": {
-    "description": "App-bar title of the main remote-control screen."
+    "description": "App-bar title of the main remote-control screen, shown when no TV is connected."
+  },
+  "homeBackToRadarTooltip": "Choose a different TV",
+  "@homeBackToRadarTooltip": {
+    "description": "Tooltip for the app-bar back button on the remote screen — returns to the device discovery (radar) screen so the user can pick another TV. The connection to the current TV stays alive."
+  },
+  "renameDeviceDialogTitle": "Rename TV",
+  "@renameDeviceDialogTitle": {
+    "description": "Title of the dialog where the user can give a connected TV a custom name."
+  },
+  "renameDeviceFieldLabel": "Name",
+  "@renameDeviceFieldLabel": {
+    "description": "Label for the text field in the rename-TV dialog."
+  },
+  "renameDeviceSaveButton": "Save",
+  "@renameDeviceSaveButton": {
+    "description": "Button that persists the typed nickname in the rename-TV dialog."
+  },
+  "renameDeviceCancelButton": "Cancel",
+  "@renameDeviceCancelButton": {
+    "description": "Button that dismisses the rename-TV dialog without saving."
+  },
+  "renameDeviceResetButton": "Reset",
+  "@renameDeviceResetButton": {
+    "description": "Button that clears the user's custom nickname for a TV, reverting to the name the TV advertises over the network."
   },
   "homeLayoutsTooltip": "Layouts",
   "@homeLayoutsTooltip": {
@@ -534,5 +558,13 @@
   "removeAdsFailureUnknown": "Something went wrong. Please try again.",
   "@removeAdsFailureUnknown": {
     "description": "User-facing message for an unclassified IAP failure."
+  },
+  "magicMouseLabel": "Magic Mouse",
+  "@magicMouseLabel": {
+    "description": "Label on the toggle button that activates the free-cursor / accelerometer pointer (LG webOS Magic Remote-style). Shown next to the D-pad."
+  },
+  "magicMouseUnsupportedTooltip": "Magic Mouse is only available on LG webOS TVs.",
+  "@magicMouseUnsupportedTooltip": {
+    "description": "Tooltip shown on the Magic Mouse toggle when the connected TV does not support a free cursor."
   }
 }

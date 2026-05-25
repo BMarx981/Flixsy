@@ -29,4 +29,17 @@ abstract interface class IPreferencesRepository {
 
   /// Persists the hardware [macAddress] for [deviceId].
   Future<void> setDeviceMacAddress(String deviceId, String macAddress);
+
+  /// Emits the full map of user-assigned device nicknames (deviceId →
+  /// nickname). Devices the user has not renamed are absent from the map.
+  Stream<Map<String, String>> watchDeviceNicknames();
+
+  /// Returns the current nickname snapshot.
+  Future<Map<String, String>> getDeviceNicknames();
+
+  /// Sets (or replaces) the user's nickname for [deviceId].
+  Future<void> setDeviceNickname(String deviceId, String nickname);
+
+  /// Removes any nickname for [deviceId], reverting it to the discovery name.
+  Future<void> clearDeviceNickname(String deviceId);
 }

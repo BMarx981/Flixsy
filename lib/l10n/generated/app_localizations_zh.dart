@@ -12,477 +12,492 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appTitle => 'Flixsy';
 
   @override
-  String get discoveryHeaderTitle => 'Find Your TV';
+  String get discoveryHeaderTitle => '查找你的电视';
 
   @override
-  String get discoveryHeaderSubtitle =>
-      'Make sure your TV is on and connected to the same Wi-Fi network.';
+  String get discoveryHeaderSubtitle => '请确保电视已打开并连接到同一 Wi-Fi 网络。';
 
   @override
-  String get discoveryErrorTitle => 'Could not start search';
+  String get discoveryErrorTitle => '无法开始搜索';
 
   @override
-  String get discoveryErrorBody =>
-      'Check your network connection and try again.';
+  String get discoveryErrorBody => '请检查网络连接后重试。';
 
   @override
-  String get discoveryRetryButton => 'Try Again';
+  String get discoveryRetryButton => '重试';
 
   @override
-  String get discoverySearching => 'Searching your network…';
+  String get discoverySearching => '正在搜索你的网络…';
 
   @override
-  String get discoverySearchingHint => 'This can take a few seconds.';
+  String get discoverySearchingHint => '可能需要几秒钟。';
 
   @override
   String discoveryDevicesFound(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count devices found',
-      one: '1 device found',
+      other: '找到 $count 个设备',
     );
     return '$_temp0';
   }
 
   @override
-  String get discoveryDeviceFallbackName => 'your TV';
+  String get discoveryDeviceFallbackName => '电视';
 
   @override
-  String get discoveryPairingEnterCodeTitle => 'Enter the code';
+  String get discoveryPairingEnterCodeTitle => '输入验证码';
 
   @override
-  String get discoveryPairingCheckTvTitle => 'Check your TV';
+  String get discoveryPairingCheckTvTitle => '查看你的电视';
 
   @override
   String discoveryPairingEnterCodeBody(String deviceName) {
-    return '$deviceName is showing a 6-digit code. Type it below to finish pairing.';
+    return '$deviceName 正在显示一个 6 位代码。请在下方输入以完成配对。';
   }
 
   @override
   String discoveryPairingCheckTvBody(String deviceName) {
-    return 'Accept the connection request on $deviceName using its remote.';
+    return '请用 $deviceName 的遥控器接受连接请求。';
   }
 
   @override
   String get discoveryPairingCodeHint => '000000';
 
   @override
-  String get discoveryPairButton => 'Pair';
+  String get discoveryPairButton => '配对';
 
   @override
-  String get homeTitle => 'Remote';
+  String get homeTitle => '遥控器';
 
   @override
-  String get homeLayoutsTooltip => 'Layouts';
+  String get homeBackToRadarTooltip => '选择其他电视';
 
   @override
-  String get homeChangeSkinTooltip => 'Change skin';
+  String get renameDeviceDialogTitle => '重命名电视';
 
   @override
-  String get skinPickerApply => 'Apply';
+  String get renameDeviceFieldLabel => '名称';
 
   @override
-  String get skinPickerCancel => 'Cancel';
+  String get renameDeviceSaveButton => '保存';
 
   @override
-  String get skinPickerPreviousTooltip => 'Previous skin';
+  String get renameDeviceCancelButton => '取消';
 
   @override
-  String get skinPickerNextTooltip => 'Next skin';
+  String get renameDeviceResetButton => '重置';
 
   @override
-  String get layoutPickerTitle => 'Layouts';
+  String get homeLayoutsTooltip => '布局';
+
+  @override
+  String get homeChangeSkinTooltip => '更换皮肤';
+
+  @override
+  String get skinPickerApply => '应用';
+
+  @override
+  String get skinPickerCancel => '取消';
+
+  @override
+  String get skinPickerPreviousTooltip => '上一个皮肤';
+
+  @override
+  String get skinPickerNextTooltip => '下一个皮肤';
+
+  @override
+  String get layoutPickerTitle => '布局';
 
   @override
   String layoutPickerLoadError(String error) {
-    return 'Could not load layouts.\n$error';
+    return '无法加载布局。\n$error';
   }
 
   @override
-  String get layoutTypeTemplate => 'Built-in template';
+  String get layoutTypeTemplate => '内置模板';
 
   @override
-  String get layoutTypeCustom => 'Custom layout';
+  String get layoutTypeCustom => '自定义布局';
 
   @override
-  String get layoutActionsTooltip => 'Layout actions';
+  String get layoutActionsTooltip => '布局操作';
 
   @override
-  String get layoutActionDuplicate => 'Duplicate';
+  String get layoutActionDuplicate => '复制';
 
   @override
-  String get layoutActionEdit => 'Edit';
+  String get layoutActionEdit => '编辑';
 
   @override
-  String get layoutDeleteDialogTitle => 'Delete layout?';
+  String get layoutDeleteDialogTitle => '删除此布局？';
 
   @override
   String layoutDeleteDialogBody(String name) {
-    return '\"$name\" will be permanently removed.';
+    return '“$name”将被永久删除。';
   }
 
   @override
-  String get editorTitle => 'Edit layout';
+  String get editorTitle => '编辑布局';
 
   @override
-  String get editorAddBlockButton => 'Add block';
+  String get editorAddBlockButton => '添加块';
 
   @override
-  String get editorValidationName => 'Give the layout a name.';
+  String get editorValidationName => '请为布局命名。';
 
   @override
-  String get editorValidationBlocks => 'Add at least one block before saving.';
+  String get editorValidationBlocks => '保存前请至少添加一个块。';
 
   @override
-  String get editorSavedSnack => 'Layout saved.';
+  String get editorSavedSnack => '布局已保存。';
 
   @override
-  String get editorPreviewLabel => 'Preview';
+  String get editorPreviewLabel => '预览';
 
   @override
-  String get editorBlocksLabel => 'Blocks';
+  String get editorBlocksLabel => '块';
 
   @override
-  String get editorNameFieldLabel => 'Layout name';
+  String get editorNameFieldLabel => '布局名称';
 
   @override
-  String get editorEmptyPreview => 'Add a block to see a preview';
+  String get editorEmptyPreview => '添加块后即可预览';
 
   @override
-  String get editorRemoveBlockTooltip => 'Remove block';
+  String get editorRemoveBlockTooltip => '移除块';
 
   @override
-  String get editorEmptyCell => 'Empty';
+  String get editorEmptyCell => '空';
 
   @override
-  String get editorRemoveButtonTooltip => 'Remove button';
+  String get editorRemoveButtonTooltip => '移除按钮';
 
   @override
-  String get editorAddButtonChip => 'Add';
+  String get editorAddButtonChip => '添加';
 
   @override
-  String get blockKindDpad => 'D-pad';
+  String get blockKindDpad => '方向键';
 
   @override
-  String get blockKindButtonRow => 'Button row';
+  String get blockKindButtonRow => '按钮行';
 
   @override
-  String get blockKindVolume => 'Volume rocker';
+  String get blockKindVolume => '音量摇杆';
 
   @override
-  String get blockKindGrid => 'Grid';
+  String get blockKindGrid => '网格';
 
   @override
-  String get blockKindSpacer => 'Spacer';
+  String get blockKindSpacer => '间隔';
 
   @override
-  String get blockDescDpad => 'A five-button directional cross';
+  String get blockDescDpad => '五按钮方向十字键';
 
   @override
-  String get blockDescButtonRow => 'An evenly spaced row of buttons';
+  String get blockDescButtonRow => '等间距排列的按钮行';
 
   @override
-  String get blockDescVolume => 'Volume down / mute / volume up';
+  String get blockDescVolume => '音量减 / 静音 / 音量加';
 
   @override
-  String get blockDescGrid => 'A grid of buttons';
+  String get blockDescGrid => '按钮网格';
 
   @override
-  String get blockDescSpacer => 'Blank vertical space between blocks';
+  String get blockDescSpacer => '块之间的空白垂直间距';
 
   @override
-  String get buttonEditorTitle => 'Edit button';
+  String get buttonEditorTitle => '编辑按钮';
 
   @override
-  String get buttonEditorActionLabel => 'Action';
+  String get buttonEditorActionLabel => '操作';
 
   @override
-  String get buttonEditorIconLabel => 'Icon';
+  String get buttonEditorIconLabel => '图标';
 
   @override
-  String get buttonEditorShowLabel => 'Show label';
+  String get buttonEditorShowLabel => '显示标签';
 
   @override
-  String get buttonEditorShowLabelOn => 'A caption is shown on the button';
+  String get buttonEditorShowLabelOn => '按钮上显示标题';
 
   @override
-  String get buttonEditorShowLabelOff => 'The button shows no caption';
+  String get buttonEditorShowLabelOff => '按钮不显示标题';
 
   @override
-  String get buttonEditorLabelField => 'Label';
+  String get buttonEditorLabelField => '标签';
 
   @override
   String buttonEditorLabelHelper(String defaultLabel) {
-    return 'Empty — using the default: $defaultLabel';
+    return '空白 — 使用默认值：$defaultLabel';
   }
 
   @override
-  String get iconPickerTitle => 'Choose icon';
+  String get iconPickerTitle => '选择图标';
 
   @override
-  String get iconPickerDefaultSubtitle => 'The standard icon for this action';
+  String get iconPickerDefaultSubtitle => '此操作的标准图标';
 
   @override
-  String get iconPickerTextOnlySubtitle => 'Show the label, no icon';
+  String get iconPickerTextOnlySubtitle => '只显示标签，不显示图标';
 
   @override
-  String get iconPickerYourImages => 'Your images';
+  String get iconPickerYourImages => '你的图片';
 
   @override
-  String get iconPickerAddImage => 'Add';
+  String get iconPickerAddImage => '添加';
 
   @override
-  String get iconPackStandardName => 'Standard';
+  String get iconPackStandardName => '标准';
 
   @override
-  String get appearanceDefault => 'Default';
+  String get appearanceDefault => '默认';
 
   @override
-  String get appearanceTextOnly => 'Text only';
+  String get appearanceTextOnly => '仅文字';
 
   @override
-  String get appearancePackIcon => 'Pack icon';
+  String get appearancePackIcon => '图标包图标';
 
   @override
-  String get appearanceCustomImage => 'Custom image';
+  String get appearanceCustomImage => '自定义图片';
 
   @override
-  String get appearanceCustomIcon => 'Custom icon';
+  String get appearanceCustomIcon => '自定义图标';
 
   @override
-  String get keyRoleDpad => 'Directional';
+  String get keyRoleDpad => '方向键';
 
   @override
-  String get keyRoleNavigation => 'Navigation';
+  String get keyRoleNavigation => '导航';
 
   @override
-  String get keyRoleTransport => 'Playback';
+  String get keyRoleTransport => '播放';
 
   @override
-  String get keyRoleVolume => 'Volume';
+  String get keyRoleVolume => '音量';
 
   @override
-  String get keyRoleChannel => 'Channel';
+  String get keyRoleChannel => '频道';
 
   @override
-  String get keyRoleSystem => 'System';
+  String get keyRoleSystem => '系统';
 
   @override
-  String get remoteKeyUp => 'Up';
+  String get remoteKeyUp => '上';
 
   @override
-  String get remoteKeyDown => 'Down';
+  String get remoteKeyDown => '下';
 
   @override
-  String get remoteKeyLeft => 'Left';
+  String get remoteKeyLeft => '左';
 
   @override
-  String get remoteKeyRight => 'Right';
+  String get remoteKeyRight => '右';
 
   @override
-  String get remoteKeyOk => 'OK';
+  String get remoteKeyOk => '确定';
 
   @override
-  String get remoteKeyBack => 'Back';
+  String get remoteKeyBack => '返回';
 
   @override
-  String get remoteKeyHome => 'Home';
+  String get remoteKeyHome => '主页';
 
   @override
-  String get remoteKeyRewind => 'Rewind';
+  String get remoteKeyRewind => '倒退';
 
   @override
-  String get remoteKeyPlayPause => 'Play/Pause';
+  String get remoteKeyPlayPause => '播放/暂停';
 
   @override
-  String get remoteKeyFastForward => 'Fast Forward';
+  String get remoteKeyFastForward => '快进';
 
   @override
-  String get remoteKeyNext => 'Next';
+  String get remoteKeyNext => '下一个';
 
   @override
-  String get remoteKeyPrevious => 'Previous';
+  String get remoteKeyPrevious => '上一个';
 
   @override
-  String get remoteKeyVolumeUp => 'Volume Up';
+  String get remoteKeyVolumeUp => '音量 +';
 
   @override
-  String get remoteKeyVolumeDown => 'Volume Down';
+  String get remoteKeyVolumeDown => '音量 -';
 
   @override
-  String get remoteKeyMute => 'Mute';
+  String get remoteKeyMute => '静音';
 
   @override
-  String get remoteKeyChannelUp => 'Channel Up';
+  String get remoteKeyChannelUp => '频道 +';
 
   @override
-  String get remoteKeyChannelDown => 'Channel Down';
+  String get remoteKeyChannelDown => '频道 -';
 
   @override
-  String get remoteKeyPower => 'Power';
+  String get remoteKeyPower => '电源';
 
   @override
-  String get remoteKeySettings => 'Settings';
+  String get remoteKeySettings => '设置';
 
   @override
-  String get remoteKeyKeyboard => 'Keyboard';
+  String get remoteKeyKeyboard => '键盘';
 
   @override
-  String get keyboardTitle => 'Type to TV';
+  String get keyboardTitle => '在电视上输入';
 
   @override
-  String get keyboardHint => 'Focus a text field on your TV, then type here.';
+  String get keyboardHint => '在电视上选择文本框，然后在此输入。';
 
   @override
-  String get keyboardSendEnter => 'Send Enter';
+  String get keyboardSendEnter => '发送回车';
 
   @override
-  String get keyboardClose => 'Done';
+  String get keyboardClose => '完成';
 
   @override
-  String get keyboardNotSupported => 'This TV doesn\'t support remote typing.';
+  String get keyboardNotSupported => '此电视不支持远程输入。';
 
   @override
-  String get iconNameUp => 'Up';
+  String get iconNameUp => '上';
 
   @override
-  String get iconNameDown => 'Down';
+  String get iconNameDown => '下';
 
   @override
-  String get iconNameLeft => 'Left';
+  String get iconNameLeft => '左';
 
   @override
-  String get iconNameRight => 'Right';
+  String get iconNameRight => '右';
 
   @override
-  String get iconNameOk => 'OK';
+  String get iconNameOk => '确定';
 
   @override
-  String get iconNameBack => 'Back';
+  String get iconNameBack => '返回';
 
   @override
-  String get iconNameHome => 'Home';
+  String get iconNameHome => '主页';
 
   @override
-  String get iconNameRewind => 'Rewind';
+  String get iconNameRewind => '倒退';
 
   @override
-  String get iconNameFastForward => 'Fast forward';
+  String get iconNameFastForward => '快进';
 
   @override
-  String get iconNamePlayPause => 'Play / Pause';
+  String get iconNamePlayPause => '播放 / 暂停';
 
   @override
-  String get iconNamePlay => 'Play';
+  String get iconNamePlay => '播放';
 
   @override
-  String get iconNamePause => 'Pause';
+  String get iconNamePause => '暂停';
 
   @override
-  String get iconNameStop => 'Stop';
+  String get iconNameStop => '停止';
 
   @override
-  String get iconNameNext => 'Next';
+  String get iconNameNext => '下一个';
 
   @override
-  String get iconNamePrevious => 'Previous';
+  String get iconNamePrevious => '上一个';
 
   @override
-  String get iconNameVolumeUp => 'Volume up';
+  String get iconNameVolumeUp => '音量 +';
 
   @override
-  String get iconNameVolumeDown => 'Volume down';
+  String get iconNameVolumeDown => '音量 -';
 
   @override
-  String get iconNameMute => 'Mute';
+  String get iconNameMute => '静音';
 
   @override
-  String get iconNameChannelUp => 'Channel up';
+  String get iconNameChannelUp => '频道 +';
 
   @override
-  String get iconNameChannelDown => 'Channel down';
+  String get iconNameChannelDown => '频道 -';
 
   @override
-  String get iconNamePower => 'Power';
+  String get iconNamePower => '电源';
 
   @override
-  String get iconNameMenu => 'Menu';
+  String get iconNameMenu => '菜单';
 
   @override
-  String get iconNameSettings => 'Settings';
+  String get iconNameSettings => '设置';
 
   @override
-  String get iconNameInfo => 'Info';
+  String get iconNameInfo => '信息';
 
   @override
-  String get iconNameMic => 'Microphone';
+  String get iconNameMic => '麦克风';
 
   @override
-  String get iconNameKeyboard => 'Keyboard';
+  String get iconNameKeyboard => '键盘';
 
   @override
-  String get failureDiscovery =>
-      'Couldn\'t search for TVs. Check your Wi-Fi and try again.';
+  String get failureDiscovery => '无法搜索电视。请检查 Wi-Fi 后重试。';
 
   @override
-  String get failureConnection =>
-      'Couldn\'t connect to the TV. Make sure it\'s on and nearby.';
+  String get failureConnection => '无法连接到电视。请确保它已打开并在附近。';
 
   @override
-  String get failureCommand =>
-      'That button didn\'t go through. Please try again.';
+  String get failureCommand => '该按钮未送达。请重试。';
 
   @override
-  String get failureUnknown => 'Something went wrong. Please try again.';
+  String get failureUnknown => '出了点问题。请重试。';
 
   @override
-  String get logoSemanticLabel => 'Flixsy logo';
+  String get logoSemanticLabel => 'Flixsy 标志';
 
   @override
-  String get mainRemoteSemanticLabel => 'Flixsy remote';
+  String get mainRemoteSemanticLabel => 'Flixsy 遥控器';
 
   @override
-  String get commonCancel => 'Cancel';
+  String get commonCancel => '取消';
 
   @override
-  String get commonDelete => 'Delete';
+  String get commonDelete => '删除';
 
   @override
-  String get commonSave => 'Save';
+  String get commonSave => '保存';
 
   @override
-  String get commonDone => 'Done';
+  String get commonDone => '完成';
 
   @override
-  String get removeAdsAction => 'Remove Ads';
+  String get removeAdsAction => '移除广告';
 
   @override
   String removeAdsActionWithPrice(String price) {
-    return 'Remove Ads — $price';
+    return '移除广告 — $price';
   }
 
   @override
-  String get restorePurchasesAction => 'Restore Purchases';
+  String get restorePurchasesAction => '恢复购买';
 
   @override
-  String get removeAdsSuccess => 'Ads removed. Thanks for your support!';
+  String get removeAdsSuccess => '广告已移除，感谢你的支持！';
 
   @override
-  String get removeAdsFailureCancelled => 'Purchase cancelled.';
+  String get removeAdsFailureCancelled => '购买已取消。';
 
   @override
-  String get removeAdsFailureProductNotFound =>
-      'This product isn\'t available right now. Please try again later.';
+  String get removeAdsFailureProductNotFound => '此商品当前不可用。请稍后重试。';
 
   @override
-  String get removeAdsFailureNetwork =>
-      'Couldn\'t reach the store. Check your connection and try again.';
+  String get removeAdsFailureNetwork => '无法连接到应用商店。请检查网络后重试。';
 
   @override
-  String get removeAdsFailureNothingToRestore => 'No previous purchases found.';
+  String get removeAdsFailureNothingToRestore => '未找到以前的购买记录。';
 
   @override
-  String get removeAdsFailureUnknown =>
-      'Something went wrong. Please try again.';
+  String get removeAdsFailureUnknown => '出了点问题。请重试。';
+
+  @override
+  String get magicMouseLabel => 'Magic Mouse';
+
+  @override
+  String get magicMouseUnsupportedTooltip => 'Magic Mouse 仅适用于 LG webOS 电视。';
 }

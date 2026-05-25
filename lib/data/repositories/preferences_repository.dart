@@ -60,6 +60,22 @@ class PreferencesRepository implements IPreferencesRepository {
   Future<void> setDeviceMacAddress(String deviceId, String macAddress) =>
       _db.preferencesDao.setDeviceMacAddress(deviceId, macAddress);
 
+  @override
+  Stream<Map<String, String>> watchDeviceNicknames() =>
+      _db.deviceNamesDao.watchAll();
+
+  @override
+  Future<Map<String, String>> getDeviceNicknames() =>
+      _db.deviceNamesDao.getAll();
+
+  @override
+  Future<void> setDeviceNickname(String deviceId, String nickname) =>
+      _db.deviceNamesDao.setNickname(deviceId, nickname);
+
+  @override
+  Future<void> clearDeviceNickname(String deviceId) =>
+      _db.deviceNamesDao.clearNickname(deviceId);
+
   AppSkin _parseSkin(String? value) {
     if (value == null) return AppSkin.classic;
     return AppSkin.values.firstWhere(

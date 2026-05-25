@@ -6,18 +6,25 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'package:flixsy/data/database/daos/custom_images_dao.dart';
+import 'package:flixsy/data/database/daos/device_names_dao.dart';
 import 'package:flixsy/data/database/daos/layouts_dao.dart';
 import 'package:flixsy/data/database/daos/preferences_dao.dart';
 import 'package:flixsy/data/database/migrations/app_migrations.dart';
 import 'package:flixsy/data/database/tables/custom_images_table.dart';
 import 'package:flixsy/data/database/tables/custom_layouts_table.dart';
+import 'package:flixsy/data/database/tables/device_names_table.dart';
 import 'package:flixsy/data/database/tables/preferences_table.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [PreferencesTable, CustomLayoutsTable, CustomImagesTable],
-  daos: [PreferencesDao, LayoutsDao, CustomImagesDao],
+  tables: [
+    PreferencesTable,
+    CustomLayoutsTable,
+    CustomImagesTable,
+    DeviceNamesTable,
+  ],
+  daos: [PreferencesDao, LayoutsDao, CustomImagesDao, DeviceNamesDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -26,7 +33,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.connection);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => createMigrationStrategy(this);

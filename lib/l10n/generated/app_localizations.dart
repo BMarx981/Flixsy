@@ -214,11 +214,47 @@ abstract class AppLocalizations {
   /// **'Pair'**
   String get discoveryPairButton;
 
-  /// App-bar title of the main remote-control screen.
+  /// App-bar title of the main remote-control screen, shown when no TV is connected.
   ///
   /// In en, this message translates to:
   /// **'Remote'**
   String get homeTitle;
+
+  /// Tooltip for the app-bar back button on the remote screen — returns to the device discovery (radar) screen so the user can pick another TV. The connection to the current TV stays alive.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a different TV'**
+  String get homeBackToRadarTooltip;
+
+  /// Title of the dialog where the user can give a connected TV a custom name.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename TV'**
+  String get renameDeviceDialogTitle;
+
+  /// Label for the text field in the rename-TV dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get renameDeviceFieldLabel;
+
+  /// Button that persists the typed nickname in the rename-TV dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get renameDeviceSaveButton;
+
+  /// Button that dismisses the rename-TV dialog without saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get renameDeviceCancelButton;
+
+  /// Button that clears the user's custom nickname for a TV, reverting to the name the TV advertises over the network.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get renameDeviceResetButton;
 
   /// Tooltip for the app-bar action that opens the layout picker.
   ///
@@ -1017,6 +1053,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Please try again.'**
   String get removeAdsFailureUnknown;
+
+  /// Label on the toggle button that activates the free-cursor / accelerometer pointer (LG webOS Magic Remote-style). Shown next to the D-pad.
+  ///
+  /// In en, this message translates to:
+  /// **'Magic Mouse'**
+  String get magicMouseLabel;
+
+  /// Tooltip shown on the Magic Mouse toggle when the connected TV does not support a free cursor.
+  ///
+  /// In en, this message translates to:
+  /// **'Magic Mouse is only available on LG webOS TVs.'**
+  String get magicMouseUnsupportedTooltip;
 }
 
 class _AppLocalizationsDelegate

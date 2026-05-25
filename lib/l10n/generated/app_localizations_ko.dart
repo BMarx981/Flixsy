@@ -12,477 +12,495 @@ class AppLocalizationsKo extends AppLocalizations {
   String get appTitle => 'Flixsy';
 
   @override
-  String get discoveryHeaderTitle => 'Find Your TV';
+  String get discoveryHeaderTitle => 'TV 찾기';
 
   @override
   String get discoveryHeaderSubtitle =>
-      'Make sure your TV is on and connected to the same Wi-Fi network.';
+      'TV가 켜져 있고 같은 Wi-Fi 네트워크에 연결되어 있는지 확인하세요.';
 
   @override
-  String get discoveryErrorTitle => 'Could not start search';
+  String get discoveryErrorTitle => '검색을 시작할 수 없습니다';
 
   @override
-  String get discoveryErrorBody =>
-      'Check your network connection and try again.';
+  String get discoveryErrorBody => '네트워크 연결을 확인하고 다시 시도해 주세요.';
 
   @override
-  String get discoveryRetryButton => 'Try Again';
+  String get discoveryRetryButton => '다시 시도';
 
   @override
-  String get discoverySearching => 'Searching your network…';
+  String get discoverySearching => '네트워크에서 검색 중…';
 
   @override
-  String get discoverySearchingHint => 'This can take a few seconds.';
+  String get discoverySearchingHint => '몇 초 정도 걸릴 수 있습니다.';
 
   @override
   String discoveryDevicesFound(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count devices found',
-      one: '1 device found',
+      other: '기기 $count대 찾음',
     );
     return '$_temp0';
   }
 
   @override
-  String get discoveryDeviceFallbackName => 'your TV';
+  String get discoveryDeviceFallbackName => 'TV';
 
   @override
-  String get discoveryPairingEnterCodeTitle => 'Enter the code';
+  String get discoveryPairingEnterCodeTitle => '코드 입력';
 
   @override
-  String get discoveryPairingCheckTvTitle => 'Check your TV';
+  String get discoveryPairingCheckTvTitle => 'TV를 확인하세요';
 
   @override
   String discoveryPairingEnterCodeBody(String deviceName) {
-    return '$deviceName is showing a 6-digit code. Type it below to finish pairing.';
+    return '$deviceName에 6자리 코드가 표시되어 있습니다. 아래에 입력하여 페어링을 완료하세요.';
   }
 
   @override
   String discoveryPairingCheckTvBody(String deviceName) {
-    return 'Accept the connection request on $deviceName using its remote.';
+    return '$deviceName의 리모컨으로 연결 요청을 수락하세요.';
   }
 
   @override
   String get discoveryPairingCodeHint => '000000';
 
   @override
-  String get discoveryPairButton => 'Pair';
+  String get discoveryPairButton => '페어링';
 
   @override
-  String get homeTitle => 'Remote';
+  String get homeTitle => '리모컨';
 
   @override
-  String get homeLayoutsTooltip => 'Layouts';
+  String get homeBackToRadarTooltip => '다른 TV 선택';
 
   @override
-  String get homeChangeSkinTooltip => 'Change skin';
+  String get renameDeviceDialogTitle => 'TV 이름 변경';
 
   @override
-  String get skinPickerApply => 'Apply';
+  String get renameDeviceFieldLabel => '이름';
 
   @override
-  String get skinPickerCancel => 'Cancel';
+  String get renameDeviceSaveButton => '저장';
 
   @override
-  String get skinPickerPreviousTooltip => 'Previous skin';
+  String get renameDeviceCancelButton => '취소';
 
   @override
-  String get skinPickerNextTooltip => 'Next skin';
+  String get renameDeviceResetButton => '재설정';
 
   @override
-  String get layoutPickerTitle => 'Layouts';
+  String get homeLayoutsTooltip => '레이아웃';
+
+  @override
+  String get homeChangeSkinTooltip => '스킨 변경';
+
+  @override
+  String get skinPickerApply => '적용';
+
+  @override
+  String get skinPickerCancel => '취소';
+
+  @override
+  String get skinPickerPreviousTooltip => '이전 스킨';
+
+  @override
+  String get skinPickerNextTooltip => '다음 스킨';
+
+  @override
+  String get layoutPickerTitle => '레이아웃';
 
   @override
   String layoutPickerLoadError(String error) {
-    return 'Could not load layouts.\n$error';
+    return '레이아웃을 불러올 수 없습니다.\n$error';
   }
 
   @override
-  String get layoutTypeTemplate => 'Built-in template';
+  String get layoutTypeTemplate => '기본 제공 템플릿';
 
   @override
-  String get layoutTypeCustom => 'Custom layout';
+  String get layoutTypeCustom => '사용자 지정 레이아웃';
 
   @override
-  String get layoutActionsTooltip => 'Layout actions';
+  String get layoutActionsTooltip => '레이아웃 작업';
 
   @override
-  String get layoutActionDuplicate => 'Duplicate';
+  String get layoutActionDuplicate => '복제';
 
   @override
-  String get layoutActionEdit => 'Edit';
+  String get layoutActionEdit => '편집';
 
   @override
-  String get layoutDeleteDialogTitle => 'Delete layout?';
+  String get layoutDeleteDialogTitle => '레이아웃을 삭제할까요?';
 
   @override
   String layoutDeleteDialogBody(String name) {
-    return '\"$name\" will be permanently removed.';
+    return '\"$name\"이(가) 영구적으로 삭제됩니다.';
   }
 
   @override
-  String get editorTitle => 'Edit layout';
+  String get editorTitle => '레이아웃 편집';
 
   @override
-  String get editorAddBlockButton => 'Add block';
+  String get editorAddBlockButton => '블록 추가';
 
   @override
-  String get editorValidationName => 'Give the layout a name.';
+  String get editorValidationName => '레이아웃 이름을 입력하세요.';
 
   @override
-  String get editorValidationBlocks => 'Add at least one block before saving.';
+  String get editorValidationBlocks => '저장하기 전에 블록을 하나 이상 추가하세요.';
 
   @override
-  String get editorSavedSnack => 'Layout saved.';
+  String get editorSavedSnack => '레이아웃이 저장되었습니다.';
 
   @override
-  String get editorPreviewLabel => 'Preview';
+  String get editorPreviewLabel => '미리보기';
 
   @override
-  String get editorBlocksLabel => 'Blocks';
+  String get editorBlocksLabel => '블록';
 
   @override
-  String get editorNameFieldLabel => 'Layout name';
+  String get editorNameFieldLabel => '레이아웃 이름';
 
   @override
-  String get editorEmptyPreview => 'Add a block to see a preview';
+  String get editorEmptyPreview => '블록을 추가하면 미리보기가 표시됩니다';
 
   @override
-  String get editorRemoveBlockTooltip => 'Remove block';
+  String get editorRemoveBlockTooltip => '블록 제거';
 
   @override
-  String get editorEmptyCell => 'Empty';
+  String get editorEmptyCell => '비어 있음';
 
   @override
-  String get editorRemoveButtonTooltip => 'Remove button';
+  String get editorRemoveButtonTooltip => '버튼 제거';
 
   @override
-  String get editorAddButtonChip => 'Add';
+  String get editorAddButtonChip => '추가';
 
   @override
-  String get blockKindDpad => 'D-pad';
+  String get blockKindDpad => '방향 키';
 
   @override
-  String get blockKindButtonRow => 'Button row';
+  String get blockKindButtonRow => '버튼 행';
 
   @override
-  String get blockKindVolume => 'Volume rocker';
+  String get blockKindVolume => '볼륨 컨트롤';
 
   @override
-  String get blockKindGrid => 'Grid';
+  String get blockKindGrid => '그리드';
 
   @override
-  String get blockKindSpacer => 'Spacer';
+  String get blockKindSpacer => '간격';
 
   @override
-  String get blockDescDpad => 'A five-button directional cross';
+  String get blockDescDpad => '5버튼 방향 키';
 
   @override
-  String get blockDescButtonRow => 'An evenly spaced row of buttons';
+  String get blockDescButtonRow => '균일한 간격의 버튼 행';
 
   @override
-  String get blockDescVolume => 'Volume down / mute / volume up';
+  String get blockDescVolume => '볼륨 다운 / 음소거 / 볼륨 업';
 
   @override
-  String get blockDescGrid => 'A grid of buttons';
+  String get blockDescGrid => '버튼 그리드';
 
   @override
-  String get blockDescSpacer => 'Blank vertical space between blocks';
+  String get blockDescSpacer => '블록 사이의 빈 세로 공간';
 
   @override
-  String get buttonEditorTitle => 'Edit button';
+  String get buttonEditorTitle => '버튼 편집';
 
   @override
-  String get buttonEditorActionLabel => 'Action';
+  String get buttonEditorActionLabel => '동작';
 
   @override
-  String get buttonEditorIconLabel => 'Icon';
+  String get buttonEditorIconLabel => '아이콘';
 
   @override
-  String get buttonEditorShowLabel => 'Show label';
+  String get buttonEditorShowLabel => '라벨 표시';
 
   @override
-  String get buttonEditorShowLabelOn => 'A caption is shown on the button';
+  String get buttonEditorShowLabelOn => '버튼에 캡션이 표시됩니다';
 
   @override
-  String get buttonEditorShowLabelOff => 'The button shows no caption';
+  String get buttonEditorShowLabelOff => '버튼에 캡션이 표시되지 않습니다';
 
   @override
-  String get buttonEditorLabelField => 'Label';
+  String get buttonEditorLabelField => '라벨';
 
   @override
   String buttonEditorLabelHelper(String defaultLabel) {
-    return 'Empty — using the default: $defaultLabel';
+    return '비어 있음 — 기본값 사용: $defaultLabel';
   }
 
   @override
-  String get iconPickerTitle => 'Choose icon';
+  String get iconPickerTitle => '아이콘 선택';
 
   @override
-  String get iconPickerDefaultSubtitle => 'The standard icon for this action';
+  String get iconPickerDefaultSubtitle => '이 동작의 기본 아이콘';
 
   @override
-  String get iconPickerTextOnlySubtitle => 'Show the label, no icon';
+  String get iconPickerTextOnlySubtitle => '아이콘 없이 라벨만 표시';
 
   @override
-  String get iconPickerYourImages => 'Your images';
+  String get iconPickerYourImages => '내 이미지';
 
   @override
-  String get iconPickerAddImage => 'Add';
+  String get iconPickerAddImage => '추가';
 
   @override
-  String get iconPackStandardName => 'Standard';
+  String get iconPackStandardName => '표준';
 
   @override
-  String get appearanceDefault => 'Default';
+  String get appearanceDefault => '기본값';
 
   @override
-  String get appearanceTextOnly => 'Text only';
+  String get appearanceTextOnly => '텍스트만';
 
   @override
-  String get appearancePackIcon => 'Pack icon';
+  String get appearancePackIcon => '팩 아이콘';
 
   @override
-  String get appearanceCustomImage => 'Custom image';
+  String get appearanceCustomImage => '사용자 지정 이미지';
 
   @override
-  String get appearanceCustomIcon => 'Custom icon';
+  String get appearanceCustomIcon => '사용자 지정 아이콘';
 
   @override
-  String get keyRoleDpad => 'Directional';
+  String get keyRoleDpad => '방향';
 
   @override
-  String get keyRoleNavigation => 'Navigation';
+  String get keyRoleNavigation => '탐색';
 
   @override
-  String get keyRoleTransport => 'Playback';
+  String get keyRoleTransport => '재생';
 
   @override
-  String get keyRoleVolume => 'Volume';
+  String get keyRoleVolume => '볼륨';
 
   @override
-  String get keyRoleChannel => 'Channel';
+  String get keyRoleChannel => '채널';
 
   @override
-  String get keyRoleSystem => 'System';
+  String get keyRoleSystem => '시스템';
 
   @override
-  String get remoteKeyUp => 'Up';
+  String get remoteKeyUp => '위';
 
   @override
-  String get remoteKeyDown => 'Down';
+  String get remoteKeyDown => '아래';
 
   @override
-  String get remoteKeyLeft => 'Left';
+  String get remoteKeyLeft => '왼쪽';
 
   @override
-  String get remoteKeyRight => 'Right';
+  String get remoteKeyRight => '오른쪽';
 
   @override
-  String get remoteKeyOk => 'OK';
+  String get remoteKeyOk => '확인';
 
   @override
-  String get remoteKeyBack => 'Back';
+  String get remoteKeyBack => '뒤로';
 
   @override
-  String get remoteKeyHome => 'Home';
+  String get remoteKeyHome => '홈';
 
   @override
-  String get remoteKeyRewind => 'Rewind';
+  String get remoteKeyRewind => '되감기';
 
   @override
-  String get remoteKeyPlayPause => 'Play/Pause';
+  String get remoteKeyPlayPause => '재생/일시정지';
 
   @override
-  String get remoteKeyFastForward => 'Fast Forward';
+  String get remoteKeyFastForward => '빨리 감기';
 
   @override
-  String get remoteKeyNext => 'Next';
+  String get remoteKeyNext => '다음';
 
   @override
-  String get remoteKeyPrevious => 'Previous';
+  String get remoteKeyPrevious => '이전';
 
   @override
-  String get remoteKeyVolumeUp => 'Volume Up';
+  String get remoteKeyVolumeUp => '볼륨 업';
 
   @override
-  String get remoteKeyVolumeDown => 'Volume Down';
+  String get remoteKeyVolumeDown => '볼륨 다운';
 
   @override
-  String get remoteKeyMute => 'Mute';
+  String get remoteKeyMute => '음소거';
 
   @override
-  String get remoteKeyChannelUp => 'Channel Up';
+  String get remoteKeyChannelUp => '채널 +';
 
   @override
-  String get remoteKeyChannelDown => 'Channel Down';
+  String get remoteKeyChannelDown => '채널 -';
 
   @override
-  String get remoteKeyPower => 'Power';
+  String get remoteKeyPower => '전원';
 
   @override
-  String get remoteKeySettings => 'Settings';
+  String get remoteKeySettings => '설정';
 
   @override
-  String get remoteKeyKeyboard => 'Keyboard';
+  String get remoteKeyKeyboard => '키보드';
 
   @override
-  String get keyboardTitle => 'Type to TV';
+  String get keyboardTitle => 'TV에 입력';
 
   @override
-  String get keyboardHint => 'Focus a text field on your TV, then type here.';
+  String get keyboardHint => 'TV에서 텍스트 필드를 선택한 다음 여기에 입력하세요.';
 
   @override
-  String get keyboardSendEnter => 'Send Enter';
+  String get keyboardSendEnter => 'Enter 전송';
 
   @override
-  String get keyboardClose => 'Done';
+  String get keyboardClose => '완료';
 
   @override
-  String get keyboardNotSupported => 'This TV doesn\'t support remote typing.';
+  String get keyboardNotSupported => '이 TV는 원격 입력을 지원하지 않습니다.';
 
   @override
-  String get iconNameUp => 'Up';
+  String get iconNameUp => '위';
 
   @override
-  String get iconNameDown => 'Down';
+  String get iconNameDown => '아래';
 
   @override
-  String get iconNameLeft => 'Left';
+  String get iconNameLeft => '왼쪽';
 
   @override
-  String get iconNameRight => 'Right';
+  String get iconNameRight => '오른쪽';
 
   @override
-  String get iconNameOk => 'OK';
+  String get iconNameOk => '확인';
 
   @override
-  String get iconNameBack => 'Back';
+  String get iconNameBack => '뒤로';
 
   @override
-  String get iconNameHome => 'Home';
+  String get iconNameHome => '홈';
 
   @override
-  String get iconNameRewind => 'Rewind';
+  String get iconNameRewind => '되감기';
 
   @override
-  String get iconNameFastForward => 'Fast forward';
+  String get iconNameFastForward => '빨리 감기';
 
   @override
-  String get iconNamePlayPause => 'Play / Pause';
+  String get iconNamePlayPause => '재생 / 일시정지';
 
   @override
-  String get iconNamePlay => 'Play';
+  String get iconNamePlay => '재생';
 
   @override
-  String get iconNamePause => 'Pause';
+  String get iconNamePause => '일시정지';
 
   @override
-  String get iconNameStop => 'Stop';
+  String get iconNameStop => '정지';
 
   @override
-  String get iconNameNext => 'Next';
+  String get iconNameNext => '다음';
 
   @override
-  String get iconNamePrevious => 'Previous';
+  String get iconNamePrevious => '이전';
 
   @override
-  String get iconNameVolumeUp => 'Volume up';
+  String get iconNameVolumeUp => '볼륨 업';
 
   @override
-  String get iconNameVolumeDown => 'Volume down';
+  String get iconNameVolumeDown => '볼륨 다운';
 
   @override
-  String get iconNameMute => 'Mute';
+  String get iconNameMute => '음소거';
 
   @override
-  String get iconNameChannelUp => 'Channel up';
+  String get iconNameChannelUp => '채널 +';
 
   @override
-  String get iconNameChannelDown => 'Channel down';
+  String get iconNameChannelDown => '채널 -';
 
   @override
-  String get iconNamePower => 'Power';
+  String get iconNamePower => '전원';
 
   @override
-  String get iconNameMenu => 'Menu';
+  String get iconNameMenu => '메뉴';
 
   @override
-  String get iconNameSettings => 'Settings';
+  String get iconNameSettings => '설정';
 
   @override
-  String get iconNameInfo => 'Info';
+  String get iconNameInfo => '정보';
 
   @override
-  String get iconNameMic => 'Microphone';
+  String get iconNameMic => '마이크';
 
   @override
-  String get iconNameKeyboard => 'Keyboard';
+  String get iconNameKeyboard => '키보드';
 
   @override
-  String get failureDiscovery =>
-      'Couldn\'t search for TVs. Check your Wi-Fi and try again.';
+  String get failureDiscovery => 'TV를 검색할 수 없습니다. Wi-Fi를 확인하고 다시 시도하세요.';
 
   @override
-  String get failureConnection =>
-      'Couldn\'t connect to the TV. Make sure it\'s on and nearby.';
+  String get failureConnection => 'TV에 연결할 수 없습니다. 켜져 있고 가까이 있는지 확인하세요.';
 
   @override
-  String get failureCommand =>
-      'That button didn\'t go through. Please try again.';
+  String get failureCommand => '버튼이 전달되지 않았습니다. 다시 시도하세요.';
 
   @override
-  String get failureUnknown => 'Something went wrong. Please try again.';
+  String get failureUnknown => '문제가 발생했습니다. 다시 시도하세요.';
 
   @override
-  String get logoSemanticLabel => 'Flixsy logo';
+  String get logoSemanticLabel => 'Flixsy 로고';
 
   @override
-  String get mainRemoteSemanticLabel => 'Flixsy remote';
+  String get mainRemoteSemanticLabel => 'Flixsy 리모컨';
 
   @override
-  String get commonCancel => 'Cancel';
+  String get commonCancel => '취소';
 
   @override
-  String get commonDelete => 'Delete';
+  String get commonDelete => '삭제';
 
   @override
-  String get commonSave => 'Save';
+  String get commonSave => '저장';
 
   @override
-  String get commonDone => 'Done';
+  String get commonDone => '완료';
 
   @override
-  String get removeAdsAction => 'Remove Ads';
+  String get removeAdsAction => '광고 제거';
 
   @override
   String removeAdsActionWithPrice(String price) {
-    return 'Remove Ads — $price';
+    return '광고 제거 — $price';
   }
 
   @override
-  String get restorePurchasesAction => 'Restore Purchases';
+  String get restorePurchasesAction => '구매 복원';
 
   @override
-  String get removeAdsSuccess => 'Ads removed. Thanks for your support!';
+  String get removeAdsSuccess => '광고가 제거되었습니다. 지원해 주셔서 감사합니다!';
 
   @override
-  String get removeAdsFailureCancelled => 'Purchase cancelled.';
+  String get removeAdsFailureCancelled => '구매가 취소되었습니다.';
 
   @override
   String get removeAdsFailureProductNotFound =>
-      'This product isn\'t available right now. Please try again later.';
+      '이 상품은 현재 사용할 수 없습니다. 나중에 다시 시도하세요.';
 
   @override
-  String get removeAdsFailureNetwork =>
-      'Couldn\'t reach the store. Check your connection and try again.';
+  String get removeAdsFailureNetwork => '스토어에 연결할 수 없습니다. 연결을 확인하고 다시 시도하세요.';
 
   @override
-  String get removeAdsFailureNothingToRestore => 'No previous purchases found.';
+  String get removeAdsFailureNothingToRestore => '이전 구매 내역이 없습니다.';
 
   @override
-  String get removeAdsFailureUnknown =>
-      'Something went wrong. Please try again.';
+  String get removeAdsFailureUnknown => '문제가 발생했습니다. 다시 시도하세요.';
+
+  @override
+  String get magicMouseLabel => 'Magic Mouse';
+
+  @override
+  String get magicMouseUnsupportedTooltip =>
+      'Magic Mouse는 LG webOS TV에서만 사용할 수 있습니다.';
 }

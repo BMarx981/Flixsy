@@ -249,6 +249,19 @@ class _FakePreferencesRepository implements IPreferencesRepository {
   Future<String?> getDeviceCredential(String deviceId) async => null;
   @override
   Future<void> setDeviceCredential(String deviceId, String credential) async {}
+  @override
+  Future<String?> getDeviceMacAddress(String deviceId) async => null;
+  @override
+  Future<void> setDeviceMacAddress(String deviceId, String macAddress) async {}
+  @override
+  Stream<Map<String, String>> watchDeviceNicknames() =>
+      Stream<Map<String, String>>.value(const {});
+  @override
+  Future<Map<String, String>> getDeviceNicknames() async => const {};
+  @override
+  Future<void> setDeviceNickname(String deviceId, String nickname) async {}
+  @override
+  Future<void> clearDeviceNickname(String deviceId) async {}
 
   void dispose() => _layoutController.close();
 }

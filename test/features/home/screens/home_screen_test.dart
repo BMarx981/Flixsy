@@ -244,10 +244,47 @@ class _FakePreferencesRepository implements IPreferencesRepository {
     _credentials[deviceId] = credential;
   }
 
+  final Map<String, String> _macAddresses = {};
+
+  @override
+  Future<String?> getDeviceMacAddress(String deviceId) async =>
+      _macAddresses[deviceId];
+
+  @override
+  Future<void> setDeviceMacAddress(String deviceId, String macAddress) async {
+    _macAddresses[deviceId] = macAddress;
+  }
+
+  final Map<String, String> _nicknames = {};
+  final StreamController<Map<String, String>> _nicknamesController =
+      StreamController<Map<String, String>>.broadcast();
+
+  @override
+  Stream<Map<String, String>> watchDeviceNicknames() async* {
+    yield Map.of(_nicknames);
+    yield* _nicknamesController.stream;
+  }
+
+  @override
+  Future<Map<String, String>> getDeviceNicknames() async => Map.of(_nicknames);
+
+  @override
+  Future<void> setDeviceNickname(String deviceId, String nickname) async {
+    _nicknames[deviceId] = nickname;
+    _nicknamesController.add(Map.of(_nicknames));
+  }
+
+  @override
+  Future<void> clearDeviceNickname(String deviceId) async {
+    _nicknames.remove(deviceId);
+    _nicknamesController.add(Map.of(_nicknames));
+  }
+
   void dispose() {
     _controller.close();
     _layoutController.close();
     _adsRemovedController.close();
+    _nicknamesController.close();
   }
 }
 

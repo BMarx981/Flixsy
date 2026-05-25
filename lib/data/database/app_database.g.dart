@@ -849,6 +849,276 @@ class CustomImagesTableCompanion
   }
 }
 
+class $DeviceNamesTableTable extends DeviceNamesTable
+    with TableInfo<$DeviceNamesTableTable, DeviceNamesTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DeviceNamesTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _deviceIdMeta = const VerificationMeta(
+    'deviceId',
+  );
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+    'device_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nicknameMeta = const VerificationMeta(
+    'nickname',
+  );
+  @override
+  late final GeneratedColumn<String> nickname = GeneratedColumn<String>(
+    'nickname',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [deviceId, nickname, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'device_names_table';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DeviceNamesTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('device_id')) {
+      context.handle(
+        _deviceIdMeta,
+        deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_deviceIdMeta);
+    }
+    if (data.containsKey('nickname')) {
+      context.handle(
+        _nicknameMeta,
+        nickname.isAcceptableOrUnknown(data['nickname']!, _nicknameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nicknameMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {deviceId};
+  @override
+  DeviceNamesTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DeviceNamesTableData(
+      deviceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}device_id'],
+      )!,
+      nickname: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nickname'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $DeviceNamesTableTable createAlias(String alias) {
+    return $DeviceNamesTableTable(attachedDatabase, alias);
+  }
+}
+
+class DeviceNamesTableData extends DataClass
+    implements Insertable<DeviceNamesTableData> {
+  final String deviceId;
+  final String nickname;
+  final DateTime updatedAt;
+  const DeviceNamesTableData({
+    required this.deviceId,
+    required this.nickname,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['device_id'] = Variable<String>(deviceId);
+    map['nickname'] = Variable<String>(nickname);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  DeviceNamesTableCompanion toCompanion(bool nullToAbsent) {
+    return DeviceNamesTableCompanion(
+      deviceId: Value(deviceId),
+      nickname: Value(nickname),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory DeviceNamesTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DeviceNamesTableData(
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      nickname: serializer.fromJson<String>(json['nickname']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'deviceId': serializer.toJson<String>(deviceId),
+      'nickname': serializer.toJson<String>(nickname),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  DeviceNamesTableData copyWith({
+    String? deviceId,
+    String? nickname,
+    DateTime? updatedAt,
+  }) => DeviceNamesTableData(
+    deviceId: deviceId ?? this.deviceId,
+    nickname: nickname ?? this.nickname,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  DeviceNamesTableData copyWithCompanion(DeviceNamesTableCompanion data) {
+    return DeviceNamesTableData(
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      nickname: data.nickname.present ? data.nickname.value : this.nickname,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DeviceNamesTableData(')
+          ..write('deviceId: $deviceId, ')
+          ..write('nickname: $nickname, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(deviceId, nickname, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DeviceNamesTableData &&
+          other.deviceId == this.deviceId &&
+          other.nickname == this.nickname &&
+          other.updatedAt == this.updatedAt);
+}
+
+class DeviceNamesTableCompanion extends UpdateCompanion<DeviceNamesTableData> {
+  final Value<String> deviceId;
+  final Value<String> nickname;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const DeviceNamesTableCompanion({
+    this.deviceId = const Value.absent(),
+    this.nickname = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DeviceNamesTableCompanion.insert({
+    required String deviceId,
+    required String nickname,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : deviceId = Value(deviceId),
+       nickname = Value(nickname),
+       updatedAt = Value(updatedAt);
+  static Insertable<DeviceNamesTableData> custom({
+    Expression<String>? deviceId,
+    Expression<String>? nickname,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (deviceId != null) 'device_id': deviceId,
+      if (nickname != null) 'nickname': nickname,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DeviceNamesTableCompanion copyWith({
+    Value<String>? deviceId,
+    Value<String>? nickname,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return DeviceNamesTableCompanion(
+      deviceId: deviceId ?? this.deviceId,
+      nickname: nickname ?? this.nickname,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (nickname.present) {
+      map['nickname'] = Variable<String>(nickname.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DeviceNamesTableCompanion(')
+          ..write('deviceId: $deviceId, ')
+          ..write('nickname: $nickname, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -859,11 +1129,17 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $CustomLayoutsTableTable(this);
   late final $CustomImagesTableTable customImagesTable =
       $CustomImagesTableTable(this);
+  late final $DeviceNamesTableTable deviceNamesTable = $DeviceNamesTableTable(
+    this,
+  );
   late final PreferencesDao preferencesDao = PreferencesDao(
     this as AppDatabase,
   );
   late final LayoutsDao layoutsDao = LayoutsDao(this as AppDatabase);
   late final CustomImagesDao customImagesDao = CustomImagesDao(
+    this as AppDatabase,
+  );
+  late final DeviceNamesDao deviceNamesDao = DeviceNamesDao(
     this as AppDatabase,
   );
   @override
@@ -874,6 +1150,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     preferencesTable,
     customLayoutsTable,
     customImagesTable,
+    deviceNamesTable,
   ];
 }
 
@@ -1420,6 +1697,178 @@ typedef $$CustomImagesTableTableProcessedTableManager =
       CustomImagesTableData,
       PrefetchHooks Function()
     >;
+typedef $$DeviceNamesTableTableCreateCompanionBuilder =
+    DeviceNamesTableCompanion Function({
+      required String deviceId,
+      required String nickname,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$DeviceNamesTableTableUpdateCompanionBuilder =
+    DeviceNamesTableCompanion Function({
+      Value<String> deviceId,
+      Value<String> nickname,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$DeviceNamesTableTableFilterComposer
+    extends Composer<_$AppDatabase, $DeviceNamesTableTable> {
+  $$DeviceNamesTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nickname => $composableBuilder(
+    column: $table.nickname,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DeviceNamesTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $DeviceNamesTableTable> {
+  $$DeviceNamesTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+    column: $table.deviceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nickname => $composableBuilder(
+    column: $table.nickname,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DeviceNamesTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $DeviceNamesTableTable> {
+  $$DeviceNamesTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get nickname =>
+      $composableBuilder(column: $table.nickname, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$DeviceNamesTableTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $DeviceNamesTableTable,
+          DeviceNamesTableData,
+          $$DeviceNamesTableTableFilterComposer,
+          $$DeviceNamesTableTableOrderingComposer,
+          $$DeviceNamesTableTableAnnotationComposer,
+          $$DeviceNamesTableTableCreateCompanionBuilder,
+          $$DeviceNamesTableTableUpdateCompanionBuilder,
+          (
+            DeviceNamesTableData,
+            BaseReferences<
+              _$AppDatabase,
+              $DeviceNamesTableTable,
+              DeviceNamesTableData
+            >,
+          ),
+          DeviceNamesTableData,
+          PrefetchHooks Function()
+        > {
+  $$DeviceNamesTableTableTableManager(
+    _$AppDatabase db,
+    $DeviceNamesTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$DeviceNamesTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$DeviceNamesTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$DeviceNamesTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> deviceId = const Value.absent(),
+                Value<String> nickname = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DeviceNamesTableCompanion(
+                deviceId: deviceId,
+                nickname: nickname,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String deviceId,
+                required String nickname,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => DeviceNamesTableCompanion.insert(
+                deviceId: deviceId,
+                nickname: nickname,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DeviceNamesTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $DeviceNamesTableTable,
+      DeviceNamesTableData,
+      $$DeviceNamesTableTableFilterComposer,
+      $$DeviceNamesTableTableOrderingComposer,
+      $$DeviceNamesTableTableAnnotationComposer,
+      $$DeviceNamesTableTableCreateCompanionBuilder,
+      $$DeviceNamesTableTableUpdateCompanionBuilder,
+      (
+        DeviceNamesTableData,
+        BaseReferences<
+          _$AppDatabase,
+          $DeviceNamesTableTable,
+          DeviceNamesTableData
+        >,
+      ),
+      DeviceNamesTableData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -1430,4 +1879,6 @@ class $AppDatabaseManager {
       $$CustomLayoutsTableTableTableManager(_db, _db.customLayoutsTable);
   $$CustomImagesTableTableTableManager get customImagesTable =>
       $$CustomImagesTableTableTableManager(_db, _db.customImagesTable);
+  $$DeviceNamesTableTableTableManager get deviceNamesTable =>
+      $$DeviceNamesTableTableTableManager(_db, _db.deviceNamesTable);
 }

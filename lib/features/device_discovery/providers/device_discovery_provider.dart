@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flixsy/core/errors/connect_failure.dart';
 import 'package:flixsy/data/models/tv_device.dart';
+import 'package:flixsy/shared/providers/active_device_provider.dart';
 import 'package:flixsy/shared/providers/app_providers.dart';
 
 enum DiscoveryStatus { scanning, idle, error }
@@ -171,6 +172,7 @@ class DeviceDiscoveryNotifier extends Notifier<DiscoveryState> {
     );
     try {
       await ref.read(remoteChannelProvider).connectToDevice(device.id);
+      ref.read(activeDeviceProvider.notifier).set(device);
       state = state.copyWith(
         clearConnecting: true,
         clearPairing: true,

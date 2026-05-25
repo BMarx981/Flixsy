@@ -5,10 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('AppDatabase migrations', () {
-    test('schema version is 3', () {
+    test('schema version is 4', () {
       final db = AppDatabase.forTesting(NativeDatabase.memory());
       addTearDown(db.close);
-      expect(db.schemaVersion, 3);
+      expect(db.schemaVersion, 4);
     });
 
     test('a fresh database has a usable custom_layouts table', () async {
@@ -117,6 +117,31 @@ void main() {
           ),
         );
         expect(await db.customImagesDao.getAll(), hasLength(1));
+      },
+    );
+
+    test(
+      'the v3 → v4 upgrade adds device_names and keeps existing tables',
+      () async {
+        final db = AppDatabase.forTesting(NativeDatabase.memory());
+        addTearDown(db.close);
+
+        // Seed a preference, then simulate a v3 database — one that predates
+        // device_names — by dropping the table.
+        await db.preferencesDao.setActiveSkin('main');
+        await db.customStatement(
+          'DROP TABLE "${db.deviceNamesTable.actualTableName}"',
+        );
+
+        final strategy = createMigrationStrategy(db);
+        await strategy.onUpgrade(db.createMigrator(), 3, 4);
+
+        // The new table is usable and the pre-existing preference survived.
+        expect(await db.deviceNamesDao.getAll(), isEmpty);
+        expect(await db.preferencesDao.getActiveSkin(), 'main');
+
+        await db.deviceNamesDao.setNickname('tv-1', 'Den');
+        expect(await db.deviceNamesDao.getAll(), {'tv-1': 'Den'});
       },
     );
   });

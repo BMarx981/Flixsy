@@ -8,6 +8,7 @@ import 'package:flixsy/data/database/app_database.dart';
 /// - **v1** — `preferences_table` only.
 /// - **v2** — adds `custom_layouts_table` for user-created remote layouts.
 /// - **v3** — adds `custom_images_table` for user-uploaded button images.
+/// - **v4** — adds `device_names_table` for user-assigned TV nicknames.
 MigrationStrategy createMigrationStrategy(AppDatabase db) {
   return MigrationStrategy(
     onCreate: (m) => m.createAll(),
@@ -17,6 +18,9 @@ MigrationStrategy createMigrationStrategy(AppDatabase db) {
       }
       if (from < 3) {
         await m.createTable(db.customImagesTable);
+      }
+      if (from < 4) {
+        await m.createTable(db.deviceNamesTable);
       }
     },
   );

@@ -29,6 +29,13 @@ const double _gyroToPixels = 600;
 /// over-the-air rate sane (~50 Hz max).
 const Duration _frameInterval = Duration(milliseconds: 20);
 
+/// How long the gyro can stay still before the session auto-deactivates.
+/// Matches the industry norm for motion-aim controllers: LG's Magic Remote
+/// dims the cursor at ~5 s and hides at ~10 s; game motion controllers idle
+/// around 2–3 s. 3 s feels responsive without ending the session every time
+/// the user pauses to look at something on screen.
+const Duration _idleTimeout = Duration(seconds: 3);
+
 /// Owns the active free-cursor session: gyro subscription, delta throttling,
 /// and forwarding to the TV's [PointerControl].
 ///
@@ -39,12 +46,18 @@ const Duration _frameInterval = Duration(milliseconds: 20);
 class PointerSessionNotifier extends Notifier<bool> {
   StreamSubscription<GyroscopeEvent>? _gyroSub;
   Timer? _frameTimer;
+  Timer? _idleTimer;
   double _pendingDx = 0;
   double _pendingDy = 0;
 
   @visibleForTesting
   Stream<GyroscopeEvent> Function() gyroStreamFactory =
       () => gyroscopeEventStream();
+
+  /// Overridable for tests so the 3 s production timeout doesn't slow the
+  /// suite to a crawl.
+  @visibleForTesting
+  Duration idleTimeout = _idleTimeout;
 
   @override
   bool build() {
@@ -68,6 +81,7 @@ class PointerSessionNotifier extends Notifier<bool> {
 
     _gyroSub = gyroStreamFactory().listen(_onGyro);
     _frameTimer = Timer.periodic(_frameInterval, (_) => _flush(pointer));
+    _resetIdleTimer();
     state = true;
   }
 
@@ -111,19 +125,34 @@ class PointerSessionNotifier extends Notifier<bool> {
   }
 
   void _flush(PointerControl pointer) {
+    // Any flush below the 0.5 px floor counts as "still" — the gyro could be
+    // streaming events but the phone isn't actually moving (sensor noise).
     if (_pendingDx.abs() < 0.5 && _pendingDy.abs() < 0.5) return;
     final dx = _pendingDx;
     final dy = _pendingDy;
     _pendingDx = 0;
     _pendingDy = 0;
+    _resetIdleTimer();
     pointer.sendPointerMove(dx, dy).catchError((Object error) {
       debugPrint('[PointerSession] sendPointerMove failed: $error');
     });
   }
 
+  void _resetIdleTimer() {
+    _idleTimer?.cancel();
+    _idleTimer = Timer(idleTimeout, _onIdle);
+  }
+
+  void _onIdle() {
+    if (!state) return;
+    stop();
+  }
+
   void _teardown() {
     _frameTimer?.cancel();
     _frameTimer = null;
+    _idleTimer?.cancel();
+    _idleTimer = null;
     _gyroSub?.cancel();
     _gyroSub = null;
     _pendingDx = 0;

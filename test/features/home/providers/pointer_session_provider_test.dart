@@ -122,6 +122,53 @@ void main() {
     expect(pointer.moves.length, before);
   });
 
+  test(
+    'session auto-deactivates after the idle timeout elapses with no motion',
+    () async {
+      final pointer = _FakePointerControl();
+      final container = makeContainer(pointer: pointer);
+      addTearDown(container.dispose);
+
+      final notifier = container.read(pointerSessionProvider.notifier);
+      final gyroController = StreamController<GyroscopeEvent>.broadcast();
+      addTearDown(gyroController.close);
+      notifier.gyroStreamFactory = () => gyroController.stream;
+      // Shorten the timeout so the test doesn't sit for 3 s.
+      notifier.idleTimeout = const Duration(milliseconds: 80);
+
+      await notifier.start();
+      expect(container.read(pointerSessionProvider), isTrue);
+
+      // No gyro events → no flushes → idle timer fires.
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+
+      expect(container.read(pointerSessionProvider), isFalse);
+      expect(pointer.connected, isFalse);
+    },
+  );
+
+  test('motion within the idle window keeps the session alive', () async {
+    final pointer = _FakePointerControl();
+    final container = makeContainer(pointer: pointer);
+    addTearDown(container.dispose);
+
+    final notifier = container.read(pointerSessionProvider.notifier);
+    final gyroController = StreamController<GyroscopeEvent>.broadcast();
+    addTearDown(gyroController.close);
+    notifier.gyroStreamFactory = () => gyroController.stream;
+    notifier.idleTimeout = const Duration(milliseconds: 80);
+
+    await notifier.start();
+
+    // Inject motion before the idle window expires — that flush resets the
+    // timer.
+    await Future<void>.delayed(const Duration(milliseconds: 40));
+    gyroController.add(GyroscopeEvent(1, 1, 0, DateTime.now()));
+    await Future<void>.delayed(const Duration(milliseconds: 40));
+
+    expect(container.read(pointerSessionProvider), isTrue);
+  });
+
   test('click forwards to sendPointerClick', () async {
     final pointer = _FakePointerControl();
     final container = makeContainer(pointer: pointer);

@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 // ignore: unnecessary_import — needed for PanGestureRecognizer subclassing
@@ -20,6 +19,10 @@ import 'package:flixsy/theming/remote_skin.dart';
 /// The logo's 4-point sparkle star points exactly N/S/E/W; the points
 /// converge at the centre. Each region carries the [RemoteKey] it sends.
 enum _SpinAxis { none, vertical, horizontal }
+
+// Which half of the disc a clip should keep visible — used by the rolodex
+// layers to render the SVG split at the active axle.
+enum _HalfSide { top, bottom, left, right }
 
 enum _LogoRegion {
   up(RemoteKey.up), // North point
@@ -60,69 +63,50 @@ class MainRemoteSkin extends StatefulWidget implements RemoteSkin {
   State<MainRemoteSkin> createState() => _MainRemoteSkinState();
 }
 
-class _MainRemoteSkinState extends State<MainRemoteSkin>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _resetController = AnimationController(
-    vsync: this,
-    duration: SpinnableStarDpad.resetDuration,
-  )..addListener(_onResetTick);
-
+class _MainRemoteSkinState extends State<MainRemoteSkin> {
   /// The region currently held down, used only for press feedback.
   _LogoRegion? _active;
 
   // Spin state — see `SpinnableStarDpad` for the full rationale behind the
   // axis-lock + linear-drag design. This skin owns its own copy because its
   // hit-test geometry and highlight overlay are bound to the logo SVG.
+  //
+  // `_axisPixels` *persists* across gestures: when the finger lifts mid-flip
+  // the disc freezes at its current pose, and the next gesture continues
+  // from there. `_basePixels` anchors the live drag delta against that
+  // carried-over rotation so each pan contributes only its own travel.
   _SpinAxis _axis = _SpinAxis.none;
   double _axisPixels = 0;
+  double _basePixels = 0;
   double _lastTickPixels = 0;
-  double _resetFrom = 0;
-  double _resetVisual = 0;
-  bool _isResetting = false;
   Offset _panStart = Offset.zero;
   Offset _axisLockOrigin = Offset.zero;
   bool _isSpinning = false;
-  Timer? _resetTimer;
+  // True between touch-down and the moment a fresh axis lock latches. While
+  // set, the renderer keeps showing the previous gesture's pose; once the
+  // new drag picks an axis we either continue (same axis) or snap to a
+  // fresh card on the new axle (cross-axis).
+  bool _pendingRelock = false;
 
   double get _visualRotation =>
       _axisPixels * SpinnableStarDpad.tickAngle / SpinnableStarDpad.pixelsPerTick;
 
+  // Current flip angle, wrapped into [0, π) so each π of accumulated
+  // rotation reads as one full card flip and the next card starts fresh.
+  double get _flipAngle {
+    if (_axis == _SpinAxis.none) return 0;
+    return _visualRotation.abs() % math.pi;
+  }
+
+  // Sign of accumulated rotation along the locked axis. Picks which half
+  // hinges; 0 when idle.
+  int get _flipSign {
+    if (_axis == _SpinAxis.none || _visualRotation == 0) return 0;
+    return _visualRotation > 0 ? 1 : -1;
+  }
+
   void _clearActive() {
     if (_active != null) setState(() => _active = null);
-  }
-
-  void _cancelReset() {
-    _resetTimer?.cancel();
-    _resetTimer = null;
-    if (_resetController.isAnimating) _resetController.stop();
-  }
-
-  void _scheduleReset() {
-    _resetTimer?.cancel();
-    _resetTimer = Timer(SpinnableStarDpad.resetDelay, _startReset);
-  }
-
-  void _startReset() {
-    _resetFrom = _visualRotation;
-    _axisPixels = 0;
-    _lastTickPixels = 0;
-    _resetVisual = _resetFrom;
-    _isResetting = true;
-    setState(() {});
-    _resetController
-      ..value = 0
-      ..forward();
-  }
-
-  void _onResetTick() {
-    final t = Curves.easeOutCubic.transform(_resetController.value);
-    setState(() {
-      _resetVisual = _resetFrom * (1 - t);
-      if (_resetController.isCompleted) {
-        _resetVisual = 0;
-        _isResetting = false;
-      }
-    });
   }
 
   // Pan handlers cover *both* the arm-tap (a short pan that never crosses
@@ -130,15 +114,13 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
   // recognizer — instead of separate tap + pan — stops ancestor scrollables
   // (the skin-picker `PageView`) from stealing the gesture mid-spin.
   void _onPanStart(DragStartDetails details, double side) {
-    _cancelReset();
     _panStart = details.localPosition;
     _axisLockOrigin = details.localPosition;
-    _axis = _SpinAxis.none;
-    _axisPixels = 0;
-    _lastTickPixels = 0;
-    _resetVisual = 0;
-    _isResetting = false;
     _isSpinning = false;
+    // Carry the previous gesture's rotation forward — don't touch _axis or
+    // _axisPixels. The renderer keeps the disc in its frozen pose until a
+    // new drag direction nudges it.
+    _pendingRelock = true;
     final region = _hitTest(details.localPosition, side);
     setState(() => _active = region);
   }
@@ -146,18 +128,26 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
   void _onPanUpdate(DragUpdateDetails details, double _) {
     final local = details.localPosition;
 
-    if (_axis == _SpinAxis.none) {
+    if (_pendingRelock) {
       final fromStart = local - _panStart;
       if (fromStart.distanceSquared <
           SpinnableStarDpad.tapSlop * SpinnableStarDpad.tapSlop) {
         return;
       }
-      _axis = fromStart.dx.abs() >= fromStart.dy.abs()
+      final newAxis = fromStart.dx.abs() >= fromStart.dy.abs()
           ? _SpinAxis.horizontal
           : _SpinAxis.vertical;
+      // Cross-axis transition: the prior pose was rotated around a
+      // different axle, so carrying its angle onto the new axle would look
+      // arbitrary. Snap to a fresh upright card on the new axle instead.
+      if (_axis != _SpinAxis.none && newAxis != _axis) {
+        _axisPixels = 0;
+      }
+      _axis = newAxis;
       _axisLockOrigin = local;
-      _axisPixels = 0;
-      _lastTickPixels = 0;
+      _basePixels = _axisPixels;
+      _lastTickPixels = _axisPixels;
+      _pendingRelock = false;
       _isSpinning = true;
       // Lock-in: the highlight on the arm we started over no longer matches
       // what the gesture will do, so clear it.
@@ -165,7 +155,8 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
     }
 
     final fromLock = local - _axisLockOrigin;
-    _axisPixels = _axis == _SpinAxis.vertical ? fromLock.dy : fromLock.dx;
+    final delta = _axis == _SpinAxis.vertical ? fromLock.dy : fromLock.dx;
+    _axisPixels = _basePixels + delta;
     setState(() {});
 
     // Map ticks to this skin's east/west semantics: horizontal scroll is
@@ -201,34 +192,16 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
     }
     setState(() => _active = null);
     _isSpinning = false;
-    _scheduleReset();
+    _pendingRelock = false;
+    // Intentionally do NOT touch _axis or _axisPixels — the disc freezes
+    // at whatever pose the finger left it in, and the next gesture picks
+    // up from there.
   }
 
   void _onPanCancel() {
     _clearActive();
     _isSpinning = false;
-    _scheduleReset();
-  }
-
-  Matrix4 _tumbleMatrix() {
-    final angle = _isResetting ? _resetVisual : _visualRotation;
-    final m = Matrix4.identity()..setEntry(3, 2, 0.001);
-    switch (_axis) {
-      case _SpinAxis.vertical:
-        m.rotateX(angle);
-      case _SpinAxis.horizontal:
-        m.rotateY(angle);
-      case _SpinAxis.none:
-        break;
-    }
-    return m;
-  }
-
-  @override
-  void dispose() {
-    _resetTimer?.cancel();
-    _resetController.dispose();
-    super.dispose();
+    _pendingRelock = false;
   }
 
   /// Maps a local tap position to a [_LogoRegion], or `null` for dead zones.
@@ -384,7 +357,7 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
             constraints.maxWidth,
             constraints.maxHeight,
           );
-          final side = (available.isFinite ? available : 360.0) * 0.9;
+          final side = available.isFinite ? available : 360.0;
           return SizedBox(
             key: const ValueKey('flixsyLogoPad'),
             width: side,
@@ -405,28 +378,29 @@ class _MainRemoteSkinState extends State<MainRemoteSkin>
                       },
                     ),
               },
-              child: Transform(
-                alignment: Alignment.center,
-                transform: _tumbleMatrix(),
-                child: AnimatedScale(
-                  scale: _active == null ? 1.0 : 0.97,
-                  duration: const Duration(milliseconds: 90),
-                  curve: Curves.easeOut,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/images/flixsy_logo.svg',
-                        semanticsLabel: context.l10n.mainRemoteSemanticLabel,
+              child: AnimatedScale(
+                scale: _active == null ? 1.0 : 0.97,
+                duration: const Duration(milliseconds: 90),
+                curve: Curves.easeOut,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    _RolodexLogo(
+                      side: side,
+                      axis: _axis,
+                      flipAngle: _flipAngle,
+                      flipSign: _flipSign,
+                      semanticsLabel: context.l10n.mainRemoteSemanticLabel,
+                    ),
+                    // Press highlight stays on top of the rolodex and does
+                    // not flip — it's UI feedback, anchored to the screen.
+                    CustomPaint(
+                      painter: _HighlightPainter(
+                        region: _active,
+                        color: Colors.white.withValues(alpha: 0.30),
                       ),
-                      CustomPaint(
-                        painter: _HighlightPainter(
-                          region: _active,
-                          color: Colors.white.withValues(alpha: 0.30),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -538,6 +512,150 @@ class _HighlightPainter extends CustomPainter {
   @override
   bool shouldRepaint(_HighlightPainter oldDelegate) =>
       oldDelegate.region != region || oldDelegate.color != color;
+}
+
+/// The Flixsy logo SVG rendered as a rolodex.
+///
+/// At rest the three layers stack to look like a single upright card; during
+/// a drag the leading half hinges around the active axle (horizontal for a
+/// vertical drag, vertical for a horizontal drag) while a hidden duplicate
+/// of the leading half waits behind it, becoming visible the moment the
+/// flipping half rotates past edge-on. Because every card is identical, an
+/// angle that wraps past π reads as a fresh card starting its drop — the
+/// reel feels endless.
+///
+/// The layer tree shape is the same whether the disc is idle or flipping;
+/// only the `signedAngle` differs. Keeping the shape stable across states
+/// stops the SVG painters from remounting at the moment a scroll ends,
+/// which previously caused a one-frame flash.
+class _RolodexLogo extends StatelessWidget {
+  const _RolodexLogo({
+    required this.side,
+    required this.axis,
+    required this.flipAngle,
+    required this.flipSign,
+    required this.semanticsLabel,
+  });
+
+  final double side;
+  final _SpinAxis axis;
+  final double flipAngle;
+  final int flipSign;
+  final String semanticsLabel;
+
+  // One instance of the full-disc SVG. Reused for each clipped layer so the
+  // three halves come from the same vector source. Only the trailing layer
+  // carries semantics — the others duplicate the same image and would
+  // otherwise be announced three times.
+  Widget _card({required bool labelled}) => SvgPicture.asset(
+    'assets/images/flixsy_logo.svg',
+    width: side,
+    height: side,
+    semanticsLabel: labelled ? semanticsLabel : null,
+    excludeFromSemantics: !labelled,
+  );
+
+  Widget _half(_HalfSide hSide, {required bool labelled}) => ClipRect(
+    clipper: _HalfClipper(hSide),
+    child: SizedBox.square(
+      dimension: side,
+      child: _card(labelled: labelled),
+    ),
+  );
+
+  // Rotate around the axle that passes through the disc centre. Translate
+  // origin to centre, rotate, translate back; a small perspective entry
+  // sells the depth.
+  Matrix4 _flipMatrix({required bool vertical, required double angle}) {
+    final centre = side / 2;
+    final m = Matrix4.identity()..setEntry(3, 2, 0.001);
+    m.translateByDouble(centre, centre, 0, 1);
+    if (vertical) {
+      m.rotateX(angle);
+    } else {
+      m.rotateY(angle);
+    }
+    m.translateByDouble(-centre, -centre, 0, 1);
+    return m;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Default to a vertical-axle split when idle (matches a down-drag). The
+    // signedAngle collapses to 0 for the idle case so the layers stack into
+    // a single upright card — same element tree shape as the flipping case.
+    final vertical = axis != _SpinAxis.horizontal;
+    final _HalfSide leading;
+    final _HalfSide trailing;
+    double signedAngle;
+    if (vertical) {
+      if (flipSign >= 0) {
+        // Drag down → top half folds down onto the bottom half.
+        leading = _HalfSide.top;
+        trailing = _HalfSide.bottom;
+        signedAngle = flipAngle;
+      } else {
+        // Drag up → bottom half folds up onto the top half.
+        leading = _HalfSide.bottom;
+        trailing = _HalfSide.top;
+        signedAngle = -flipAngle;
+      }
+    } else {
+      if (flipSign >= 0) {
+        // Drag right → left half folds rightward onto the right half.
+        leading = _HalfSide.left;
+        trailing = _HalfSide.right;
+        signedAngle = -flipAngle;
+      } else {
+        // Drag left → right half folds leftward onto the left half.
+        leading = _HalfSide.right;
+        trailing = _HalfSide.left;
+        signedAngle = flipAngle;
+      }
+    }
+    if (axis == _SpinAxis.none || flipSign == 0 || flipAngle == 0) {
+      signedAngle = 0;
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        _half(trailing, labelled: true),
+        _half(leading, labelled: false),
+        Transform(
+          alignment: Alignment.topLeft,
+          transform: _flipMatrix(vertical: vertical, angle: signedAngle),
+          child: _half(leading, labelled: false),
+        ),
+      ],
+    );
+  }
+}
+
+/// Clips a full-size square layer down to one of its halves. The clipped
+/// layer is still full-size so the SVG's interior geometry doesn't shift —
+/// only its visible region is reduced.
+class _HalfClipper extends CustomClipper<Rect> {
+  const _HalfClipper(this.side);
+
+  final _HalfSide side;
+
+  @override
+  Rect getClip(Size size) {
+    switch (side) {
+      case _HalfSide.top:
+        return Rect.fromLTWH(0, 0, size.width, size.height / 2);
+      case _HalfSide.bottom:
+        return Rect.fromLTWH(0, size.height / 2, size.width, size.height / 2);
+      case _HalfSide.left:
+        return Rect.fromLTWH(0, 0, size.width / 2, size.height);
+      case _HalfSide.right:
+        return Rect.fromLTWH(size.width / 2, 0, size.width / 2, size.height);
+    }
+  }
+
+  @override
+  bool shouldReclip(_HalfClipper oldClipper) => oldClipper.side != side;
 }
 
 /// A [PanGestureRecognizer] that wins the gesture arena the instant a finger

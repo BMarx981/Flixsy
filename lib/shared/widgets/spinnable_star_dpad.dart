@@ -12,6 +12,11 @@ import 'package:flixsy/core/extensions/l10n_extensions.dart';
 import 'package:flixsy/theming/skin_tokens.dart';
 import 'package:flixsy/shared/widgets/flixsy_logo.dart';
 
+// Which half of the disc a clip should keep visible. Used by [_HalfClipper]
+// to carve the full-disc layer into the two halves a rolodex flip pivots
+// between.
+enum _HalfSide { top, bottom, left, right }
+
 /// A D-pad control that fuses four directional tap regions, an OK tap, and a
 /// scroll-wheel spin into one surface.
 ///
@@ -73,12 +78,6 @@ class SpinnableStarDpad extends StatefulWidget {
   /// dominant axis is locked.
   static const double tapSlop = 10;
 
-  /// Idle time after the finger lifts before the wheel eases back upright.
-  static const Duration resetDelay = Duration(milliseconds: 900);
-
-  /// Duration of the ease-back-to-upright animation.
-  static const Duration resetDuration = Duration(milliseconds: 450);
-
   @override
   State<SpinnableStarDpad> createState() => _SpinnableStarDpadState();
 }
@@ -117,108 +116,100 @@ double _axisDegFor(_Region r) => switch (r) {
 
 class _SpinnableStarDpadState extends State<SpinnableStarDpad>
     with TickerProviderStateMixin {
-  late final AnimationController _resetController;
-  // Slow, continuous controller that drives an ambient rock when the wheel
-  // is otherwise still. Hints to the user that the disc rotates.
-  late final AnimationController _idleController;
+  /// Time the user must stop interacting before the rolodex begins fading
+  /// back to the upright Flixsy icon.
+  static const Duration _idleFadeDelay = Duration(seconds: 3);
 
-  /// Period of one full back-and-forth rock cycle.
-  static const Duration _idleRockPeriod = Duration(milliseconds: 3600);
+  /// Duration of the fade from current pose back to the upright icon.
+  static const Duration _idleFadeDuration = Duration(milliseconds: 3500);
 
-  /// Peak tilt of the ambient rock, in radians (~5°). Small enough to read
-  /// as a hint, not as motion the user has to track.
-  static const double _idleRockAmplitude = 15 * math.pi / 180;
+  // Controller driving the opacity fade from the rolodex (current frozen
+  // pose) down to the static FlixsyLogo underlay. value 0 = rolodex fully
+  // visible, 1 = fully faded out and the underlay shows through.
+  late final AnimationController _fadeController;
+  // Pending fire of the 3-second idle delay. Cancelled the moment the
+  // user touches the disc again.
+  Timer? _idleFadeTimer;
 
   _Region? _active;
   _GestureMode _mode = _GestureMode.idle;
   _SpinAxis _axis = _SpinAxis.none;
-  // Signed pixel offset of the current finger position relative to where the
-  // axis lock latched, measured along the locked axis. Drives both the
-  // visual tumble (radians = pixels * tickAngle / pixelsPerTick) and the
-  // tick emitter.
+  // Accumulated rotation, in pixel-equivalents along the locked axis.
+  // *Persists across gestures*: when the finger lifts mid-flip the disc
+  // freezes at this pose, and the next drag continues from here. Drives
+  // both the visual tumble (radians = pixels * tickAngle / pixelsPerTick)
+  // and the tick emitter.
   double _axisPixels = 0;
+  // Snapshot of `_axisPixels` at the moment the current drag's axis
+  // latched. Each frame's `_axisPixels = _basePixels + drag-delta`, so a
+  // pan only contributes its own travel — not the carried-over rotation.
+  double _basePixels = 0;
   // Pixel value at which the last haptic tick fired. Ticks fire whenever
   // `_axisPixels` crosses another `pixelsPerTick` increment past this anchor.
   double _lastTickPixels = 0;
   Offset _panStart = Offset.zero;
   Offset _axisLockOrigin = Offset.zero;
   bool _hasFiredTick = false;
-  Timer? _resetTimer;
+  // True between touch-down and the moment a fresh axis lock latches. While
+  // set, the previous gesture's `_axis` keeps the renderer in pose; once
+  // the new drag picks an axis we either continue (same axis) or snap to
+  // a fresh upright card on the new axle.
+  bool _pendingRelock = false;
 
   Offset get _center => Offset(widget.size / 2, widget.size / 2);
 
   @override
   void initState() {
     super.initState();
-    _resetController = AnimationController(
-      vsync: this,
-      duration: SpinnableStarDpad.resetDuration,
-    )..addListener(_onResetTick);
-    _idleController =
-        AnimationController(vsync: this, duration: _idleRockPeriod)
-          ..addListener(_onIdleTick)
-          ..repeat();
+    _fadeController =
+        AnimationController(vsync: this, duration: _idleFadeDuration)
+          ..addListener(() => setState(() {}))
+          ..addStatusListener(_onFadeStatus);
   }
 
-  // Repaint whenever the idle rock advances, but only while the wheel is
-  // actually idle — during a real spin or reset, the gesture-driven rotation
-  // is the source of truth and the rock is suppressed in `_tumbleMatrix`.
-  void _onIdleTick() {
-    if (_axisPixels == 0 && !_isResetting && _mode != _GestureMode.spin) {
-      setState(() {});
+  // When the fade finishes, the rolodex is fully transparent over the
+  // static underlay — collapse its pose so the next touch starts from
+  // upright instead of resuming wherever the finger lifted.
+  void _onFadeStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
+      setState(() {
+        _axisPixels = 0;
+        _basePixels = 0;
+        _lastTickPixels = 0;
+        _axis = _SpinAxis.none;
+      });
+    }
+  }
+
+  // Arm the 3-second idle countdown. No-op if the disc is already at
+  // rest (nothing to fade away from).
+  void _scheduleIdleFade() {
+    _idleFadeTimer?.cancel();
+    if (_axisPixels == 0 && _axis == _SpinAxis.none) return;
+    _idleFadeTimer = Timer(_idleFadeDelay, () {
+      if (!mounted) return;
+      if (_mode == _GestureMode.idle && _axisPixels != 0) {
+        _fadeController.forward(from: 0);
+      }
+    });
+  }
+
+  // Any touch cancels both the pending timer and an in-flight fade —
+  // mid-fade the rolodex snaps back to full opacity over its current
+  // pose, so the user can pick up where they left off.
+  void _cancelIdleFade() {
+    _idleFadeTimer?.cancel();
+    if (_fadeController.value != 0) {
+      _fadeController.value = 0;
     }
   }
 
   // Current visual rotation, in radians, derived from `_axisPixels` so the
-  // wheel and the tick emitter share a single source of truth. Used only
-  // while a spin is in progress; the reset animation uses `_resetVisual`.
+  // wheel and the tick emitter share a single source of truth.
   double get _visualRotation =>
       _axisPixels *
       SpinnableStarDpad.tickAngle /
       SpinnableStarDpad.pixelsPerTick;
-
-  // Eased rotation written by the reset animation. Independent of
-  // `_axisPixels` so we can fade out a tumble without snapping the source.
-  double _resetVisual = 0;
-  bool _isResetting = false;
-
-  void _cancelReset() {
-    _resetTimer?.cancel();
-    _resetTimer = null;
-    if (_resetController.isAnimating) _resetController.stop();
-  }
-
-  void _scheduleReset() {
-    _resetTimer?.cancel();
-    _resetTimer = Timer(SpinnableStarDpad.resetDelay, _startReset);
-  }
-
-  double _resetFrom = 0;
-
-  void _startReset() {
-    // Freeze the live spin value, hand it to the reset animation, and clear
-    // the source so a new pan starts from zero.
-    _resetFrom = _visualRotation;
-    _axisPixels = 0;
-    _lastTickPixels = 0;
-    _isResetting = true;
-    _resetVisual = _resetFrom;
-    setState(() {});
-    _resetController
-      ..value = 0
-      ..forward();
-  }
-
-  void _onResetTick() {
-    final t = Curves.easeOutCubic.transform(_resetController.value);
-    setState(() {
-      _resetVisual = _resetFrom * (1 - t);
-      if (_resetController.isCompleted) {
-        _resetVisual = 0;
-        _isResetting = false;
-      }
-    });
-  }
 
   bool _withinWedge(double deg, double axisDeg) {
     var delta = (deg - axisDeg).abs() % 360;
@@ -261,17 +252,14 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   }
 
   void _onPanStart(DragStartDetails details) {
-    _cancelReset();
+    _cancelIdleFade();
     _panStart = details.localPosition;
     _axisLockOrigin = details.localPosition;
     _hasFiredTick = false;
-    _axis = _SpinAxis.none;
-    _axisPixels = 0;
-    _lastTickPixels = 0;
-    // Reset visual is also cleared so we don't blend a half-finished ease
-    // into a fresh tumble.
-    _resetVisual = 0;
-    _isResetting = false;
+    // Carry _axis and _axisPixels forward — the disc stays in whatever
+    // pose the last gesture left it in. We re-decide the axis once this
+    // drag crosses the slop threshold.
+    _pendingRelock = true;
 
     final region = _hitTest(details.localPosition);
     if (region == null) {
@@ -280,11 +268,17 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
       return;
     }
     if (region == _Region.ok) {
+      // Centre touch: don't highlight or scale yet — we don't know whether
+      // this is an OK tap or the start of a spin, and any visible press
+      // feedback for the first few pixels of slop reads as a spurious
+      // splash. We commit to OK feedback only on lift (in `_onPanEnd`) if
+      // no spin actually started.
       _mode = _GestureMode.spin;
+      setState(() => _active = null);
     } else {
       _mode = _GestureMode.tap;
+      setState(() => _active = region);
     }
-    setState(() => _active = region);
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
@@ -312,27 +306,36 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
     // direction the user moved farther in. After lock, only motion along
     // that axis contributes — sideways drift is ignored, so the wheel feels
     // like a track instead of a free puck.
-    if (_axis == _SpinAxis.none) {
+    if (_pendingRelock) {
       final fromStart = local - _panStart;
       if (fromStart.distanceSquared <
           SpinnableStarDpad.tapSlop * SpinnableStarDpad.tapSlop) {
         return;
       }
-      _axis = fromStart.dx.abs() >= fromStart.dy.abs()
+      final newAxis = fromStart.dx.abs() >= fromStart.dy.abs()
           ? _SpinAxis.horizontal
           : _SpinAxis.vertical;
+      // Cross-axis transition: the carried-over rotation came from a
+      // different axle and would look arbitrary on the new one. Reset to a
+      // fresh upright card on the new axle.
+      if (_axis != _SpinAxis.none && newAxis != _axis) {
+        _axisPixels = 0;
+      }
+      _axis = newAxis;
       // Anchor pixel travel to where the lock latched, not to the touch-down
       // point — otherwise the first tick fires after only a couple of pixels
       // of post-lock motion (the slop itself counts toward the tick).
       _axisLockOrigin = local;
-      _axisPixels = 0;
-      _lastTickPixels = 0;
+      _basePixels = _axisPixels;
+      _lastTickPixels = _axisPixels;
+      _pendingRelock = false;
       _hasFiredTick = true;
       if (_active != null) _active = null;
     }
 
     final fromLock = local - _axisLockOrigin;
-    _axisPixels = _axis == _SpinAxis.vertical ? fromLock.dy : fromLock.dx;
+    final delta = _axis == _SpinAxis.vertical ? fromLock.dy : fromLock.dx;
+    _axisPixels = _basePixels + delta;
     setState(() {});
 
     // Emit one tick for every `pixelsPerTick` of travel away from the last
@@ -361,11 +364,16 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   void _onPanEnd(DragEndDetails _) {
     switch (_mode) {
       case _GestureMode.spin:
-        if (!_hasFiredTick && _active == _Region.ok) {
-          // Centre touch with no real motion → OK tap.
+        if (!_hasFiredTick) {
+          // Centre touch that never crossed the slop → OK tap. We held off
+          // any press feedback during the gesture (see `_onPanStart`) so
+          // confirm the press now with a brief highlight + scale before
+          // firing the action.
+          setState(() => _active = _Region.ok);
           _fire(_Region.ok);
         }
-        _scheduleReset();
+        // Intentionally do not reset _axis or _axisPixels — the disc
+        // freezes at whatever pose the finger left it in.
       case _GestureMode.tap:
         final region = _active;
         if (region != null) _fire(region);
@@ -373,47 +381,45 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
       case _GestureMode.idle:
         break;
     }
-    setState(() => _active = null);
+    // For OK we just set the highlight in the spin branch above — leave it
+    // visible briefly so the press registers, then clear. Arm taps had
+    // their highlight up throughout the press, so they clear immediately.
+    if (_active == _Region.ok) {
+      Future.delayed(const Duration(milliseconds: 120), () {
+        if (mounted) setState(() => _active = null);
+      });
+    } else {
+      setState(() => _active = null);
+    }
     _hasFiredTick = false;
+    _pendingRelock = false;
     _mode = _GestureMode.idle;
+    _scheduleIdleFade();
   }
 
   void _onPanCancel() {
-    if (_mode == _GestureMode.spin) _scheduleReset();
+    // Same "freeze in place" behavior as a normal end — leave _axis and
+    // _axisPixels untouched.
     if (_active != null) setState(() => _active = null);
     _hasFiredTick = false;
+    _pendingRelock = false;
     _mode = _GestureMode.idle;
+    _scheduleIdleFade();
   }
 
   @override
   void dispose() {
-    _resetTimer?.cancel();
-    _resetController.dispose();
-    _idleController.dispose();
+    _idleFadeTimer?.cancel();
+    _fadeController.dispose();
     super.dispose();
   }
 
-  // The 3D tumble matrix: perspective + a rotation around whichever axis the
-  // current spin is locked to. While resetting, we use the eased value and
-  // the last-active axis so the wheel rolls back along the same path it
-  // came in on (a vertical drag eases back through X-rotation, not Z).
-  Matrix4 _tumbleMatrix() {
-    final angle = _isResetting ? _resetVisual : _visualRotation;
-    final m = Matrix4.identity()..setEntry(3, 2, 0.001);
-    switch (_axis) {
-      case _SpinAxis.vertical:
-        m.rotateX(angle);
-      case _SpinAxis.horizontal:
-        m.rotateY(angle);
-      case _SpinAxis.none:
-        // No active spin and nothing to ease back — apply the ambient rock
-        // so the wheel reads as scrollable even at rest. Suppressed the
-        // moment a real spin or reset is in flight.
-        final rock =
-            math.sin(_idleController.value * 2 * math.pi) * _idleRockAmplitude;
-        m.rotateX(rock);
-    }
-    return m;
+  // Sign of the active drag along the locked axis. +1 means the leading
+  // half is the *far* one along the axis (down for vertical, right for
+  // horizontal); -1 means the *near* one. 0 when idle.
+  int get _flipSign {
+    if (_axis == _SpinAxis.none || _visualRotation == 0) return 0;
+    return _visualRotation > 0 ? 1 : -1;
   }
 
   @override
@@ -493,37 +499,48 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
                   color: chevronColor,
                 ),
               ),
-              // Centre spin disc — the only thing that rotates. The tumble
-              // is 3D: a vertical drag rolls the wheel forward/back around
-              // the X axis; a horizontal drag spins it around the Y axis.
-              // A perspective entry on the matrix gives the rotation depth so
-              // it reads as a barrel turning instead of a squashed ellipse.
+              // Centre spin disc — a rolodex. At rest only the current card
+              // shows (with a small ambient rock to hint scrollability). On
+              // drag, the disc splits at the axle perpendicular to the drag,
+              // and the leading half hinges around that axle. Behind the
+              // flipping half sits the next identical card, hidden until the
+              // flipping half passes 90°. After a full π of flip the leading
+              // half lies flat against the trailing half and a new flip
+              // begins — the user perceives an endless reel.
               Center(
                 child: AnimatedScale(
                   scale: _active == _Region.ok ? 0.95 : 1.0,
                   duration: const Duration(milliseconds: 90),
                   curve: Curves.easeOut,
-                  child: Transform(
-                    alignment: Alignment.center,
-                    transform: _tumbleMatrix(),
-                    child: SizedBox.square(
-                      dimension: discDiameter,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          FlixsyLogo(size: discDiameter, discColor: discColor),
-                          // Dome shading lives inside the tumble Transform so
-                          // it rotates with the surface during a spin (selling
-                          // it as a textured ball rolling) and returns to the
-                          // upright dome look once the reset animation eases
-                          // the wheel back to identity.
-                          IgnorePointer(
-                            child: CustomPaint(
-                              painter: const _DomeShadingPainter(),
-                            ),
+                  child: SizedBox.square(
+                    dimension: discDiameter,
+                    // Static underlay sits beneath the rolodex. After 3
+                    // seconds of inactivity the rolodex fades over it, so
+                    // whatever pose the user left the cards in gradually
+                    // dissolves into the plain upright icon.
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        FlixsyLogo(
+                          size: discDiameter,
+                          discColor: discColor,
+                        ),
+                        const IgnorePointer(
+                          child: CustomPaint(
+                            painter: _DomeShadingPainter(),
                           ),
-                        ],
-                      ),
+                        ),
+                        Opacity(
+                          opacity: 1.0 - _fadeController.value,
+                          child: _RolodexDisc(
+                            diameter: discDiameter,
+                            discColor: discColor,
+                            axis: _axis,
+                            unwrappedRotation: _visualRotation.abs(),
+                            flipSign: _flipSign,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -611,6 +628,235 @@ class _DpadPainter extends CustomPainter {
       oldDelegate.active != active ||
       oldDelegate.borderColor != borderColor ||
       oldDelegate.highlightColor != highlightColor;
+}
+
+/// The rolodex assembly that lives inside the centre spin disc.
+///
+/// At rest ([axis] = none) renders a single upright card. During a drag it
+/// composes three layers (back to front):
+///
+///   1. **Trailing static half** — the half opposite to the drag direction.
+///      Stays put through every flip; on a continuous reel this is just the
+///      bottom (or right) of the current card.
+///   2. **Hidden next-card leading half** — a copy of the leading half at the
+///      axle plane. Fully covered by layer 3 while the front half is still
+///      tilted toward the viewer; once the flip passes 90° and layer 3 swings
+///      away, this layer is what the user actually sees as the new card.
+///   3. **Flipping leading half** — hinges on the axle from 0 → π, then the
+///      flip wraps (since cards are identical the wrap is invisible) and the
+///      next card begins.
+class _RolodexDisc extends StatelessWidget {
+  const _RolodexDisc({
+    required this.diameter,
+    required this.discColor,
+    required this.axis,
+    required this.unwrappedRotation,
+    required this.flipSign,
+  });
+
+  final double diameter;
+  final Color discColor;
+  final _SpinAxis axis;
+
+  /// Total accumulated rotation magnitude (radians), NOT wrapped into
+  /// [0, π). Each card derives its own per-cycle flip angle by
+  /// subtracting its phase offset before wrapping — that lets cards
+  /// 1..N-1 stay collapsed at 0 until the user has scrolled far enough
+  /// for them to enter the cycle (no pop-in on first drag).
+  final double unwrappedRotation;
+
+  /// +1 means the leading half is the *far* one along the axis (bottom for
+  /// vertical drag, right for horizontal); -1 means the *near* one; 0 idle.
+  final int flipSign;
+
+  // The full upright card — logo + dome shading — sized to the disc. Reused
+  // for each clipped half so a single source of pixels travels through every
+  // layer.
+  Widget _fullFace() => Stack(
+    fit: StackFit.expand,
+    children: [
+      FlixsyLogo(size: diameter, discColor: discColor),
+      IgnorePointer(child: CustomPaint(painter: const _DomeShadingPainter())),
+    ],
+  );
+
+  // One half of the full face, clipped to the requested side. The clipped
+  // layer is still full-size so logo geometry doesn't shift — only its
+  // visible region is reduced.
+  Widget _half(_HalfSide side) => ClipRect(
+    clipper: _HalfClipper(side),
+    child: SizedBox.square(dimension: diameter, child: _fullFace()),
+  );
+
+  // Build the matrix that rotates a half around the axle. The axle sits at
+  // the centre of the full disc, so we translate the rotation origin to the
+  // disc centre, rotate, and translate back. A small perspective entry sells
+  // the depth.
+  Matrix4 _flipMatrix({required bool vertical, required double angle}) {
+    final centre = diameter / 2;
+    final m = Matrix4.identity()..setEntry(3, 2, 0.001);
+    m.translateByDouble(centre, centre, 0, 1);
+    if (vertical) {
+      m.rotateX(angle);
+    } else {
+      m.rotateY(angle);
+    }
+    m.translateByDouble(-centre, -centre, 0, 1);
+    return m;
+  }
+
+  // Number of flip cards in flight at once. With N>1, card k lags card 0
+  // by k·π/N in the flip cycle, so a fast scroll shows several pages
+  // mid-flip stacked at different angles — like riffling a deck of
+  // identical pages. When idle, all cards collapse to angle 0 so the
+  // disc still reads as a single upright face.
+  static const int _cardCount = 2;
+
+  @override
+  Widget build(BuildContext context) {
+    // Pick the half assignment for the *current* drag direction, or a
+    // default (top leading, bottom trailing — matches a down-drag) for the
+    // idle case so the element tree shape is identical whether we're
+    // flipping or at rest. Swapping subtrees between idle and active
+    // remounts the SVG painters; that one-frame remount was the flash at
+    // the end of every scroll.
+    final vertical = axis != _SpinAxis.horizontal;
+    final _HalfSide leading;
+    final _HalfSide trailing;
+    if (vertical) {
+      if (flipSign >= 0) {
+        leading = _HalfSide.top;
+        trailing = _HalfSide.bottom;
+      } else {
+        leading = _HalfSide.bottom;
+        trailing = _HalfSide.top;
+      }
+    } else {
+      if (flipSign >= 0) {
+        leading = _HalfSide.left;
+        trailing = _HalfSide.right;
+      } else {
+        leading = _HalfSide.right;
+        trailing = _HalfSide.left;
+      }
+    }
+    final isIdle = axis == _SpinAxis.none || unwrappedRotation == 0;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // 1. Trailing half — static, always upright.
+        _half(trailing),
+        // 2. Next card's leading half — sits flat at the axle plane. Hidden
+        //    by the flipping cards until at least one of them passes 90°,
+        //    at which point this becomes the visible front.
+        _half(leading),
+        // 3. Up to N flipping cards on the axle. Card k lags card 0 by
+        //    k·π/N and stays collapsed at angle 0 until the total
+        //    rotation has caught up to its phase offset — so the first
+        //    drag pulls only card 0 from the top, and cards 1..N-1 enter
+        //    the riffle one at a time as the user keeps scrolling.
+        //    Painted oldest-first (largest k on the bottom) so the most
+        //    recently started card paints last.
+        for (int k = _cardCount - 1; k >= 0; k--)
+          _flipCard(
+            k: k,
+            vertical: vertical,
+            leading: leading,
+            trailing: trailing,
+            isIdle: isIdle,
+          ),
+      ],
+    );
+  }
+
+  // One flipping card in the N-card fan. k=0 matches the original
+  // single-card behaviour; k>0 lags by k·π/N. Once a card rotates past
+  // 90° its back faces the viewer, so we swap in a pre-mirrored copy of
+  // the trailing half — the outer flipMatrix's rotation cancels the
+  // pre-mirror and the trailing-half shading lands right-side up over
+  // the static trailing layer, so each card's wrap from π back to 0 is
+  // visually seamless.
+  Widget _flipCard({
+    required int k,
+    required bool vertical,
+    required _HalfSide leading,
+    required _HalfSide trailing,
+    required bool isIdle,
+  }) {
+    // Card k's "personal" accumulated rotation: total scroll minus the
+    // k·π/N head start that card 0 has. Until the user has scrolled past
+    // that head start the value is clamped to 0 and card k sits collapsed
+    // at the leading position — invisible behind card 0. Once it goes
+    // positive the card joins the riffle and cycles continuously.
+    final cardUnwrapped = math.max(
+      0.0,
+      unwrappedRotation - k * math.pi / _cardCount,
+    );
+    final cardFlipAngle = isIdle ? 0.0 : cardUnwrapped % math.pi;
+    double cardSignedAngle;
+    if (vertical) {
+      cardSignedAngle = flipSign >= 0 ? cardFlipAngle : -cardFlipAngle;
+    } else {
+      cardSignedAngle = flipSign >= 0 ? -cardFlipAngle : cardFlipAngle;
+    }
+
+    final showBack = cardSignedAngle.abs() > math.pi / 2;
+    // Both faces stay mounted via IndexedStack so swapping them at π/2
+    // doesn't churn render objects (the previous if/else remounted the
+    // ClipRect/SVG subtree every time, which read as a hitch — same
+    // problem the trailing/leading static-layer comment guards against).
+    return Transform(
+      alignment: Alignment.topLeft,
+      transform: _flipMatrix(vertical: vertical, angle: cardSignedAngle),
+      child: IndexedStack(
+        alignment: Alignment.center,
+        sizing: StackFit.expand,
+        index: showBack ? 1 : 0,
+        children: [
+          _half(leading),
+          Transform(
+            alignment: Alignment.center,
+            transform: Matrix4.identity()
+              ..scaleByDouble(
+                vertical ? 1.0 : -1.0,
+                vertical ? -1.0 : 1.0,
+                1.0,
+                1.0,
+              ),
+            child: _half(trailing),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Clips a full-size square layer down to one of its halves. Used so the
+/// rolodex can render the same logo widget four times (trailing, hidden
+/// next, flipping front, optional back of the flipping card) and have each
+/// instance only show the geometry the viewer should see.
+class _HalfClipper extends CustomClipper<Rect> {
+  const _HalfClipper(this.side);
+
+  final _HalfSide side;
+
+  @override
+  Rect getClip(Size size) {
+    switch (side) {
+      case _HalfSide.top:
+        return Rect.fromLTWH(0, 0, size.width, size.height / 2);
+      case _HalfSide.bottom:
+        return Rect.fromLTWH(0, size.height / 2, size.width, size.height / 2);
+      case _HalfSide.left:
+        return Rect.fromLTWH(0, 0, size.width / 2, size.height);
+      case _HalfSide.right:
+        return Rect.fromLTWH(size.width / 2, 0, size.width / 2, size.height);
+    }
+  }
+
+  @override
+  bool shouldReclip(_HalfClipper oldClipper) => oldClipper.side != side;
 }
 
 // Radius of the pink disc fill inside the Flixsy SVG, expressed as a

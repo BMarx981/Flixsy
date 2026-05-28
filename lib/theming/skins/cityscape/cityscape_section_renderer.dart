@@ -45,7 +45,7 @@ class CityscapeSectionRenderer implements SectionRenderer {
         Padding(
           padding: EdgeInsets.all(gap / 2),
           child: PointerAwareStarDpad(
-            size: 200,
+            size: 235,
             onUp: () => onKey(block.up.action),
             onDown: () => onKey(block.down.action),
             onLeft: () => onKey(block.left.action),

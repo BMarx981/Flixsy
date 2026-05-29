@@ -288,7 +288,7 @@ class _BlockCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: GlassSurface(
-        padding: const EdgeInsets.fromLTRB(12, 8, 4, 12),
+        padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 4, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -319,7 +319,7 @@ class _BlockCard extends StatelessWidget {
             ),
             if (buttons.isNotEmpty || canAdd)
               Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsetsDirectional.only(end: 8),
                 child: Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -439,6 +439,17 @@ class _GlassChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foreground = Theme.of(context).colorScheme.onSurface;
+    // The chip's lozenge end sits on the start side (where the label
+    // leads) and tapers down to a small radius on the end side (where the
+    // close button optionally attaches). InkWell takes BorderRadius, not
+    // BorderRadiusGeometry, so resolve the directional shape against the
+    // ambient text direction.
+    final chipRadius = BorderRadiusDirectional.only(
+      topStart: const Radius.circular(999),
+      bottomStart: const Radius.circular(999),
+      topEnd: const Radius.circular(8),
+      bottomEnd: const Radius.circular(8),
+    ).resolve(Directionality.of(context));
     return GlassSurface(
       borderRadius: const BorderRadius.all(Radius.circular(999)),
       shadow: false,
@@ -449,12 +460,9 @@ class _GlassChip extends StatelessWidget {
           children: [
             InkWell(
               onTap: onTap,
-              borderRadius: const BorderRadius.horizontal(
-                left: Radius.circular(999),
-                right: Radius.circular(8),
-              ),
+              borderRadius: chipRadius,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(
+                padding: EdgeInsetsDirectional.fromSTEB(
                   12,
                   8,
                   onRemove == null ? 12 : 8,
@@ -486,7 +494,7 @@ class _GlassChip extends StatelessWidget {
                 child: Tooltip(
                   message: removeTooltip ?? '',
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(2, 6, 10, 6),
+                    padding: const EdgeInsetsDirectional.fromSTEB(2, 6, 10, 6),
                     child: Icon(
                       Icons.close,
                       size: 16,

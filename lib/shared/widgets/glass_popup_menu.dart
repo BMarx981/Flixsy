@@ -153,6 +153,12 @@ class _GlassPopupSurface<T> extends StatelessWidget {
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.20)
         : Colors.white.withValues(alpha: 0.75);
+    // CompositedTransformFollower needs concrete Alignment values, not
+    // AlignmentGeometry — resolve the directional anchors against the
+    // ambient text direction so RTL mirrors the popup to the start side.
+    final direction = Directionality.of(context);
+    final targetAnchor = AlignmentDirectional.bottomEnd.resolve(direction);
+    final followerAnchor = AlignmentDirectional.topEnd.resolve(direction);
 
     return Stack(
       children: [
@@ -168,8 +174,8 @@ class _GlassPopupSurface<T> extends StatelessWidget {
           child: CompositedTransformFollower(
             link: link,
             showWhenUnlinked: false,
-            targetAnchor: Alignment.bottomRight,
-            followerAnchor: Alignment.topRight,
+            targetAnchor: targetAnchor,
+            followerAnchor: followerAnchor,
             offset: const Offset(0, 8),
             child: SizedBox(
               width: menuWidth,
@@ -181,7 +187,7 @@ class _GlassPopupSurface<T> extends StatelessWidget {
                   return Opacity(
                     opacity: curved,
                     child: Transform.scale(
-                      alignment: Alignment.topRight,
+                      alignment: AlignmentDirectional.topEnd,
                       scale: 0.85 + 0.15 * curved,
                       child: child,
                     ),

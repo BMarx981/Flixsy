@@ -57,6 +57,10 @@ dependencies:
   # Gyroscope stream for the LG webOS free-cursor pointer (long-press OK)
   sensors_plus: ^6.1.1
 
+  # Voice → text dictation (phone-side, on-device).
+  # Wraps SFSpeechRecognizer (iOS) + SpeechRecognizer (Android).
+  speech_to_text: ^7.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

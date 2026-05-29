@@ -67,41 +67,46 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
   /// The region currently held down, used only for press feedback.
   _LogoRegion? _active;
 
-  // Spin state — see `SpinnableStarDpad` for the full rationale behind the
-  // axis-lock + linear-drag design. This skin owns its own copy because its
-  // hit-test geometry and highlight overlay are bound to the logo SVG.
+  // Spin state — see `SpinnableStarDpad` for the full rationale. The wheel
+  // spins like a ball: vertical and horizontal ticks fire independently,
+  // so a diagonal drag emits up/down AND next/previous at the same time
+  // and the user can curve mid-drag without lifting the finger.
   //
-  // `_axisPixels` *persists* across gestures: when the finger lifts mid-flip
-  // the disc freezes at its current pose, and the next gesture continues
-  // from there. `_basePixels` anchors the live drag delta against that
-  // carried-over rotation so each pan contributes only its own travel.
-  _SpinAxis _axis = _SpinAxis.none;
-  double _axisPixels = 0;
-  double _basePixels = 0;
-  double _lastTickPixels = 0;
+  // The visual rolodex still pivots on one axle at a time — `_visualAxis`
+  // follows whichever direction the finger moved most this frame, and
+  // `_visualPixels` resets when the axle flips so the new axis starts
+  // upright. Both persist across gestures: when the finger lifts mid-flip
+  // the disc freezes at its current pose.
+  _SpinAxis _visualAxis = _SpinAxis.none;
+  double _visualPixels = 0;
+  // Per-axis travel within the *current* drag, anchored at the moment
+  // the gesture committed to a spin. Drives tick emission, independent
+  // of the visual.
+  double _vTravel = 0;
+  double _hTravel = 0;
+  double _vLastTick = 0;
+  double _hLastTick = 0;
   Offset _panStart = Offset.zero;
-  Offset _axisLockOrigin = Offset.zero;
+  Offset _prevLocal = Offset.zero;
   bool _isSpinning = false;
-  // True between touch-down and the moment a fresh axis lock latches. While
-  // set, the renderer keeps showing the previous gesture's pose; once the
-  // new drag picks an axis we either continue (same axis) or snap to a
-  // fresh card on the new axle (cross-axis).
-  bool _pendingRelock = false;
+  // True once the current drag has crossed the slop threshold and is
+  // definitively a spin (not an arm tap).
+  bool _spinCommitted = false;
 
   double get _visualRotation =>
-      _axisPixels * SpinnableStarDpad.tickAngle / SpinnableStarDpad.pixelsPerTick;
+      _visualPixels * SpinnableStarDpad.tickAngle / SpinnableStarDpad.pixelsPerTick;
 
   // Current flip angle, wrapped into [0, π) so each π of accumulated
   // rotation reads as one full card flip and the next card starts fresh.
   double get _flipAngle {
-    if (_axis == _SpinAxis.none) return 0;
+    if (_visualAxis == _SpinAxis.none) return 0;
     return _visualRotation.abs() % math.pi;
   }
 
-  // Sign of accumulated rotation along the locked axis. Picks which half
+  // Sign of accumulated rotation along the active axle. Picks which half
   // hinges; 0 when idle.
   int get _flipSign {
-    if (_axis == _SpinAxis.none || _visualRotation == 0) return 0;
+    if (_visualAxis == _SpinAxis.none || _visualRotation == 0) return 0;
     return _visualRotation > 0 ? 1 : -1;
   }
 
@@ -115,12 +120,16 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
   // (the skin-picker `PageView`) from stealing the gesture mid-spin.
   void _onPanStart(DragStartDetails details, double side) {
     _panStart = details.localPosition;
-    _axisLockOrigin = details.localPosition;
+    _prevLocal = details.localPosition;
     _isSpinning = false;
-    // Carry the previous gesture's rotation forward — don't touch _axis or
-    // _axisPixels. The renderer keeps the disc in its frozen pose until a
-    // new drag direction nudges it.
-    _pendingRelock = true;
+    _spinCommitted = false;
+    // Tick travel resets each gesture so a fresh drag ticks from 0. The
+    // visual axis/pixels are NOT reset — the disc keeps whatever pose
+    // the last gesture left it in until this drag's motion overrides it.
+    _vTravel = 0;
+    _hTravel = 0;
+    _vLastTick = 0;
+    _hLastTick = 0;
     final region = _hitTest(details.localPosition, side);
     setState(() => _active = region);
   }
@@ -128,58 +137,68 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
   void _onPanUpdate(DragUpdateDetails details, double _) {
     final local = details.localPosition;
 
-    if (_pendingRelock) {
+    // Hold arm-tap candidacy until the finger crosses tapSlop. Before that,
+    // accumulate nothing — a still touch stays a tap on the arm region.
+    if (!_spinCommitted) {
       final fromStart = local - _panStart;
       if (fromStart.distanceSquared <
           SpinnableStarDpad.tapSlop * SpinnableStarDpad.tapSlop) {
         return;
       }
-      final newAxis = fromStart.dx.abs() >= fromStart.dy.abs()
-          ? _SpinAxis.horizontal
-          : _SpinAxis.vertical;
-      // Cross-axis transition: the prior pose was rotated around a
-      // different axle, so carrying its angle onto the new axle would look
-      // arbitrary. Snap to a fresh upright card on the new axle instead.
-      if (_axis != _SpinAxis.none && newAxis != _axis) {
-        _axisPixels = 0;
-      }
-      _axis = newAxis;
-      _axisLockOrigin = local;
-      _basePixels = _axisPixels;
-      _lastTickPixels = _axisPixels;
-      _pendingRelock = false;
+      _spinCommitted = true;
       _isSpinning = true;
-      // Lock-in: the highlight on the arm we started over no longer matches
-      // what the gesture will do, so clear it.
-      if (_active != null) _active = null;
+      _prevLocal = local;
+      // The highlight on the arm we started over no longer matches what
+      // the gesture will do — clear it.
+      if (_active != null) setState(() => _active = null);
+      return;
     }
 
-    final fromLock = local - _axisLockOrigin;
-    final delta = _axis == _SpinAxis.vertical ? fromLock.dy : fromLock.dx;
-    _axisPixels = _basePixels + delta;
+    final delta = local - _prevLocal;
+    _prevLocal = local;
+
+    // Both axes accumulate independently — a diagonal drag emits ticks on
+    // both at once. This skin's east/west are track skip (previous/next),
+    // matching the arm tap mapping on the same star points.
+    _vTravel += delta.dy;
+    _hTravel += delta.dx;
+
+    while (_vTravel - _vLastTick >= SpinnableStarDpad.pixelsPerTick) {
+      _vLastTick += SpinnableStarDpad.pixelsPerTick;
+      HapticFeedback.selectionClick();
+      widget.onKeyPressed(RemoteKey.down.code);
+    }
+    while (_vLastTick - _vTravel >= SpinnableStarDpad.pixelsPerTick) {
+      _vLastTick -= SpinnableStarDpad.pixelsPerTick;
+      HapticFeedback.selectionClick();
+      widget.onKeyPressed(RemoteKey.up.code);
+    }
+    while (_hTravel - _hLastTick >= SpinnableStarDpad.pixelsPerTick) {
+      _hLastTick += SpinnableStarDpad.pixelsPerTick;
+      HapticFeedback.selectionClick();
+      widget.onKeyPressed(RemoteKey.next.code);
+    }
+    while (_hLastTick - _hTravel >= SpinnableStarDpad.pixelsPerTick) {
+      _hLastTick -= SpinnableStarDpad.pixelsPerTick;
+      HapticFeedback.selectionClick();
+      widget.onKeyPressed(RemoteKey.previous.code);
+    }
+
+    // Visual axle = whichever axis the finger moved more in this frame.
+    // Sub-pixel jitter doesn't flip the axle. When the axle does flip,
+    // the new axis starts upright.
+    final adx = delta.dx.abs();
+    final ady = delta.dy.abs();
+    if (adx >= 0.5 || ady >= 0.5) {
+      final newAxis = ady >= adx ? _SpinAxis.vertical : _SpinAxis.horizontal;
+      if (newAxis != _visualAxis) {
+        _visualAxis = newAxis;
+        _visualPixels = 0;
+      }
+      _visualPixels += newAxis == _SpinAxis.vertical ? delta.dy : delta.dx;
+    }
+
     setState(() {});
-
-    // Map ticks to this skin's east/west semantics: horizontal scroll is
-    // track skip (previous/next), not arrow left/right — matches the arm
-    // tap mapping on the same star points.
-    while (_axisPixels - _lastTickPixels >= SpinnableStarDpad.pixelsPerTick) {
-      _lastTickPixels += SpinnableStarDpad.pixelsPerTick;
-      HapticFeedback.selectionClick();
-      widget.onKeyPressed(
-        _axis == _SpinAxis.vertical
-            ? RemoteKey.down.code
-            : RemoteKey.next.code,
-      );
-    }
-    while (_lastTickPixels - _axisPixels >= SpinnableStarDpad.pixelsPerTick) {
-      _lastTickPixels -= SpinnableStarDpad.pixelsPerTick;
-      HapticFeedback.selectionClick();
-      widget.onKeyPressed(
-        _axis == _SpinAxis.vertical
-            ? RemoteKey.up.code
-            : RemoteKey.previous.code,
-      );
-    }
   }
 
   void _onPanEnd(DragEndDetails _) {
@@ -192,16 +211,16 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
     }
     setState(() => _active = null);
     _isSpinning = false;
-    _pendingRelock = false;
-    // Intentionally do NOT touch _axis or _axisPixels — the disc freezes
-    // at whatever pose the finger left it in, and the next gesture picks
-    // up from there.
+    _spinCommitted = false;
+    // Intentionally do NOT touch _visualAxis or _visualPixels — the disc
+    // freezes at whatever pose the finger left it in, and the next gesture
+    // picks up from there.
   }
 
   void _onPanCancel() {
     _clearActive();
     _isSpinning = false;
-    _pendingRelock = false;
+    _spinCommitted = false;
   }
 
   /// Maps a local tap position to a [_LogoRegion], or `null` for dead zones.
@@ -387,7 +406,7 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
                   children: [
                     _RolodexLogo(
                       side: side,
-                      axis: _axis,
+                      axis: _visualAxis,
                       flipAngle: _flipAngle,
                       flipSign: _flipSign,
                       semanticsLabel: context.l10n.mainRemoteSemanticLabel,

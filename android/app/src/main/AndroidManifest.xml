@@ -5,6 +5,9 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+    <!-- Voice → text dictation. The microphone permission is requested at
+         runtime by the speech_to_text plugin on first dictation tap. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="flixsy"
         android:name="${applicationName}"
@@ -51,6 +54,12 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Android 11+ package visibility: without this, SpeechRecognizer
+             .isRecognitionAvailable() returns false on most devices because
+             the speech recognizer lives in a separate package. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 </manifest>

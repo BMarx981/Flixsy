@@ -39,10 +39,14 @@
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Flixsy needs access to your local network to discover and control TVs.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Flixsy uses the microphone to dictate search text to your TV.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Flixsy uses your phone's motion sensors to aim the on-screen cursor when controlling an LG webOS TV.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Flixsy needs access to your photos so you can use your own images on remote buttons.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Flixsy converts your speech to text so you can search on your TV by voice instead of typing.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>

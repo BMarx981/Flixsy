@@ -18,6 +18,7 @@ import 'package:flixsy/theming/layout_provider.dart';
 import 'package:flixsy/theming/remote_key.dart';
 import 'package:flixsy/theming/skin_provider.dart';
 import 'package:flixsy/theming/skin_registry.dart';
+import 'package:flixsy/features/keyboard/voice/voice_spike_button.dart';
 import 'package:flixsy/features/keyboard/widgets/keyboard_sheet.dart';
 import 'package:flixsy/features/home/providers/remote_control_provider.dart';
 import 'package:flixsy/features/home/widgets/skin_picker_carousel.dart';
@@ -171,6 +172,8 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(width: 4),
               ]
             : [
+                // PHASE 0 SPIKE — remove with voice_spike_button.dart.
+                const VoiceSpikeButton(),
                 IconButton(
                   icon: const Icon(Icons.dashboard_customize_outlined),
                   tooltip: context.l10n.homeLayoutsTooltip,

@@ -133,28 +133,31 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
 
   _Region? _active;
   _GestureMode _mode = _GestureMode.idle;
-  _SpinAxis _axis = _SpinAxis.none;
-  // Accumulated rotation, in pixel-equivalents along the locked axis.
-  // *Persists across gestures*: when the finger lifts mid-flip the disc
-  // freezes at this pose, and the next drag continues from here. Drives
-  // both the visual tumble (radians = pixels * tickAngle / pixelsPerTick)
-  // and the tick emitter.
-  double _axisPixels = 0;
-  // Snapshot of `_axisPixels` at the moment the current drag's axis
-  // latched. Each frame's `_axisPixels = _basePixels + drag-delta`, so a
-  // pan only contributes its own travel — not the carried-over rotation.
-  double _basePixels = 0;
-  // Pixel value at which the last haptic tick fired. Ticks fire whenever
-  // `_axisPixels` crosses another `pixelsPerTick` increment past this anchor.
-  double _lastTickPixels = 0;
+  // The wheel spins like a ball: vertical and horizontal ticks fire
+  // independently, so a diagonal drag emits both at once and the user can
+  // curve from down → right without lifting the finger.
+  //
+  // `_visualAxis` and `_visualPixels` drive the rolodex pose. The visual
+  // axle follows whichever direction the finger moved most in the latest
+  // frame; when the axle flips, `_visualPixels` resets so the new axis
+  // starts upright. Persists across gestures so the disc freezes on lift.
+  _SpinAxis _visualAxis = _SpinAxis.none;
+  double _visualPixels = 0;
+  // Per-axis travel within the *current* drag, anchored at the moment the
+  // gesture committed to a spin. Drives tick emission independently of
+  // the visual — vertical ticks keep firing even while the visual axle
+  // is pivoted to horizontal.
+  double _vTravel = 0;
+  double _hTravel = 0;
+  double _vLastTick = 0;
+  double _hLastTick = 0;
   Offset _panStart = Offset.zero;
-  Offset _axisLockOrigin = Offset.zero;
+  Offset _prevLocal = Offset.zero;
   bool _hasFiredTick = false;
-  // True between touch-down and the moment a fresh axis lock latches. While
-  // set, the previous gesture's `_axis` keeps the renderer in pose; once
-  // the new drag picks an axis we either continue (same axis) or snap to
-  // a fresh upright card on the new axle.
-  bool _pendingRelock = false;
+  // True once the current drag has crossed the slop threshold and is
+  // definitively a spin (not an OK tap). Until then no ticks fire and
+  // the disc holds its previous pose.
+  bool _spinCommitted = false;
 
   Offset get _center => Offset(widget.size / 2, widget.size / 2);
 
@@ -173,10 +176,8 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   void _onFadeStatus(AnimationStatus status) {
     if (status == AnimationStatus.completed) {
       setState(() {
-        _axisPixels = 0;
-        _basePixels = 0;
-        _lastTickPixels = 0;
-        _axis = _SpinAxis.none;
+        _visualPixels = 0;
+        _visualAxis = _SpinAxis.none;
       });
     }
   }
@@ -185,10 +186,10 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   // rest (nothing to fade away from).
   void _scheduleIdleFade() {
     _idleFadeTimer?.cancel();
-    if (_axisPixels == 0 && _axis == _SpinAxis.none) return;
+    if (_visualPixels == 0 && _visualAxis == _SpinAxis.none) return;
     _idleFadeTimer = Timer(_idleFadeDelay, () {
       if (!mounted) return;
-      if (_mode == _GestureMode.idle && _axisPixels != 0) {
+      if (_mode == _GestureMode.idle && _visualPixels != 0) {
         _fadeController.forward(from: 0);
       }
     });
@@ -204,10 +205,9 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
     }
   }
 
-  // Current visual rotation, in radians, derived from `_axisPixels` so the
-  // wheel and the tick emitter share a single source of truth.
+  // Current visual rotation, in radians, derived from `_visualPixels`.
   double get _visualRotation =>
-      _axisPixels *
+      _visualPixels *
       SpinnableStarDpad.tickAngle /
       SpinnableStarDpad.pixelsPerTick;
 
@@ -254,12 +254,16 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   void _onPanStart(DragStartDetails details) {
     _cancelIdleFade();
     _panStart = details.localPosition;
-    _axisLockOrigin = details.localPosition;
+    _prevLocal = details.localPosition;
     _hasFiredTick = false;
-    // Carry _axis and _axisPixels forward — the disc stays in whatever
-    // pose the last gesture left it in. We re-decide the axis once this
-    // drag crosses the slop threshold.
-    _pendingRelock = true;
+    _spinCommitted = false;
+    // Tick travel resets each gesture so a fresh drag ticks from 0. The
+    // visual axis/pixels are NOT reset — the disc keeps whatever pose
+    // the last gesture left it in until this drag's motion overrides it.
+    _vTravel = 0;
+    _hTravel = 0;
+    _vLastTick = 0;
+    _hLastTick = 0;
 
     final region = _hitTest(details.localPosition);
     if (region == null) {
@@ -302,63 +306,67 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   }
 
   void _updateSpin(Offset local) {
-    // Lock the spin axis at first significant motion, picking whichever
-    // direction the user moved farther in. After lock, only motion along
-    // that axis contributes — sideways drift is ignored, so the wheel feels
-    // like a track instead of a free puck.
-    if (_pendingRelock) {
+    // Hold OK-tap candidacy until the finger crosses tapSlop. Before that,
+    // accumulate nothing — a still touch stays an OK tap.
+    if (!_spinCommitted) {
       final fromStart = local - _panStart;
       if (fromStart.distanceSquared <
           SpinnableStarDpad.tapSlop * SpinnableStarDpad.tapSlop) {
         return;
       }
-      final newAxis = fromStart.dx.abs() >= fromStart.dy.abs()
-          ? _SpinAxis.horizontal
-          : _SpinAxis.vertical;
-      // Cross-axis transition: the carried-over rotation came from a
-      // different axle and would look arbitrary on the new one. Reset to a
-      // fresh upright card on the new axle.
-      if (_axis != _SpinAxis.none && newAxis != _axis) {
-        _axisPixels = 0;
-      }
-      _axis = newAxis;
-      // Anchor pixel travel to where the lock latched, not to the touch-down
-      // point — otherwise the first tick fires after only a couple of pixels
-      // of post-lock motion (the slop itself counts toward the tick).
-      _axisLockOrigin = local;
-      _basePixels = _axisPixels;
-      _lastTickPixels = _axisPixels;
-      _pendingRelock = false;
+      _spinCommitted = true;
       _hasFiredTick = true;
-      if (_active != null) _active = null;
+      _prevLocal = local;
+      if (_active != null) setState(() => _active = null);
+      return;
     }
 
-    final fromLock = local - _axisLockOrigin;
-    final delta = _axis == _SpinAxis.vertical ? fromLock.dy : fromLock.dx;
-    _axisPixels = _basePixels + delta;
+    final delta = local - _prevLocal;
+    _prevLocal = local;
+
+    // Both axes accumulate independently — a diagonal drag emits ticks on
+    // both at once. Positive vertical = down-drag = onScrollDown; positive
+    // horizontal = right-drag = onScrollRight.
+    _vTravel += delta.dy;
+    _hTravel += delta.dx;
+
+    while (_vTravel - _vLastTick >= SpinnableStarDpad.pixelsPerTick) {
+      _vLastTick += SpinnableStarDpad.pixelsPerTick;
+      HapticFeedback.selectionClick();
+      widget.onScrollDown();
+    }
+    while (_vLastTick - _vTravel >= SpinnableStarDpad.pixelsPerTick) {
+      _vLastTick -= SpinnableStarDpad.pixelsPerTick;
+      HapticFeedback.selectionClick();
+      widget.onScrollUp();
+    }
+    while (_hTravel - _hLastTick >= SpinnableStarDpad.pixelsPerTick) {
+      _hLastTick += SpinnableStarDpad.pixelsPerTick;
+      HapticFeedback.selectionClick();
+      widget.onScrollRight();
+    }
+    while (_hLastTick - _hTravel >= SpinnableStarDpad.pixelsPerTick) {
+      _hLastTick -= SpinnableStarDpad.pixelsPerTick;
+      HapticFeedback.selectionClick();
+      widget.onScrollLeft();
+    }
+
+    // Visual axle = whichever axis the finger moved more in this frame.
+    // Sub-pixel jitter doesn't flip the axle (it would otherwise strobe).
+    // When the axle does flip, the new axis starts upright — same snap
+    // the previous code did on cross-axis lift+drag.
+    final adx = delta.dx.abs();
+    final ady = delta.dy.abs();
+    if (adx >= 0.5 || ady >= 0.5) {
+      final newAxis = ady >= adx ? _SpinAxis.vertical : _SpinAxis.horizontal;
+      if (newAxis != _visualAxis) {
+        _visualAxis = newAxis;
+        _visualPixels = 0;
+      }
+      _visualPixels += newAxis == _SpinAxis.vertical ? delta.dy : delta.dx;
+    }
+
     setState(() {});
-
-    // Emit one tick for every `pixelsPerTick` of travel away from the last
-    // anchor, in either direction. Positive vertical = down-drag = onScrollDown;
-    // positive horizontal = right-drag = onScrollRight.
-    while (_axisPixels - _lastTickPixels >= SpinnableStarDpad.pixelsPerTick) {
-      _lastTickPixels += SpinnableStarDpad.pixelsPerTick;
-      HapticFeedback.selectionClick();
-      if (_axis == _SpinAxis.vertical) {
-        widget.onScrollDown();
-      } else {
-        widget.onScrollRight();
-      }
-    }
-    while (_lastTickPixels - _axisPixels >= SpinnableStarDpad.pixelsPerTick) {
-      _lastTickPixels -= SpinnableStarDpad.pixelsPerTick;
-      HapticFeedback.selectionClick();
-      if (_axis == _SpinAxis.vertical) {
-        widget.onScrollUp();
-      } else {
-        widget.onScrollLeft();
-      }
-    }
   }
 
   void _onPanEnd(DragEndDetails _) {
@@ -372,8 +380,8 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
           setState(() => _active = _Region.ok);
           _fire(_Region.ok);
         }
-        // Intentionally do not reset _axis or _axisPixels — the disc
-        // freezes at whatever pose the finger left it in.
+        // Intentionally do not reset _visualAxis or _visualPixels — the
+        // disc freezes at whatever pose the finger left it in.
       case _GestureMode.tap:
         final region = _active;
         if (region != null) _fire(region);
@@ -392,17 +400,17 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
       setState(() => _active = null);
     }
     _hasFiredTick = false;
-    _pendingRelock = false;
+    _spinCommitted = false;
     _mode = _GestureMode.idle;
     _scheduleIdleFade();
   }
 
   void _onPanCancel() {
-    // Same "freeze in place" behavior as a normal end — leave _axis and
-    // _axisPixels untouched.
+    // Same "freeze in place" behavior as a normal end — leave _visualAxis
+    // and _visualPixels untouched.
     if (_active != null) setState(() => _active = null);
     _hasFiredTick = false;
-    _pendingRelock = false;
+    _spinCommitted = false;
     _mode = _GestureMode.idle;
     _scheduleIdleFade();
   }
@@ -418,7 +426,7 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
   // half is the *far* one along the axis (down for vertical, right for
   // horizontal); -1 means the *near* one. 0 when idle.
   int get _flipSign {
-    if (_axis == _SpinAxis.none || _visualRotation == 0) return 0;
+    if (_visualAxis == _SpinAxis.none || _visualRotation == 0) return 0;
     return _visualRotation > 0 ? 1 : -1;
   }
 
@@ -535,7 +543,7 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
                           child: _RolodexDisc(
                             diameter: discDiameter,
                             discColor: discColor,
-                            axis: _axis,
+                            axis: _visualAxis,
                             unwrappedRotation: _visualRotation.abs(),
                             flipSign: _flipSign,
                           ),

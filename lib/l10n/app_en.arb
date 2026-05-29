@@ -566,5 +566,29 @@
   "magicMouseUnsupportedTooltip": "Magic Mouse is only available on LG webOS TVs.",
   "@magicMouseUnsupportedTooltip": {
     "description": "Tooltip shown on the Magic Mouse toggle when the connected TV does not support a free cursor."
+  },
+
+  "voiceSpikeTooltip": "Voice spike (Phase 0)",
+  "@voiceSpikeTooltip": {
+    "description": "Tooltip on the throwaway Phase-0 voice-recognition test button in the AppBar; deleted once Phase 1 ships."
+  },
+
+  "accessibilitySkinChangedAnnouncement": "Switched to {skinName} skin",
+  "@accessibilitySkinChangedAnnouncement": {
+    "description": "Screen-reader announcement after the active skin changes.",
+    "placeholders": {
+      "skinName": { "type": "String" }
+    }
+  },
+  "accessibilityDeviceConnectedAnnouncement": "Connected to {deviceName}",
+  "@accessibilityDeviceConnectedAnnouncement": {
+    "description": "Screen-reader announcement after a TV connection succeeds.",
+    "placeholders": {
+      "deviceName": { "type": "String" }
+    }
+  },
+  "accessibilityDeviceDisconnectedAnnouncement": "Disconnected from TV",
+  "@accessibilityDeviceDisconnectedAnnouncement": {
+    "description": "Screen-reader announcement after a TV is disconnected."
   }
 }

@@ -104,6 +104,13 @@ enum _Region { up, down, left, right, ok }
 
 enum _GestureMode { idle, spin, tap, cancelled }
 
+/// Single intent type for all five D-pad directions — keeps the Actions map
+/// to one entry and lets each [SingleActivator] supply its own direction.
+class _DpadIntent extends Intent {
+  const _DpadIntent(this.region);
+  final _Region region;
+}
+
 enum _SpinAxis { none, vertical, horizontal }
 
 double _axisDegFor(_Region r) => switch (r) {
@@ -448,7 +455,36 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
       dimension: s,
       child: Semantics(
         label: context.l10n.mainRemoteSemanticLabel,
-        child: RawGestureDetector(
+        child: FocusableActionDetector(
+          shortcuts: const <ShortcutActivator, Intent>{
+            SingleActivator(LogicalKeyboardKey.arrowUp): _DpadIntent(
+              _Region.up,
+            ),
+            SingleActivator(LogicalKeyboardKey.arrowDown): _DpadIntent(
+              _Region.down,
+            ),
+            SingleActivator(LogicalKeyboardKey.arrowLeft): _DpadIntent(
+              _Region.left,
+            ),
+            SingleActivator(LogicalKeyboardKey.arrowRight): _DpadIntent(
+              _Region.right,
+            ),
+            SingleActivator(LogicalKeyboardKey.enter): _DpadIntent(_Region.ok),
+            SingleActivator(LogicalKeyboardKey.numpadEnter): _DpadIntent(
+              _Region.ok,
+            ),
+            SingleActivator(LogicalKeyboardKey.space): _DpadIntent(_Region.ok),
+            SingleActivator(LogicalKeyboardKey.select): _DpadIntent(_Region.ok),
+          },
+          actions: <Type, Action<Intent>>{
+            _DpadIntent: CallbackAction<_DpadIntent>(
+              onInvoke: (intent) {
+                _fire(intent.region);
+                return null;
+              },
+            ),
+          },
+          child: RawGestureDetector(
           behavior: HitTestBehavior.opaque,
           gestures: <Type, GestureRecognizerFactory>{
             _EagerPanGestureRecognizer:
@@ -507,6 +543,26 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
                   color: chevronColor,
                 ),
               ),
+              // Screen-reader overlay: five invisible button regions stacked
+              // over the gesture surface. Sighted users continue to interact
+              // through the gesture detector (the IgnorePointer wrapper lets
+              // touches pass through); screen readers focus and double-tap
+              // these regions to fire each direction's callback through the
+              // Semantics action pipeline.
+              IgnorePointer(
+                child: _DpadSemanticsOverlay(
+                  onUp: widget.onUp,
+                  onDown: widget.onDown,
+                  onLeft: widget.onLeft,
+                  onRight: widget.onRight,
+                  onOk: widget.onOk,
+                  upLabel: context.l10n.remoteKeyUp,
+                  downLabel: context.l10n.remoteKeyDown,
+                  leftLabel: context.l10n.remoteKeyLeft,
+                  rightLabel: context.l10n.remoteKeyRight,
+                  okLabel: context.l10n.remoteKeyOk,
+                ),
+              ),
               // Centre spin disc — a rolodex. At rest only the current card
               // shows (with a small ambient rock to hint scrollability). On
               // drag, the disc splits at the axle perpendicular to the drag,
@@ -532,6 +588,7 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
                         FlixsyLogo(
                           size: discDiameter,
                           discColor: discColor,
+                          decorative: true,
                         ),
                         const IgnorePointer(
                           child: CustomPaint(
@@ -556,7 +613,107 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
             ],
           ),
         ),
+        ),
       ),
+    );
+  }
+}
+
+/// Invisible semantics layer that exposes the five D-pad regions to screen
+/// readers as discrete buttons. Sized via [Align]+[FractionallySizedBox] so
+/// each focus rectangle covers roughly the same area as the corresponding
+/// gesture hit zone — close enough for screen-reader focus order; pixel
+/// accuracy doesn't matter since activation is via the semantics action,
+/// not a hit test.
+class _DpadSemanticsOverlay extends StatelessWidget {
+  const _DpadSemanticsOverlay({
+    required this.onUp,
+    required this.onDown,
+    required this.onLeft,
+    required this.onRight,
+    required this.onOk,
+    required this.upLabel,
+    required this.downLabel,
+    required this.leftLabel,
+    required this.rightLabel,
+    required this.okLabel,
+  });
+
+  final VoidCallback onUp;
+  final VoidCallback onDown;
+  final VoidCallback onLeft;
+  final VoidCallback onRight;
+  final VoidCallback onOk;
+  final String upLabel;
+  final String downLabel;
+  final String leftLabel;
+  final String rightLabel;
+  final String okLabel;
+
+  Widget _region({
+    required AlignmentGeometry alignment,
+    required double widthFactor,
+    required double heightFactor,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Align(
+      alignment: alignment,
+      child: FractionallySizedBox(
+        widthFactor: widthFactor,
+        heightFactor: heightFactor,
+        child: Semantics(
+          container: true,
+          button: true,
+          label: label,
+          onTap: onTap,
+          child: const SizedBox.expand(),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        _region(
+          alignment: Alignment.topCenter,
+          widthFactor: 0.40,
+          heightFactor: _armOuterRadius - _armInnerRadius + 0.04,
+          label: upLabel,
+          onTap: onUp,
+        ),
+        _region(
+          alignment: Alignment.bottomCenter,
+          widthFactor: 0.40,
+          heightFactor: _armOuterRadius - _armInnerRadius + 0.04,
+          label: downLabel,
+          onTap: onDown,
+        ),
+        _region(
+          alignment: Alignment.centerLeft,
+          widthFactor: _armOuterRadius - _armInnerRadius + 0.04,
+          heightFactor: 0.40,
+          label: leftLabel,
+          onTap: onLeft,
+        ),
+        _region(
+          alignment: Alignment.centerRight,
+          widthFactor: _armOuterRadius - _armInnerRadius + 0.04,
+          heightFactor: 0.40,
+          label: rightLabel,
+          onTap: onRight,
+        ),
+        _region(
+          alignment: Alignment.center,
+          widthFactor: _centerRadius * 2,
+          heightFactor: _centerRadius * 2,
+          label: okLabel,
+          onTap: onOk,
+        ),
+      ],
     );
   }
 }
@@ -683,7 +840,7 @@ class _RolodexDisc extends StatelessWidget {
   Widget _fullFace() => Stack(
     fit: StackFit.expand,
     children: [
-      FlixsyLogo(size: diameter, discColor: discColor),
+      FlixsyLogo(size: diameter, discColor: discColor, decorative: true),
       IgnorePointer(child: CustomPaint(painter: const _DomeShadingPainter())),
     ],
   );

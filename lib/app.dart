@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flixsy/core/extensions/l10n_extensions.dart';
 import 'package:flixsy/l10n/generated/app_localizations.dart';
+import 'package:flixsy/shared/accessibility/state_announcer.dart';
 import 'package:flixsy/shared/providers/app_providers.dart';
 import 'package:flixsy/theming/skin_provider.dart';
 
@@ -24,6 +25,7 @@ class FlixsyApp extends ConsumerWidget {
       routerConfig: appRouter.config(
         navigatorObservers: () => [ref.read(analyticsServiceProvider).observer],
       ),
+      builder: (context, child) => StateAnnouncer(child: child!),
     );
   }
 }

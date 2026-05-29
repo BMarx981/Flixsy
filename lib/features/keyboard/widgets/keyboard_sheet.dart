@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flixsy/core/channels/text_input.dart';
@@ -75,12 +76,19 @@ class _KeyboardSheetState extends ConsumerState<_KeyboardSheet> {
       keyboardSessionProvider.select((s) => s.failure),
       (prev, next) {
         if (next != null && next != prev) {
+          final message = context.l10n.failureMessage(next);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(context.l10n.failureMessage(next)),
+              content: Text(message),
               behavior: SnackBarBehavior.floating,
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
+          );
+          SemanticsService.sendAnnouncement(
+            View.of(context),
+            message,
+            Directionality.of(context),
+            assertiveness: Assertiveness.assertive,
           );
         }
       },
@@ -129,14 +137,22 @@ class _KeyboardSheetState extends ConsumerState<_KeyboardSheet> {
               Expanded(
                 child: OutlinedButton(
                   onPressed: _onSubmitted,
-                  child: Text(context.l10n.keyboardSendEnter),
+                  child: Text(
+                    context.l10n.keyboardSendEnter,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: FilledButton(
                   onPressed: _onClose,
-                  child: Text(context.l10n.keyboardClose),
+                  child: Text(
+                    context.l10n.keyboardClose,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
             ],

@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flixsy/core/errors/connect_failure.dart';
@@ -41,12 +42,19 @@ class HomeScreen extends ConsumerWidget {
     // Surface failed key commands as a snackbar.
     ref.listen<ConnectFailure?>(remoteControlProvider, (prev, next) {
       if (next != null && next != prev) {
+        final message = context.l10n.failureMessage(next);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.failureMessage(next)),
+            content: Text(message),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
+        );
+        SemanticsService.sendAnnouncement(
+          View.of(context),
+          message,
+          Directionality.of(context),
+          assertiveness: Assertiveness.assertive,
         );
       }
     });
@@ -54,11 +62,18 @@ class HomeScreen extends ConsumerWidget {
     // Surface IAP failures (cancel / network / etc.) as a snackbar.
     ref.listen<AsyncValue<IapFailure>>(iapFailureStreamProvider, (prev, next) {
       next.whenData((failure) {
+        final message = context.l10n.iapFailureMessage(failure);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.iapFailureMessage(failure)),
+            content: Text(message),
             behavior: SnackBarBehavior.floating,
           ),
+        );
+        SemanticsService.sendAnnouncement(
+          View.of(context),
+          message,
+          Directionality.of(context),
+          assertiveness: Assertiveness.assertive,
         );
       });
     });
@@ -68,11 +83,17 @@ class HomeScreen extends ConsumerWidget {
       final wasOff = prev?.valueOrNull == false;
       final isNowOn = next.valueOrNull == true;
       if (wasOff && isNowOn) {
+        final message = context.l10n.removeAdsSuccess;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.removeAdsSuccess),
+            content: Text(message),
             behavior: SnackBarBehavior.floating,
           ),
+        );
+        SemanticsService.sendAnnouncement(
+          View.of(context),
+          message,
+          Directionality.of(context),
         );
       }
     });
@@ -85,11 +106,18 @@ class HomeScreen extends ConsumerWidget {
       if (key == RemoteKey.keyboard.code) {
         final textInput = ref.read(remoteChannelProvider).textInput;
         if (textInput == null) {
+          final message = context.l10n.keyboardNotSupported;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(context.l10n.keyboardNotSupported),
+              content: Text(message),
               behavior: SnackBarBehavior.floating,
             ),
+          );
+          SemanticsService.sendAnnouncement(
+            View.of(context),
+            message,
+            Directionality.of(context),
+            assertiveness: Assertiveness.assertive,
           );
           return;
         }

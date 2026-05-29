@@ -111,7 +111,9 @@
       "Bash(md5)",
       "mcp__dart__list_devices",
       "Bash(adb devices *)",
-      "mcp__dart__launch_app"
+      "mcp__dart__launch_app",
+      "Read(//Users/brianmarx/flutter/packages/flutter/lib/src/semantics/**)",
+      "Bash(/Users/brianmarx/flutter/bin/flutter analyze *)"
     ],
     "ask": [
       "Bash(sed -i*)",

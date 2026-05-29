@@ -38,7 +38,20 @@ class _OceanRemoteSkinState extends State<OceanRemoteSkin>
     _pulse = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 4800),
-    )..repeat(reverse: true);
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Respect the OS "reduce motion" preference — when disabled, the buttons
+    // hold a steady mid-pulse state instead of breathing in and out.
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _pulse.stop();
+      _pulse.value = 0.5;
+    } else if (!_pulse.isAnimating) {
+      _pulse.repeat(reverse: true);
+    }
   }
 
   @override

@@ -283,15 +283,19 @@ class _ButtonContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final glyph = presentation.glyph;
+    final scaler = MediaQuery.textScalerOf(context);
+    final iconSize = scaler.scale(24.0);
+    final imageSide = scaler.scale(28.0);
     final mark = switch (glyph) {
-      IconGlyph(:final icon) => Icon(icon, size: 24),
+      IconGlyph(:final icon) => Icon(icon, size: iconSize),
       ImageGlyph(:final path) => Image.file(
         File(path),
-        width: 28,
-        height: 28,
+        width: imageSide,
+        height: imageSide,
         fit: BoxFit.contain,
+        excludeFromSemantics: true,
         errorBuilder: (_, _, _) =>
-            const Icon(Icons.broken_image_outlined, size: 24),
+            Icon(Icons.broken_image_outlined, size: iconSize),
       ),
       TextGlyph(:final text) => Text(text),
     };

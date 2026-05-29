@@ -29,11 +29,26 @@ class _OceanBackgroundState extends State<OceanBackground>
     _dayCycle = AnimationController(
       vsync: this,
       duration: const Duration(minutes: 3),
-    )..repeat();
+    );
     _ripples = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 12),
-    )..repeat();
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Respect the OS "reduce motion" preference — freeze on a static frame
+    // so motion-sensitive users get a still backdrop instead of constant
+    // sky/ripple animation.
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _dayCycle.stop();
+      _ripples.stop();
+    } else {
+      if (!_dayCycle.isAnimating) _dayCycle.repeat();
+      if (!_ripples.isAnimating) _ripples.repeat();
+    }
   }
 
   @override

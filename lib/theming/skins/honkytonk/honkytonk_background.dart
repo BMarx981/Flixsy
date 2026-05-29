@@ -29,14 +29,26 @@ class _HonkytonkBackgroundState extends State<HonkytonkBackground>
     _drift = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 24),
-    )..repeat();
+    );
     // Fast controller drives the neon flicker. Period is the wrap; per-element
     // integer multipliers inside the painter pick how many full sine cycles
     // each phase completes per wrap, keeping the loop seamless.
     _flicker = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 6000),
-    )..repeat();
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _drift.stop();
+      _flicker.stop();
+    } else {
+      if (!_drift.isAnimating) _drift.repeat();
+      if (!_flicker.isAnimating) _flicker.repeat();
+    }
   }
 
   @override

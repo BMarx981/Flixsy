@@ -29,13 +29,25 @@ class _CityscapeBackgroundState extends State<CityscapeBackground>
     _drift = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 30),
-    )..repeat();
+    );
     // Fast controller: drives the red aircraft warning lights (one full blink
     // per ~1.4 s) and the brief window flickers.
     _blink = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 5600),
-    )..repeat();
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _drift.stop();
+      _blink.stop();
+    } else {
+      if (!_drift.isAnimating) _drift.repeat();
+      if (!_blink.isAnimating) _blink.repeat();
+    }
   }
 
   @override

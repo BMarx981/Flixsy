@@ -18,6 +18,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flixsy/core/extensions/l10n_extensions.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -132,7 +133,7 @@ class _VoiceSpikeButtonState extends State<VoiceSpikeButton> {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           : const Icon(Icons.mic_none),
-      tooltip: 'Voice spike (Phase 0)',
+      tooltip: context.l10n.voiceSpikeTooltip,
       onPressed: _busy ? null : _runSpike,
     );
   }

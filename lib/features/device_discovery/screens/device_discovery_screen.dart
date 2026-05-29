@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flixsy/core/extensions/l10n_extensions.dart';
@@ -30,12 +31,19 @@ class DeviceDiscoveryScreen extends ConsumerWidget {
       }
       // Surface connection failures as a snackbar.
       if (next.failure != null && next.failure != prev?.failure) {
+        final message = context.l10n.failureMessage(next.failure!);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(context.l10n.failureMessage(next.failure!)),
+            content: Text(message),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Theme.of(context).colorScheme.error,
           ),
+        );
+        SemanticsService.sendAnnouncement(
+          View.of(context),
+          message,
+          Directionality.of(context),
+          assertiveness: Assertiveness.assertive,
         );
       }
     });

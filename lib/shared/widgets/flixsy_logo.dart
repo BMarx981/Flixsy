@@ -8,7 +8,12 @@ import 'package:flixsy/core/extensions/l10n_extensions.dart';
 ///
 /// The underlying SVG is square; [size] sets both its width and height.
 class FlixsyLogo extends StatelessWidget {
-  const FlixsyLogo({super.key, this.size = 96, this.discColor});
+  const FlixsyLogo({
+    super.key,
+    this.size = 96,
+    this.discColor,
+    this.decorative = false,
+  });
 
   /// Path to the vector asset, registered under `flutter/assets` in
   /// `pubspec.yaml`.
@@ -22,13 +27,19 @@ class FlixsyLogo extends StatelessWidget {
   /// can pick up the active skin's accent.
   final Color? discColor;
 
+  /// When `true`, the logo is treated as visual chrome and emits no
+  /// semantics — use inside composites that already publish their own
+  /// label (e.g. the centre of the spinnable D-pad).
+  final bool decorative;
+
   @override
   Widget build(BuildContext context) {
     return SvgPicture.asset(
       _assetPath,
       width: size,
       height: size,
-      semanticsLabel: context.l10n.logoSemanticLabel,
+      semanticsLabel: decorative ? null : context.l10n.logoSemanticLabel,
+      excludeFromSemantics: decorative,
       colorMapper: discColor == null ? null : _DiscColorMapper(discColor!),
     );
   }

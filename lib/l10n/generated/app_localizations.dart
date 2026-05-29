@@ -1065,6 +1065,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Magic Mouse is only available on LG webOS TVs.'**
   String get magicMouseUnsupportedTooltip;
+
+  /// Tooltip on the throwaway Phase-0 voice-recognition test button in the AppBar; deleted once Phase 1 ships.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice spike (Phase 0)'**
+  String get voiceSpikeTooltip;
+
+  /// Screen-reader announcement after the active skin changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched to {skinName} skin'**
+  String accessibilitySkinChangedAnnouncement(String skinName);
+
+  /// Screen-reader announcement after a TV connection succeeds.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected to {deviceName}'**
+  String accessibilityDeviceConnectedAnnouncement(String deviceName);
+
+  /// Screen-reader announcement after a TV is disconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected from TV'**
+  String get accessibilityDeviceDisconnectedAnnouncement;
 }
 
 class _AppLocalizationsDelegate

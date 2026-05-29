@@ -512,4 +512,21 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get magicMouseUnsupportedTooltip =>
       'Magic Mouse solo está disponible en TVs LG webOS.';
+
+  @override
+  String get voiceSpikeTooltip => 'Voice spike (Phase 0)';
+
+  @override
+  String accessibilitySkinChangedAnnouncement(String skinName) {
+    return 'Switched to $skinName skin';
+  }
+
+  @override
+  String accessibilityDeviceConnectedAnnouncement(String deviceName) {
+    return 'Connected to $deviceName';
+  }
+
+  @override
+  String get accessibilityDeviceDisconnectedAnnouncement =>
+      'Disconnected from TV';
 }

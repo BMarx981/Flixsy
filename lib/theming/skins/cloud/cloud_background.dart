@@ -23,7 +23,17 @@ class _CloudBackgroundState extends State<CloudBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 60),
-    )..repeat();
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _controller.stop();
+    } else if (!_controller.isAnimating) {
+      _controller.repeat();
+    }
   }
 
   @override

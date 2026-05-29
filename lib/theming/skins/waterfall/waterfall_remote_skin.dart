@@ -37,7 +37,18 @@ class _WaterfallRemoteSkinState extends State<WaterfallRemoteSkin>
     _pulse = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 3200),
-    )..repeat(reverse: true);
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _pulse.stop();
+      _pulse.value = 0.5;
+    } else if (!_pulse.isAnimating) {
+      _pulse.repeat(reverse: true);
+    }
   }
 
   @override

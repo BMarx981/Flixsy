@@ -184,8 +184,9 @@ class _ButtonContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final glyph = presentation.glyph;
-    final iconSize = compact ? 18.0 : 24.0;
-    final imageSide = compact ? 20.0 : 28.0;
+    final scaler = MediaQuery.textScalerOf(context);
+    final iconSize = scaler.scale(compact ? 18.0 : 24.0);
+    final imageSide = scaler.scale(compact ? 20.0 : 28.0);
     final mark = switch (glyph) {
       IconGlyph(:final icon) => Icon(icon, size: iconSize),
       ImageGlyph(:final path) => Image.file(
@@ -193,6 +194,7 @@ class _ButtonContent extends StatelessWidget {
         width: imageSide,
         height: imageSide,
         fit: BoxFit.contain,
+        excludeFromSemantics: true,
         // The file may have been swept between path resolution and paint.
         errorBuilder: (_, _, _) =>
             Icon(Icons.broken_image_outlined, size: iconSize),

@@ -26,7 +26,7 @@ class _CampfireBackgroundState extends State<CampfireBackground>
     _drift = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 20),
-    )..repeat();
+    );
     // Flame flicker controller. The period is the slowest cycle in the
     // scene; per-flame integer multipliers in `_CampfirePainter` pick how
     // many full sine cycles each flame completes per wrap. Integer
@@ -34,7 +34,19 @@ class _CampfireBackgroundState extends State<CampfireBackground>
     _flicker = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 9000),
-    )..repeat();
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _drift.stop();
+      _flicker.stop();
+    } else {
+      if (!_drift.isAnimating) _drift.repeat();
+      if (!_flicker.isAnimating) _flicker.repeat();
+    }
   }
 
   @override

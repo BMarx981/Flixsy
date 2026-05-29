@@ -206,7 +206,9 @@ class _CampfireButton extends StatelessWidget {
           splashColor: CampfireTheme.alpha(CampfireTheme.ember, 0.30),
           highlightColor: CampfireTheme.alpha(CampfireTheme.amber, 0.12),
           onTap: onPressed,
-          child: Padding(
+          child: Container(
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+            alignment: Alignment.center,
             padding: compact
                 ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
                 : const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -236,8 +238,9 @@ class _ButtonContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final glyph = presentation.glyph;
-    final iconSize = compact ? 18.0 : 24.0;
-    final imageSide = compact ? 20.0 : 28.0;
+    final scaler = MediaQuery.textScalerOf(context);
+    final iconSize = scaler.scale(compact ? 18.0 : 24.0);
+    final imageSide = scaler.scale(compact ? 20.0 : 28.0);
     final mark = switch (glyph) {
       IconGlyph(:final icon) => Icon(icon, size: iconSize),
       ImageGlyph(:final path) => Image.file(
@@ -245,6 +248,7 @@ class _ButtonContent extends StatelessWidget {
         width: imageSide,
         height: imageSide,
         fit: BoxFit.contain,
+        excludeFromSemantics: true,
         errorBuilder: (_, _, _) =>
             Icon(Icons.broken_image_outlined, size: iconSize),
       ),

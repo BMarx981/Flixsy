@@ -174,5 +174,14 @@
   "removeAdsFailureUnknown": "कुछ गलत हो गया। कृपया पुनः प्रयास करें।",
 
   "magicMouseLabel": "Magic Mouse",
-  "magicMouseUnsupportedTooltip": "Magic Mouse केवल LG webOS टीवी पर उपलब्ध है।"
+  "magicMouseUnsupportedTooltip": "Magic Mouse केवल LG webOS टीवी पर उपलब्ध है।",
+
+  "powerSetupWebosTitle": "Flixsy से अपना टीवी चालू करें",
+  "powerSetupWebosIntro": "Flixsy को आपके टीवी को स्टैंडबाय से जगाने के लिए आपके LG टीवी पर एक सेटिंग सक्षम होनी चाहिए।",
+  "powerSetupWebosStep1": "अपने टीवी पर सेटिंग्स खोलें।",
+  "powerSetupWebosStep2": "“Mobile TV On” खोजें — कभी-कभी इसे “TV On With Mobile” या “Wake On LAN” कहा जाता है। यह आमतौर पर General → Network, या Connection → Mobile Connection Management के अंतर्गत होता है।",
+  "powerSetupWebosStep3": "इसे चालू करें।",
+  "powerSetupWebosTipTitle": "विश्वसनीय वेक-अप के लिए",
+  "powerSetupWebosTipBody": "अपने टीवी का प्लग लगा रहने दें। सुनिश्चित करें कि आपका फ़ोन टीवी के समान Wi-Fi नेटवर्क पर है।",
+  "powerSetupDismiss": "ठीक है"
 }

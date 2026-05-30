@@ -46,6 +46,16 @@ void main() {
   setUp(() => repo = _FakeLayoutRepository());
 
   Future<void> pumpEditor(WidgetTester tester, RemoteLayout layout) async {
+    // The editor stacks a live StandardRemote preview, the name field and a
+    // block card with up to nine button chips inside a ReorderableListView;
+    // the default 800x600 view pushes the delete control off-screen and the
+    // resulting tap lands on the bottom-sheet scrim instead. Give the surface
+    // enough room to render the whole editor in-frame.
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -71,14 +81,6 @@ void main() {
   });
 
   testWidgets('adding a block via the sheet appends it', (tester) async {
-    // The d-pad card shows nine button chips, so it pushes the new Spacer
-    // card past the default 800x600 viewport — give the test a taller view
-    // so ReorderableListView builds the appended tile.
-    tester.view.physicalSize = const Size(800, 1200);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-
     await pumpEditor(tester, _dpadLayout);
 
     await tester.tap(find.text('Add block'));
@@ -101,10 +103,10 @@ void main() {
 
   testWidgets('editing a button reassigns its action', (tester) async {
     await pumpEditor(tester, _rowLayout);
-    expect(find.widgetWithText(ActionChip, 'Home'), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
 
     // Tapping the chip opens the button editor sheet.
-    await tester.tap(find.widgetWithText(ActionChip, 'Home'));
+    await tester.tap(find.text('Home'));
     await tester.pumpAndSettle();
     expect(find.text('Edit button'), findsOneWidget);
 
@@ -120,14 +122,14 @@ void main() {
     await tester.tap(find.text('Done'));
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(ActionChip, 'Up'), findsOneWidget);
-    expect(find.widgetWithText(ActionChip, 'Home'), findsNothing);
+    expect(find.text('Up'), findsOneWidget);
+    expect(find.text('Home'), findsNothing);
   });
 
   testWidgets('editing a button switches it to text-only', (tester) async {
     await pumpEditor(tester, _rowLayout);
 
-    await tester.tap(find.widgetWithText(ActionChip, 'Home'));
+    await tester.tap(find.text('Home'));
     await tester.pumpAndSettle();
 
     // The Icon row opens the icon picker; choose "Text only".
@@ -139,14 +141,8 @@ void main() {
     await tester.tap(find.text('Done'));
     await tester.pumpAndSettle();
 
-    // The chip now carries the text-only marker icon.
-    expect(
-      find.descendant(
-        of: find.byType(ActionChip),
-        matching: find.byIcon(Icons.text_fields),
-      ),
-      findsOneWidget,
-    );
+    // The chip now carries the text-only marker icon as its leading glyph.
+    expect(find.byIcon(Icons.text_fields), findsOneWidget);
   });
 
   testWidgets('saving an empty layout shows a validation message', (

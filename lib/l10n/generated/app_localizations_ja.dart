@@ -519,4 +519,31 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get accessibilityDeviceDisconnectedAnnouncement =>
       'Disconnected from TV';
+
+  @override
+  String get powerSetupWebosTitle => 'Flixsy からテレビを起動する';
+
+  @override
+  String get powerSetupWebosIntro =>
+      'Flixsy が待機状態からテレビを起動できるよう、LG テレビで設定を 1 つ有効にする必要があります。';
+
+  @override
+  String get powerSetupWebosStep1 => 'テレビの設定を開きます。';
+
+  @override
+  String get powerSetupWebosStep2 =>
+      '「Mobile TV On」を探します — 機種によっては「TV On With Mobile」または「Wake On LAN」と表示されることもあります。通常は 一般 → ネットワーク、または 接続 → モバイル接続管理 にあります。';
+
+  @override
+  String get powerSetupWebosStep3 => 'オンにします。';
+
+  @override
+  String get powerSetupWebosTipTitle => '確実に起動するために';
+
+  @override
+  String get powerSetupWebosTipBody =>
+      'テレビの電源プラグは挿したままにしてください。スマートフォンとテレビが同じ Wi-Fi ネットワークに接続されていることを確認してください。';
+
+  @override
+  String get powerSetupDismiss => 'OK';
 }

@@ -61,6 +61,14 @@ class PreferencesRepository implements IPreferencesRepository {
       _db.preferencesDao.setDeviceMacAddress(deviceId, macAddress);
 
   @override
+  Future<bool> getPowerSetupSeen(String vendor) =>
+      _db.preferencesDao.getPowerSetupSeen(vendor);
+
+  @override
+  Future<void> setPowerSetupSeen(String vendor) =>
+      _db.preferencesDao.setPowerSetupSeen(vendor);
+
+  @override
   Stream<Map<String, String>> watchDeviceNicknames() =>
       _db.deviceNamesDao.watchAll();
 

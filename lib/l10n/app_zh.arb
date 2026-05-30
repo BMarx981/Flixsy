@@ -174,5 +174,14 @@
   "removeAdsFailureUnknown": "出了点问题。请重试。",
 
   "magicMouseLabel": "Magic Mouse",
-  "magicMouseUnsupportedTooltip": "Magic Mouse 仅适用于 LG webOS 电视。"
+  "magicMouseUnsupportedTooltip": "Magic Mouse 仅适用于 LG webOS 电视。",
+
+  "powerSetupWebosTitle": "通过 Flixsy 打开您的电视",
+  "powerSetupWebosIntro": "您的 LG 电视需要启用一项设置，Flixsy 才能将其从待机状态唤醒。",
+  "powerSetupWebosStep1": "在电视上打开“设置”。",
+  "powerSetupWebosStep2": "找到 “Mobile TV On” — 有时也叫 “TV On With Mobile” 或 “Wake On LAN.” 通常位于 通用 → 网络，或 连接 → 移动连接管理 下。",
+  "powerSetupWebosStep3": "将其开启。",
+  "powerSetupWebosTipTitle": "为确保可靠唤醒",
+  "powerSetupWebosTipBody": "请保持电视通电。确保手机与电视连接到同一个 Wi-Fi 网络。",
+  "powerSetupDismiss": "知道了"
 }

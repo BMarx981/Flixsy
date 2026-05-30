@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:flixsy/shared/providers/active_device_provider.dart';
+import 'package:flixsy/shared/widgets/power_setup_sheet.dart';
 import 'package:flixsy/theming/remote_skin.dart';
 import 'package:flixsy/theming/skins/classic/classic_section_renderer.dart';
 import 'package:flixsy/theming/skins/classic/classic_theme.dart';
@@ -65,11 +68,24 @@ final Map<AppSkin, SkinConfig> skinRegistry = {
   ),
   // A bespoke skin: hand-coded hit-testing, implements RemoteSkin directly.
   // Its arrangement is fixed, so it ignores the layout and image arguments.
+  //
+  // Wrapped in a Consumer so a long-press on the Power key can reopen the
+  // vendor-specific Wake-on-LAN setup sheet (currently LG webOS only).
   AppSkin.main: SkinConfig(
     themeData: MainTheme.themeData,
     buildRemoteSkin:
         ({required onKeyPressed, required layout, required imagePaths}) =>
-            MainRemoteSkin(onKeyPressed: onKeyPressed),
+            Consumer(
+              builder: (context, ref, _) {
+                final vendor = ref.watch(activeDeviceProvider)?.vendor;
+                return MainRemoteSkin(
+                  onKeyPressed: onKeyPressed,
+                  onPowerLongPress: vendor == null
+                      ? null
+                      : () => showPowerSetupSheet(context, vendor: vendor),
+                );
+              },
+            ),
   ),
   // A bespoke skin that still walks the active layout: a slow waterfall of
   // blues behind a StandardRemote whose buttons pulse together.

@@ -47,6 +47,14 @@ void main() {
   });
 
   Future<void> pumpHome(WidgetTester tester) async {
+    // HomeScreen stacks the classic D-pad above its chrome (~700 px tall when
+    // the magic-mouse button, transport row and banner ad slot are included);
+    // the default 800x600 test view overflows by ~100 px. Give it headroom.
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final fakeConsent = _FakeConsentService(analytics);
     await tester.pumpWidget(
       ProviderScope(
@@ -253,6 +261,17 @@ class _FakePreferencesRepository implements IPreferencesRepository {
   @override
   Future<void> setDeviceMacAddress(String deviceId, String macAddress) async {
     _macAddresses[deviceId] = macAddress;
+  }
+
+  final Set<String> _powerSetupSeen = {};
+
+  @override
+  Future<bool> getPowerSetupSeen(String vendor) async =>
+      _powerSetupSeen.contains(vendor);
+
+  @override
+  Future<void> setPowerSetupSeen(String vendor) async {
+    _powerSetupSeen.add(vendor);
   }
 
   final Map<String, String> _nicknames = {};

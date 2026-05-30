@@ -1089,6 +1089,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Disconnected from TV'**
   String get accessibilityDeviceDisconnectedAnnouncement;
+
+  /// Title of the LG webOS Wake-on-LAN setup bottom sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Power on your TV from Flixsy'**
+  String get powerSetupWebosTitle;
+
+  /// Intro line above the numbered LG webOS setup steps.
+  ///
+  /// In en, this message translates to:
+  /// **'Your LG TV needs one setting enabled so Flixsy can wake it from standby.'**
+  String get powerSetupWebosIntro;
+
+  /// Step 1 of the LG webOS setup instructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Settings on your TV.'**
+  String get powerSetupWebosStep1;
+
+  /// Step 2 of the LG webOS setup instructions. The setting name varies by model year so all three common labels are listed.
+  ///
+  /// In en, this message translates to:
+  /// **'Find “Mobile TV On” — sometimes labeled “TV On With Mobile” or “Wake On LAN.” It is usually under General → Network or Connection → Mobile Connection Management.'**
+  String get powerSetupWebosStep2;
+
+  /// Step 3 of the LG webOS setup instructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn it on.'**
+  String get powerSetupWebosStep3;
+
+  /// Heading for the tips section beneath the LG webOS setup steps.
+  ///
+  /// In en, this message translates to:
+  /// **'For reliable wake-up'**
+  String get powerSetupWebosTipTitle;
+
+  /// Tips body explaining the two prerequisites for Wake-on-LAN to work.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your TV plugged in. Make sure your phone is on the same Wi-Fi network as the TV.'**
+  String get powerSetupWebosTipBody;
+
+  /// Button that dismisses the power-setup bottom sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get powerSetupDismiss;
 }
 
 class _AppLocalizationsDelegate

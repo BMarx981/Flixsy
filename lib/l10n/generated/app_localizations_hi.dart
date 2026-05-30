@@ -530,4 +530,31 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get accessibilityDeviceDisconnectedAnnouncement =>
       'Disconnected from TV';
+
+  @override
+  String get powerSetupWebosTitle => 'Flixsy से अपना टीवी चालू करें';
+
+  @override
+  String get powerSetupWebosIntro =>
+      'Flixsy को आपके टीवी को स्टैंडबाय से जगाने के लिए आपके LG टीवी पर एक सेटिंग सक्षम होनी चाहिए।';
+
+  @override
+  String get powerSetupWebosStep1 => 'अपने टीवी पर सेटिंग्स खोलें।';
+
+  @override
+  String get powerSetupWebosStep2 =>
+      '“Mobile TV On” खोजें — कभी-कभी इसे “TV On With Mobile” या “Wake On LAN” कहा जाता है। यह आमतौर पर General → Network, या Connection → Mobile Connection Management के अंतर्गत होता है।';
+
+  @override
+  String get powerSetupWebosStep3 => 'इसे चालू करें।';
+
+  @override
+  String get powerSetupWebosTipTitle => 'विश्वसनीय वेक-अप के लिए';
+
+  @override
+  String get powerSetupWebosTipBody =>
+      'अपने टीवी का प्लग लगा रहने दें। सुनिश्चित करें कि आपका फ़ोन टीवी के समान Wi-Fi नेटवर्क पर है।';
+
+  @override
+  String get powerSetupDismiss => 'ठीक है';
 }

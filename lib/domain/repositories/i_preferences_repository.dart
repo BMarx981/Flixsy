@@ -30,6 +30,13 @@ abstract interface class IPreferencesRepository {
   /// Persists the hardware [macAddress] for [deviceId].
   Future<void> setDeviceMacAddress(String deviceId, String macAddress);
 
+  /// Whether the user has already seen the Wake-on-LAN setup sheet for
+  /// [vendor] (e.g. `'webos'`). Drives the once-per-vendor auto-open.
+  Future<bool> getPowerSetupSeen(String vendor);
+
+  /// Marks the power-setup sheet for [vendor] as seen.
+  Future<void> setPowerSetupSeen(String vendor);
+
   /// Emits the full map of user-assigned device nicknames (deviceId →
   /// nickname). Devices the user has not renamed are absent from the map.
   Stream<Map<String, String>> watchDeviceNicknames();

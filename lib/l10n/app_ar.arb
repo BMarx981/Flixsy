@@ -174,5 +174,14 @@
   "removeAdsFailureUnknown": "حدث خطأ ما. الرجاء المحاولة مرة أخرى.",
 
   "magicMouseLabel": "Magic Mouse",
-  "magicMouseUnsupportedTooltip": "تتوفر Magic Mouse على تلفازات LG webOS فقط."
+  "magicMouseUnsupportedTooltip": "تتوفر Magic Mouse على تلفازات LG webOS فقط.",
+
+  "powerSetupWebosTitle": "شغّل تلفازك من Flixsy",
+  "powerSetupWebosIntro": "يحتاج تلفاز LG إلى تفعيل إعداد واحد ليتمكن Flixsy من تنبيهه من وضع الاستعداد.",
+  "powerSetupWebosStep1": "افتح الإعدادات على تلفازك.",
+  "powerSetupWebosStep2": "ابحث عن «Mobile TV On» — يُسمى أحيانًا «TV On With Mobile» أو «Wake On LAN». يوجد عادةً ضمن عام → الشبكة، أو اتصال → إدارة الاتصال بالهاتف المحمول.",
+  "powerSetupWebosStep3": "فعّله.",
+  "powerSetupWebosTipTitle": "لتنبيه موثوق",
+  "powerSetupWebosTipBody": "اترك تلفازك موصولاً بالكهرباء. تأكد من أن هاتفك متصل بنفس شبكة Wi-Fi التي يتصل بها التلفاز.",
+  "powerSetupDismiss": "حسناً"
 }

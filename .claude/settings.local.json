@@ -113,7 +113,11 @@
       "Bash(adb devices *)",
       "mcp__dart__launch_app",
       "Read(//Users/brianmarx/flutter/packages/flutter/lib/src/semantics/**)",
-      "Bash(/Users/brianmarx/flutter/bin/flutter analyze *)"
+      "Bash(/Users/brianmarx/flutter/bin/flutter analyze *)",
+      "Bash(which fvm *)",
+      "Read(//opt/homebrew/bin/**)",
+      "Bash(~/flutter/bin/flutter test *)",
+      "Bash(/Users/brianmarx/flutter/bin/flutter test *)"
     ],
     "ask": [
       "Bash(sed -i*)",

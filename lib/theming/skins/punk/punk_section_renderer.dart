@@ -38,8 +38,8 @@ class PunkSectionRenderer implements SectionRenderer {
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _button(context, block.volumeUp, onKey, gap),
-            _button(context, block.volumeDown, onKey, gap),
+            _button(context, block.volumeUp, onKey, gap, compact: true),
+            _button(context, block.volumeDown, onKey, gap, compact: true),
           ],
         ),
         Padding(
@@ -60,8 +60,8 @@ class PunkSectionRenderer implements SectionRenderer {
         Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _button(context, block.channelUp, onKey, gap),
-            _button(context, block.channelDown, onKey, gap),
+            _button(context, block.channelUp, onKey, gap, compact: true),
+            _button(context, block.channelDown, onKey, gap, compact: true),
           ],
         ),
       ],
@@ -135,8 +135,9 @@ class PunkSectionRenderer implements SectionRenderer {
     BuildContext context,
     RemoteButton button,
     KeyPressHandler onKey,
-    double gap,
-  ) {
+    double gap, {
+    bool compact = false,
+  }) {
     final presentation = resolveButton(
       button,
       imagePaths: RemoteImageScope.of(context),
@@ -147,6 +148,7 @@ class PunkSectionRenderer implements SectionRenderer {
       child: _PunkButton(
         presentation: presentation,
         onPressed: () => onKey(button.action),
+        compact: compact,
       ),
     );
   }
@@ -203,10 +205,15 @@ class _NotchedRectBorder extends OutlinedBorder {
 }
 
 class _PunkButton extends StatelessWidget {
-  const _PunkButton({required this.presentation, required this.onPressed});
+  const _PunkButton({
+    required this.presentation,
+    required this.onPressed,
+    this.compact = false,
+  });
 
   final ButtonPresentation presentation;
   final VoidCallback onPressed;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -255,8 +262,12 @@ class _PunkButton extends StatelessWidget {
           splashColor: PunkTheme.alpha(PunkTheme.magenta, 0.32),
           highlightColor: PunkTheme.alpha(PunkTheme.acid, 0.12),
           onTap: onPressed,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Container(
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+            alignment: Alignment.center,
+            padding: compact
+                ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+                : const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             child: DefaultTextStyle.merge(
               style: const TextStyle(
                 color: PunkTheme.bone,
@@ -265,7 +276,10 @@ class _PunkButton extends StatelessWidget {
               ),
               child: IconTheme.merge(
                 data: const IconThemeData(color: PunkTheme.bone),
-                child: _ButtonContent(presentation: presentation),
+                child: _ButtonContent(
+                  presentation: presentation,
+                  compact: compact,
+                ),
               ),
             ),
           ),
@@ -276,16 +290,17 @@ class _PunkButton extends StatelessWidget {
 }
 
 class _ButtonContent extends StatelessWidget {
-  const _ButtonContent({required this.presentation});
+  const _ButtonContent({required this.presentation, this.compact = false});
 
   final ButtonPresentation presentation;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final glyph = presentation.glyph;
     final scaler = MediaQuery.textScalerOf(context);
-    final iconSize = scaler.scale(24.0);
-    final imageSide = scaler.scale(28.0);
+    final iconSize = scaler.scale(compact ? 18.0 : 24.0);
+    final imageSide = scaler.scale(compact ? 20.0 : 28.0);
     final mark = switch (glyph) {
       IconGlyph(:final icon) => Icon(icon, size: iconSize),
       ImageGlyph(:final path) => Image.file(
@@ -299,19 +314,7 @@ class _ButtonContent extends StatelessWidget {
       ),
       TextGlyph(:final text) => Text(text),
     };
-    final caption = presentation.caption;
 
-    final content = caption == null
-        ? mark
-        : Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              mark,
-              const SizedBox(height: 2),
-              Text(caption, style: const TextStyle(fontSize: 11)),
-            ],
-          );
-
-    return Semantics(label: presentation.semanticLabel, child: content);
+    return Semantics(label: presentation.semanticLabel, child: mark);
   }
 }

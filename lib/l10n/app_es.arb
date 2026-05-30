@@ -174,5 +174,14 @@
   "removeAdsFailureUnknown": "Algo salió mal. Inténtalo de nuevo.",
 
   "magicMouseLabel": "Magic Mouse",
-  "magicMouseUnsupportedTooltip": "Magic Mouse solo está disponible en TVs LG webOS."
+  "magicMouseUnsupportedTooltip": "Magic Mouse solo está disponible en TVs LG webOS.",
+
+  "powerSetupWebosTitle": "Enciende tu TV desde Flixsy",
+  "powerSetupWebosIntro": "Tu TV LG necesita un ajuste activado para que Flixsy pueda encenderlo desde el modo de espera.",
+  "powerSetupWebosStep1": "Abre Ajustes en tu TV.",
+  "powerSetupWebosStep2": "Busca “Mobile TV On” — a veces aparece como “TV On With Mobile” o “Wake On LAN.” Suele estar en General → Red, o Conexión → Gestión de conexión móvil.",
+  "powerSetupWebosStep3": "Actívalo.",
+  "powerSetupWebosTipTitle": "Para un encendido fiable",
+  "powerSetupWebosTipBody": "Mantén tu TV enchufado. Asegúrate de que tu teléfono esté en la misma red Wi-Fi que el TV.",
+  "powerSetupDismiss": "Entendido"
 }

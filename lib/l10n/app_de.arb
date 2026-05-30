@@ -174,5 +174,14 @@
   "removeAdsFailureUnknown": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
 
   "magicMouseLabel": "Magic Mouse",
-  "magicMouseUnsupportedTooltip": "Magic Mouse ist nur auf LG webOS TVs verfügbar."
+  "magicMouseUnsupportedTooltip": "Magic Mouse ist nur auf LG webOS TVs verfügbar.",
+
+  "powerSetupWebosTitle": "Schalte deinen TV mit Flixsy ein",
+  "powerSetupWebosIntro": "Damit Flixsy deinen LG TV aus dem Standby aufwecken kann, muss eine Einstellung am TV aktiviert sein.",
+  "powerSetupWebosStep1": "Öffne die Einstellungen auf deinem TV.",
+  "powerSetupWebosStep2": "Suche „Mobile TV On“ — je nach Modell auch „TV On With Mobile“ oder „Wake On LAN“. Es befindet sich meist unter Allgemein → Netzwerk oder Verbindung → Mobile Verbindungsverwaltung.",
+  "powerSetupWebosStep3": "Aktiviere es.",
+  "powerSetupWebosTipTitle": "Für zuverlässiges Aufwecken",
+  "powerSetupWebosTipBody": "Lass deinen TV eingesteckt. Achte darauf, dass dein Telefon im selben Wi-Fi-Netzwerk wie der TV ist.",
+  "powerSetupDismiss": "Verstanden"
 }

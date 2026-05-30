@@ -23,6 +23,7 @@ import 'package:flixsy/features/keyboard/voice/voice_spike_button.dart';
 import 'package:flixsy/features/keyboard/widgets/keyboard_sheet.dart';
 import 'package:flixsy/features/home/providers/remote_control_provider.dart';
 import 'package:flixsy/features/home/widgets/skin_picker_carousel.dart';
+import 'package:flixsy/shared/widgets/power_setup_sheet.dart';
 
 enum _HomeMenuAction { removeAds, restorePurchases }
 
@@ -221,16 +222,54 @@ class HomeScreen extends ConsumerWidget {
                 _HomeOverflowMenu(adsRemoved: adsRemoved),
               ],
       ),
-      body: adsRemoved
-          ? remote
-          : Column(
-              children: [
-                Expanded(child: remote),
-                const RemoteBannerAd(),
-              ],
-            ),
+      body: _PowerSetupAutoOpener(
+        child: adsRemoved
+            ? remote
+            : Column(
+                children: [
+                  Expanded(child: remote),
+                  const RemoteBannerAd(),
+                ],
+              ),
+      ),
     );
   }
+}
+
+/// Opens the vendor-specific Wake-on-LAN setup sheet the first time the user
+/// reaches the home screen with a TV of that brand connected. Marks the sheet
+/// as seen so it never auto-opens again for that vendor; the user can still
+/// reach it on demand via long-press on the Power key in the main skin.
+class _PowerSetupAutoOpener extends ConsumerStatefulWidget {
+  const _PowerSetupAutoOpener({required this.child});
+
+  final Widget child;
+
+  @override
+  ConsumerState<_PowerSetupAutoOpener> createState() =>
+      _PowerSetupAutoOpenerState();
+}
+
+class _PowerSetupAutoOpenerState extends ConsumerState<_PowerSetupAutoOpener> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeOpen());
+  }
+
+  Future<void> _maybeOpen() async {
+    if (!mounted) return;
+    final vendor = ref.read(activeDeviceProvider)?.vendor;
+    if (vendor == null) return;
+    final prefs = ref.read(preferencesRepositoryProvider);
+    if (await prefs.getPowerSetupSeen(vendor)) return;
+    if (!mounted) return;
+    await showPowerSetupSheet(context, vendor: vendor);
+    await prefs.setPowerSetupSeen(vendor);
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 /// Streams IAP failures from the singleton [IapService] so screens can show

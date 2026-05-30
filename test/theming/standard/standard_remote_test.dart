@@ -9,6 +9,7 @@ import 'package:flixsy/theming/skins/classic/classic_section_renderer.dart';
 import 'package:flixsy/theming/skins/classic/classic_theme.dart';
 import 'package:flixsy/theming/standard/standard_remote.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// A layout exercising all five block types with distinct keys.
@@ -54,17 +55,29 @@ const _everyBlockLayout = RemoteLayout(
 
 void main() {
   Future<List<String>> pump(WidgetTester tester, RemoteLayout layout) async {
+    // The classic D-pad is ~580 px tall (235 wheel + Magic Mouse + chrome) and
+    // the rest of the layout stacks beneath; the default 800x600 test view
+    // overflows. Give the surface enough headroom to fit every block.
+    tester.view.physicalSize = const Size(800, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     final keys = <String>[];
     await tester.pumpWidget(
-      MaterialApp(
-        theme: ClassicTheme.themeData,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: StandardRemote(
-            layout: layout,
-            renderer: const ClassicSectionRenderer(),
-            onKeyPressed: keys.add,
+      // ClassicSectionRenderer's D-pad is a PointerAwareStarDpad
+      // (ConsumerWidget), which throws without a ProviderScope ancestor.
+      ProviderScope(
+        child: MaterialApp(
+          theme: ClassicTheme.themeData,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: StandardRemote(
+              layout: layout,
+              renderer: const ClassicSectionRenderer(),
+              onKeyPressed: keys.add,
+            ),
           ),
         ),
       ),

@@ -517,4 +517,29 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get accessibilityDeviceDisconnectedAnnouncement =>
       'Disconnected from TV';
+
+  @override
+  String get powerSetupWebosTitle => '通过 Flixsy 打开您的电视';
+
+  @override
+  String get powerSetupWebosIntro => '您的 LG 电视需要启用一项设置，Flixsy 才能将其从待机状态唤醒。';
+
+  @override
+  String get powerSetupWebosStep1 => '在电视上打开“设置”。';
+
+  @override
+  String get powerSetupWebosStep2 =>
+      '找到 “Mobile TV On” — 有时也叫 “TV On With Mobile” 或 “Wake On LAN.” 通常位于 通用 → 网络，或 连接 → 移动连接管理 下。';
+
+  @override
+  String get powerSetupWebosStep3 => '将其开启。';
+
+  @override
+  String get powerSetupWebosTipTitle => '为确保可靠唤醒';
+
+  @override
+  String get powerSetupWebosTipBody => '请保持电视通电。确保手机与电视连接到同一个 Wi-Fi 网络。';
+
+  @override
+  String get powerSetupDismiss => '知道了';
 }

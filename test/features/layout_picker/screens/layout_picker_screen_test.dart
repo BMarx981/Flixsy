@@ -52,11 +52,20 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// The overflow-menu button within the card titled [layoutName].
-  Finder menuFor(String layoutName) => find.descendant(
-    of: find.widgetWithText(Card, layoutName),
-    matching: find.byIcon(Icons.more_vert),
-  );
+  /// The overflow-menu trigger within the row for [layoutName].
+  ///
+  /// Built-in templates show a copy-icon trigger (their only action is
+  /// duplicate); custom layouts show an edit-icon trigger.
+  Finder menuFor(String layoutName, {required bool isTemplate}) =>
+      find.descendant(
+        of: find.ancestor(
+          of: find.text(layoutName),
+          matching: find.byType(InkWell),
+        ),
+        matching: find.byIcon(
+          isTemplate ? Icons.copy_rounded : Icons.edit_outlined,
+        ),
+      );
 
   testWidgets('lists the built-in Classic template', (tester) async {
     await pumpPicker(tester);
@@ -90,7 +99,7 @@ void main() {
   testWidgets('duplicating a layout adds an editable copy', (tester) async {
     await pumpPicker(tester);
 
-    await tester.tap(menuFor('Classic'));
+    await tester.tap(menuFor('Classic', isTemplate: true));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Duplicate'));
     await tester.pumpAndSettle();
@@ -101,7 +110,7 @@ void main() {
   testWidgets('built-in templates expose only Duplicate', (tester) async {
     await pumpPicker(tester);
 
-    await tester.tap(menuFor('Classic'));
+    await tester.tap(menuFor('Classic', isTemplate: true));
     await tester.pumpAndSettle();
 
     expect(find.text('Duplicate'), findsOneWidget);
@@ -117,7 +126,7 @@ void main() {
     );
     await pumpPicker(tester);
 
-    await tester.tap(menuFor('Den Remote'));
+    await tester.tap(menuFor('Den Remote', isTemplate: false));
     await tester.pumpAndSettle();
 
     expect(find.text('Duplicate'), findsOneWidget);
@@ -132,7 +141,7 @@ void main() {
     await pumpPicker(tester);
     expect(find.text('Doomed'), findsOneWidget);
 
-    await tester.tap(menuFor('Doomed'));
+    await tester.tap(menuFor('Doomed', isTemplate: false));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
@@ -148,7 +157,7 @@ void main() {
     layouts.seed(const RemoteLayout(id: 'doomed', name: 'Doomed', blocks: []));
     await pumpPicker(tester);
 
-    await tester.tap(menuFor('Doomed'));
+    await tester.tap(menuFor('Doomed', isTemplate: false));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Delete'));
     await tester.pumpAndSettle();
@@ -253,6 +262,10 @@ class _FakePreferencesRepository implements IPreferencesRepository {
   Future<String?> getDeviceMacAddress(String deviceId) async => null;
   @override
   Future<void> setDeviceMacAddress(String deviceId, String macAddress) async {}
+  @override
+  Future<bool> getPowerSetupSeen(String vendor) async => true;
+  @override
+  Future<void> setPowerSetupSeen(String vendor) async {}
   @override
   Stream<Map<String, String>> watchDeviceNicknames() =>
       Stream<Map<String, String>>.value(const {});

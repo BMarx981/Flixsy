@@ -1,15 +1,12 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-// ignore: unnecessary_import — widgets.dart re-exports gesture types as
-// meta-types only; we need direct access to PanGestureRecognizer /
-// GestureDisposition for the eager-claim subclass.
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:flixsy/core/extensions/l10n_extensions.dart';
 import 'package:flixsy/theming/skin_tokens.dart';
+import 'package:flixsy/shared/widgets/eager_pan_gesture_recognizer.dart';
 import 'package:flixsy/shared/widgets/flixsy_logo.dart';
 
 // Which half of the disc a clip should keep visible. Used by [_HalfClipper]
@@ -387,8 +384,8 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
           setState(() => _active = _Region.ok);
           _fire(_Region.ok);
         }
-        // Intentionally do not reset _visualAxis or _visualPixels — the
-        // disc freezes at whatever pose the finger left it in.
+      // Intentionally do not reset _visualAxis or _visualPixels — the
+      // disc freezes at whatever pose the finger left it in.
       case _GestureMode.tap:
         final region = _active;
         if (region != null) _fire(region);
@@ -485,134 +482,132 @@ class _SpinnableStarDpadState extends State<SpinnableStarDpad>
             ),
           },
           child: RawGestureDetector(
-          behavior: HitTestBehavior.opaque,
-          gestures: <Type, GestureRecognizerFactory>{
-            _EagerPanGestureRecognizer:
-                GestureRecognizerFactoryWithHandlers<
-                  _EagerPanGestureRecognizer
-                >(() => _EagerPanGestureRecognizer(), (instance) {
-                  instance.onStart = _onPanStart;
-                  instance.onUpdate = _onPanUpdate;
-                  instance.onEnd = _onPanEnd;
-                  instance.onCancel = _onPanCancel;
-                }),
-          },
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Borders + active-region highlight (under the icons so the
-              // chevrons / logo stay crisp on top).
-              CustomPaint(
-                painter: _DpadPainter(
-                  borderColor: borderColor,
-                  highlightColor: highlightColor,
-                  active: _active,
+            behavior: HitTestBehavior.opaque,
+            gestures: <Type, GestureRecognizerFactory>{
+              EagerPanGestureRecognizer:
+                  GestureRecognizerFactoryWithHandlers<
+                    EagerPanGestureRecognizer
+                  >(() => EagerPanGestureRecognizer(), (instance) {
+                    instance.onStart = _onPanStart;
+                    instance.onUpdate = _onPanUpdate;
+                    instance.onEnd = _onPanEnd;
+                    instance.onCancel = _onPanCancel;
+                  }),
+            },
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Borders + active-region highlight (under the icons so the
+                // chevrons / logo stay crisp on top).
+                CustomPaint(
+                  painter: _DpadPainter(
+                    borderColor: borderColor,
+                    highlightColor: highlightColor,
+                    active: _active,
+                  ),
                 ),
-              ),
-              // Four static chevron icons — these don't rotate, so the
-              // user can always tap the arrow they see.
-              Align(
-                alignment: Alignment(0, -chevronAlign),
-                child: Icon(
-                  Icons.keyboard_arrow_up,
-                  size: chevronSize,
-                  color: chevronColor,
+                // Four static chevron icons — these don't rotate, so the
+                // user can always tap the arrow they see.
+                Align(
+                  alignment: Alignment(0, -chevronAlign),
+                  child: Icon(
+                    Icons.keyboard_arrow_up,
+                    size: chevronSize,
+                    color: chevronColor,
+                  ),
                 ),
-              ),
-              Align(
-                alignment: Alignment(0, chevronAlign),
-                child: Icon(
-                  Icons.keyboard_arrow_down,
-                  size: chevronSize,
-                  color: chevronColor,
+                Align(
+                  alignment: Alignment(0, chevronAlign),
+                  child: Icon(
+                    Icons.keyboard_arrow_down,
+                    size: chevronSize,
+                    color: chevronColor,
+                  ),
                 ),
-              ),
-              Align(
-                alignment: Alignment(-chevronAlign, 0),
-                child: Icon(
-                  Icons.keyboard_arrow_left,
-                  size: chevronSize,
-                  color: chevronColor,
+                Align(
+                  alignment: Alignment(-chevronAlign, 0),
+                  child: Icon(
+                    Icons.keyboard_arrow_left,
+                    size: chevronSize,
+                    color: chevronColor,
+                  ),
                 ),
-              ),
-              Align(
-                alignment: Alignment(chevronAlign, 0),
-                child: Icon(
-                  Icons.keyboard_arrow_right,
-                  size: chevronSize,
-                  color: chevronColor,
+                Align(
+                  alignment: Alignment(chevronAlign, 0),
+                  child: Icon(
+                    Icons.keyboard_arrow_right,
+                    size: chevronSize,
+                    color: chevronColor,
+                  ),
                 ),
-              ),
-              // Screen-reader overlay: five invisible button regions stacked
-              // over the gesture surface. Sighted users continue to interact
-              // through the gesture detector (the IgnorePointer wrapper lets
-              // touches pass through); screen readers focus and double-tap
-              // these regions to fire each direction's callback through the
-              // Semantics action pipeline.
-              IgnorePointer(
-                child: _DpadSemanticsOverlay(
-                  onUp: widget.onUp,
-                  onDown: widget.onDown,
-                  onLeft: widget.onLeft,
-                  onRight: widget.onRight,
-                  onOk: widget.onOk,
-                  upLabel: context.l10n.remoteKeyUp,
-                  downLabel: context.l10n.remoteKeyDown,
-                  leftLabel: context.l10n.remoteKeyLeft,
-                  rightLabel: context.l10n.remoteKeyRight,
-                  okLabel: context.l10n.remoteKeyOk,
+                // Screen-reader overlay: five invisible button regions stacked
+                // over the gesture surface. Sighted users continue to interact
+                // through the gesture detector (the IgnorePointer wrapper lets
+                // touches pass through); screen readers focus and double-tap
+                // these regions to fire each direction's callback through the
+                // Semantics action pipeline.
+                IgnorePointer(
+                  child: _DpadSemanticsOverlay(
+                    onUp: widget.onUp,
+                    onDown: widget.onDown,
+                    onLeft: widget.onLeft,
+                    onRight: widget.onRight,
+                    onOk: widget.onOk,
+                    upLabel: context.l10n.remoteKeyUp,
+                    downLabel: context.l10n.remoteKeyDown,
+                    leftLabel: context.l10n.remoteKeyLeft,
+                    rightLabel: context.l10n.remoteKeyRight,
+                    okLabel: context.l10n.remoteKeyOk,
+                  ),
                 ),
-              ),
-              // Centre spin disc — a rolodex. At rest only the current card
-              // shows (with a small ambient rock to hint scrollability). On
-              // drag, the disc splits at the axle perpendicular to the drag,
-              // and the leading half hinges around that axle. Behind the
-              // flipping half sits the next identical card, hidden until the
-              // flipping half passes 90°. After a full π of flip the leading
-              // half lies flat against the trailing half and a new flip
-              // begins — the user perceives an endless reel.
-              Center(
-                child: AnimatedScale(
-                  scale: _active == _Region.ok ? 0.95 : 1.0,
-                  duration: const Duration(milliseconds: 90),
-                  curve: Curves.easeOut,
-                  child: SizedBox.square(
-                    dimension: discDiameter,
-                    // Static underlay sits beneath the rolodex. After 3
-                    // seconds of inactivity the rolodex fades over it, so
-                    // whatever pose the user left the cards in gradually
-                    // dissolves into the plain upright icon.
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        FlixsyLogo(
-                          size: discDiameter,
-                          discColor: discColor,
-                          decorative: true,
-                        ),
-                        const IgnorePointer(
-                          child: CustomPaint(
-                            painter: _DomeShadingPainter(),
-                          ),
-                        ),
-                        Opacity(
-                          opacity: 1.0 - _fadeController.value,
-                          child: _RolodexDisc(
-                            diameter: discDiameter,
+                // Centre spin disc — a rolodex. At rest only the current card
+                // shows (with a small ambient rock to hint scrollability). On
+                // drag, the disc splits at the axle perpendicular to the drag,
+                // and the leading half hinges around that axle. Behind the
+                // flipping half sits the next identical card, hidden until the
+                // flipping half passes 90°. After a full π of flip the leading
+                // half lies flat against the trailing half and a new flip
+                // begins — the user perceives an endless reel.
+                Center(
+                  child: AnimatedScale(
+                    scale: _active == _Region.ok ? 0.95 : 1.0,
+                    duration: const Duration(milliseconds: 90),
+                    curve: Curves.easeOut,
+                    child: SizedBox.square(
+                      dimension: discDiameter,
+                      // Static underlay sits beneath the rolodex. After 3
+                      // seconds of inactivity the rolodex fades over it, so
+                      // whatever pose the user left the cards in gradually
+                      // dissolves into the plain upright icon.
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          FlixsyLogo(
+                            size: discDiameter,
                             discColor: discColor,
-                            axis: _visualAxis,
-                            unwrappedRotation: _visualRotation.abs(),
-                            flipSign: _flipSign,
+                            decorative: true,
                           ),
-                        ),
-                      ],
+                          const IgnorePointer(
+                            child: CustomPaint(painter: _DomeShadingPainter()),
+                          ),
+                          Opacity(
+                            opacity: 1.0 - _fadeController.value,
+                            child: _RolodexDisc(
+                              diameter: discDiameter,
+                              discColor: discColor,
+                              axis: _visualAxis,
+                              unwrappedRotation: _visualRotation.abs(),
+                              flipSign: _flipSign,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         ),
       ),
     );
@@ -715,17 +710,6 @@ class _DpadSemanticsOverlay extends StatelessWidget {
         ),
       ],
     );
-  }
-}
-
-/// A [PanGestureRecognizer] that wins the gesture arena the instant a finger
-/// touches it — so an ancestor `PageView` (the skin-picker carousel) can't
-/// steal the gesture mid-spin.
-class _EagerPanGestureRecognizer extends PanGestureRecognizer {
-  @override
-  void addAllowedPointer(PointerDownEvent event) {
-    super.addAllowedPointer(event);
-    resolve(GestureDisposition.accepted);
   }
 }
 

@@ -70,6 +70,21 @@ class PreferencesDao extends DatabaseAccessor<AppDatabase>
   Future<void> setDeviceMacAddress(String deviceId, String macAddress) =>
       _setValue('$_deviceMacPrefix$deviceId', macAddress);
 
+  static const _powerSetupSeenPrefix = 'power_setup_seen:';
+
+  /// Whether the user has already seen the Wake-on-LAN setup sheet for
+  /// [vendor] (e.g. `'webos'`). Used so the sheet only auto-opens on the
+  /// first successful connection to a TV of that brand.
+  Future<bool> getPowerSetupSeen(String vendor) async {
+    final value = await _getValue('$_powerSetupSeenPrefix$vendor');
+    return value == 'true';
+  }
+
+  /// Marks the power-setup sheet for [vendor] as seen so it does not
+  /// auto-open again. The user can still reopen it on demand.
+  Future<void> setPowerSetupSeen(String vendor) =>
+      _setValue('$_powerSetupSeenPrefix$vendor', 'true');
+
   Future<String?> _getValue(String key) async {
     final query = select(preferencesTable)..where((t) => t.key.equals(key));
     final row = await query.getSingleOrNull();

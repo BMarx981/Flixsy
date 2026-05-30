@@ -534,4 +534,31 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get accessibilityDeviceDisconnectedAnnouncement =>
       'Disconnected from TV';
+
+  @override
+  String get powerSetupWebosTitle => 'Allumez votre TV depuis Flixsy';
+
+  @override
+  String get powerSetupWebosIntro =>
+      'Votre TV LG a besoin d\'un réglage activé pour que Flixsy puisse la sortir de veille.';
+
+  @override
+  String get powerSetupWebosStep1 => 'Ouvrez les Paramètres sur votre TV.';
+
+  @override
+  String get powerSetupWebosStep2 =>
+      'Trouvez « Mobile TV On » — parfois appelé « TV On With Mobile » ou « Wake On LAN ». Il se trouve généralement sous Général → Réseau, ou Connexion → Gestion de la connexion mobile.';
+
+  @override
+  String get powerSetupWebosStep3 => 'Activez-le.';
+
+  @override
+  String get powerSetupWebosTipTitle => 'Pour un réveil fiable';
+
+  @override
+  String get powerSetupWebosTipBody =>
+      'Laissez votre TV branchée. Assurez-vous que votre téléphone est sur le même réseau Wi-Fi que la TV.';
+
+  @override
+  String get powerSetupDismiss => 'Compris';
 }

@@ -531,4 +531,31 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get accessibilityDeviceDisconnectedAnnouncement =>
       'Disconnected from TV';
+
+  @override
+  String get powerSetupWebosTitle => 'Включайте телевизор из Flixsy';
+
+  @override
+  String get powerSetupWebosIntro =>
+      'Чтобы Flixsy мог выводить телевизор из режима ожидания, на вашем LG TV должна быть включена одна настройка.';
+
+  @override
+  String get powerSetupWebosStep1 => 'Откройте «Настройки» на телевизоре.';
+
+  @override
+  String get powerSetupWebosStep2 =>
+      'Найдите «Mobile TV On» — иногда называется «TV On With Mobile» или «Wake On LAN». Обычно находится в разделе Общие → Сеть, или Подключение → Управление мобильным подключением.';
+
+  @override
+  String get powerSetupWebosStep3 => 'Включите её.';
+
+  @override
+  String get powerSetupWebosTipTitle => 'Для надёжного пробуждения';
+
+  @override
+  String get powerSetupWebosTipBody =>
+      'Не отключайте телевизор от сети. Убедитесь, что телефон подключён к той же сети Wi-Fi, что и телевизор.';
+
+  @override
+  String get powerSetupDismiss => 'Понятно';
 }

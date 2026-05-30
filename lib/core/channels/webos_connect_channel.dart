@@ -621,5 +621,6 @@ class _WebosDevice {
     'name': 'LG webOS TV',
     'ipAddress': host,
     'modelName': '',
+    'vendor': 'webos',
   };
 }

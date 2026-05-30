@@ -4,13 +4,16 @@ import 'package:flixsy/theming/remote_skin.dart';
 import 'package:flixsy/theming/skin_registry.dart';
 import 'package:flixsy/theming/skins/main/main_remote_skin.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('RemoteSkin contract', () {
     // Every registered skin must build a widget that satisfies the
-    // RemoteSkin interface and forwards the callback it was given.
-    for (final skin in AppSkin.values) {
+    // RemoteSkin interface and forwards the callback it was given. The main
+    // skin wraps its RemoteSkin in a Consumer (to read the active device's
+    // vendor for the power-setup long-press), so it's special-cased below.
+    for (final skin in AppSkin.values.where((s) => s != AppSkin.main)) {
       test('${skin.name} skin forwards its onKeyPressed callback', () {
         void callback(String key) {}
         final widget = skinRegistry[skin]!.buildRemoteSkin(
@@ -23,6 +26,30 @@ void main() {
         expect((widget as RemoteSkin).onKeyPressed, same(callback));
       });
     }
+
+    testWidgets('main skin forwards its onKeyPressed callback', (tester) async {
+      void callback(String key) {}
+      final widget = skinRegistry[AppSkin.main]!.buildRemoteSkin(
+        onKeyPressed: callback,
+        layout: classicLayout,
+        imagePaths: const {},
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: widget),
+          ),
+        ),
+      );
+
+      final mainSkin = tester.widget<MainRemoteSkin>(
+        find.byType(MainRemoteSkin),
+      );
+      expect(mainSkin.onKeyPressed, same(callback));
+    });
   });
 
   group('MainRemoteSkin hit testing', () {

@@ -1,14 +1,11 @@
 import 'dart:math' as math;
 
-// ignore: unnecessary_import — needed for PanGestureRecognizer subclassing
-// and GestureDisposition, which material.dart re-exports only as meta-types
-// (the analyzer's hint is wrong here).
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:flixsy/core/extensions/l10n_extensions.dart';
+import 'package:flixsy/shared/widgets/eager_pan_gesture_recognizer.dart';
 import 'package:flixsy/shared/widgets/spinnable_star_dpad.dart';
 import 'package:flixsy/theming/icons/remote_key_l10n.dart';
 import 'package:flixsy/theming/remote_key.dart';
@@ -54,10 +51,19 @@ const double _guardDegrees = 9.0;
 
 /// Logo-shaped remote skin: the Flixsy sparkle star *is* the control surface.
 class MainRemoteSkin extends StatefulWidget implements RemoteSkin {
-  const MainRemoteSkin({super.key, required this.onKeyPressed});
+  const MainRemoteSkin({
+    super.key,
+    required this.onKeyPressed,
+    this.onPowerLongPress,
+  });
 
   @override
   final void Function(String key) onKeyPressed;
+
+  /// Invoked when the user long-presses the Power button. Used to re-open the
+  /// TV-specific Wake-on-LAN setup sheet on demand. `null` when the host has
+  /// no setup instructions to show for the connected TV's vendor.
+  final VoidCallback? onPowerLongPress;
 
   @override
   State<MainRemoteSkin> createState() => _MainRemoteSkinState();
@@ -94,7 +100,9 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
   bool _spinCommitted = false;
 
   double get _visualRotation =>
-      _visualPixels * SpinnableStarDpad.tickAngle / SpinnableStarDpad.pixelsPerTick;
+      _visualPixels *
+      SpinnableStarDpad.tickAngle /
+      SpinnableStarDpad.pixelsPerTick;
 
   // Current flip angle, wrapped into [0, π) so each π of accumulated
   // rotation reads as one full card flip and the next card starts fresh.
@@ -257,111 +265,143 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
     // so the star's points and the surrounding buttons never mirror with an
     // RTL UI language. The button labels themselves are still localized.
     final onKey = widget.onKeyPressed;
+    // Wrap in a scroll view so the bottom transport bar stays reachable on
+    // short phones / landscape. `ConstrainedBox(minHeight)` keeps the
+    // remote vertically centered (via Column.spaceBetween) when content
+    // fits the viewport; when it doesn't, the user can scroll to the
+    // bottom row. The star pad uses [EagerPanGestureRecognizer] so the
+    // scroll view can't hijack a spin gesture.
     return Directionality(
       textDirection: TextDirection.ltr,
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _ControlButton(
-                icon: Icons.power_settings_new,
-                action: RemoteKey.power,
-                onKeyPressed: onKey,
-              ),
-              _ControlButton(
-                icon: Icons.settings_outlined,
-                action: RemoteKey.settings,
-                onKeyPressed: onKey,
-              ),
-              _ControlButton(
-                icon: Icons.volume_off_outlined,
-                action: RemoteKey.mute,
-                onKeyPressed: onKey,
-              ),
-              _ControlButton(
-                icon: Icons.play_arrow_outlined,
-                action: RemoteKey.playPause,
-                onKeyPressed: onKey,
-              ),
-            ],
-          ),
-          Expanded(
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _ControlButton(
-                        icon: Icons.volume_up_outlined,
-                        action: RemoteKey.volumeUp,
-                        onKeyPressed: onKey,
-                        compact: true,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // See [StandardRemote] for why this guards unbounded parents:
+          // when the parent is itself a scrollable, maxHeight is infinite
+          // and a `minHeight: infinity` would assert.
+          final minHeight = constraints.maxHeight.isFinite
+              ? constraints.maxHeight
+              : 0.0;
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: minHeight),
+              child: IntrinsicHeight(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _ControlButton(
+                          icon: Icons.power_settings_new,
+                          action: RemoteKey.power,
+                          onKeyPressed: onKey,
+                          onLongPress: widget.onPowerLongPress,
+                        ),
+                        _ControlButton(
+                          icon: Icons.settings_outlined,
+                          action: RemoteKey.settings,
+                          onKeyPressed: onKey,
+                        ),
+                        _ControlButton(
+                          icon: Icons.volume_off_outlined,
+                          action: RemoteKey.mute,
+                          onKeyPressed: onKey,
+                        ),
+                        _ControlButton(
+                          icon: Icons.play_arrow_outlined,
+                          action: RemoteKey.playPause,
+                          onKeyPressed: onKey,
+                        ),
+                      ],
+                    ),
+                    // The star + side rockers form a square footprint: the logo pad is
+                    // a square (`_buildLogoPad` takes the shorter of width/height) and
+                    // the rockers sit in narrow strips on either side. Using
+                    // `AspectRatio(1)` instead of `Expanded` gives the row an intrinsic
+                    // height, which lets the whole remote live inside a
+                    // `SingleChildScrollView` for short/landscape phones.
+                    AspectRatio(
+                      aspectRatio: 1,
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _ControlButton(
+                                  icon: Icons.volume_up_outlined,
+                                  action: RemoteKey.volumeUp,
+                                  onKeyPressed: onKey,
+                                  compact: true,
+                                ),
+                                const SizedBox(height: 12),
+                                _ControlButton(
+                                  icon: Icons.volume_down_outlined,
+                                  action: RemoteKey.volumeDown,
+                                  onKeyPressed: onKey,
+                                  compact: true,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Expanded(child: _buildLogoPad()),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _ControlButton(
+                                  icon: Icons.keyboard_arrow_up,
+                                  action: RemoteKey.channelUp,
+                                  onKeyPressed: onKey,
+                                  compact: true,
+                                ),
+                                const SizedBox(height: 12),
+                                _ControlButton(
+                                  icon: Icons.keyboard_arrow_down,
+                                  action: RemoteKey.channelDown,
+                                  onKeyPressed: onKey,
+                                  compact: true,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      _ControlButton(
-                        icon: Icons.volume_down_outlined,
-                        action: RemoteKey.volumeDown,
-                        onKeyPressed: onKey,
-                        compact: true,
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _ControlButton(
+                          icon: Icons.fast_rewind_outlined,
+                          action: RemoteKey.rewind,
+                          onKeyPressed: onKey,
+                        ),
+                        _ControlButton(
+                          icon: Icons.arrow_back_rounded,
+                          action: RemoteKey.back,
+                          onKeyPressed: onKey,
+                        ),
+                        _ControlButton(
+                          icon: Icons.home_outlined,
+                          action: RemoteKey.home,
+                          onKeyPressed: onKey,
+                        ),
+                        _ControlButton(
+                          icon: Icons.fast_forward_outlined,
+                          action: RemoteKey.fastForward,
+                          onKeyPressed: onKey,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                Expanded(child: _buildLogoPad()),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _ControlButton(
-                        icon: Icons.keyboard_arrow_up,
-                        action: RemoteKey.channelUp,
-                        onKeyPressed: onKey,
-                        compact: true,
-                      ),
-                      const SizedBox(height: 12),
-                      _ControlButton(
-                        icon: Icons.keyboard_arrow_down,
-                        action: RemoteKey.channelDown,
-                        onKeyPressed: onKey,
-                        compact: true,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _ControlButton(
-                icon: Icons.fast_rewind_outlined,
-                action: RemoteKey.rewind,
-                onKeyPressed: onKey,
-              ),
-              _ControlButton(
-                icon: Icons.arrow_back_rounded,
-                action: RemoteKey.back,
-                onKeyPressed: onKey,
-              ),
-              _ControlButton(
-                icon: Icons.home_outlined,
-                action: RemoteKey.home,
-                onKeyPressed: onKey,
-              ),
-              _ControlButton(
-                icon: Icons.fast_forward_outlined,
-                action: RemoteKey.fastForward,
-                onKeyPressed: onKey,
-              ),
-            ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
@@ -384,18 +424,15 @@ class _MainRemoteSkinState extends State<MainRemoteSkin> {
             child: RawGestureDetector(
               behavior: HitTestBehavior.opaque,
               gestures: <Type, GestureRecognizerFactory>{
-                _EagerPanGestureRecognizer:
+                EagerPanGestureRecognizer:
                     GestureRecognizerFactoryWithHandlers<
-                      _EagerPanGestureRecognizer
-                    >(
-                      () => _EagerPanGestureRecognizer(),
-                      (instance) {
-                        instance.onStart = (d) => _onPanStart(d, side);
-                        instance.onUpdate = (d) => _onPanUpdate(d, side);
-                        instance.onEnd = _onPanEnd;
-                        instance.onCancel = _onPanCancel;
-                      },
-                    ),
+                      EagerPanGestureRecognizer
+                    >(() => EagerPanGestureRecognizer(), (instance) {
+                      instance.onStart = (d) => _onPanStart(d, side);
+                      instance.onUpdate = (d) => _onPanUpdate(d, side);
+                      instance.onEnd = _onPanEnd;
+                      instance.onCancel = _onPanCancel;
+                    }),
               },
               child: AnimatedScale(
                 scale: _active == null ? 1.0 : 0.97,
@@ -438,17 +475,24 @@ class _ControlButton extends StatelessWidget {
     required this.icon,
     required this.action,
     required this.onKeyPressed,
+    this.onLongPress,
     this.compact = false,
   });
 
   final IconData icon;
   final RemoteKey action;
   final void Function(String key) onKeyPressed;
+  final VoidCallback? onLongPress;
   final bool compact;
 
   void _handleTap() {
     HapticFeedback.selectionClick();
     onKeyPressed(action.code);
+  }
+
+  void _handleLongPress() {
+    HapticFeedback.mediumImpact();
+    onLongPress?.call();
   }
 
   @override
@@ -465,13 +509,10 @@ class _ControlButton extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: _handleTap,
+          onLongPress: onLongPress == null ? null : _handleLongPress,
           child: Padding(
             padding: EdgeInsets.all(compact ? 10 : 18),
-            child: Icon(
-              icon,
-              size: compact ? 18 : 24,
-              color: scheme.onSurface,
-            ),
+            child: Icon(icon, size: compact ? 18 : 24, color: scheme.onSurface),
           ),
         ),
       ),
@@ -675,18 +716,4 @@ class _HalfClipper extends CustomClipper<Rect> {
 
   @override
   bool shouldReclip(_HalfClipper oldClipper) => oldClipper.side != side;
-}
-
-/// A [PanGestureRecognizer] that wins the gesture arena the instant a finger
-/// touches it, instead of waiting for kTouchSlop movement.
-///
-/// Without this, an ancestor `PageView` (the skin-picker carousel) steals the
-/// gesture mid-spin whenever the user's motion happens to align with its
-/// horizontal drag axis — the wheel "stops spinning after a little while."
-class _EagerPanGestureRecognizer extends PanGestureRecognizer {
-  @override
-  void addAllowedPointer(PointerDownEvent event) {
-    super.addAllowedPointer(event);
-    resolve(GestureDisposition.accepted);
-  }
 }

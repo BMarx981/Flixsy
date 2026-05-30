@@ -174,5 +174,14 @@
   "removeAdsFailureUnknown": "Что-то пошло не так. Повторите попытку.",
 
   "magicMouseLabel": "Magic Mouse",
-  "magicMouseUnsupportedTooltip": "Magic Mouse доступен только на ТВ LG webOS."
+  "magicMouseUnsupportedTooltip": "Magic Mouse доступен только на ТВ LG webOS.",
+
+  "powerSetupWebosTitle": "Включайте телевизор из Flixsy",
+  "powerSetupWebosIntro": "Чтобы Flixsy мог выводить телевизор из режима ожидания, на вашем LG TV должна быть включена одна настройка.",
+  "powerSetupWebosStep1": "Откройте «Настройки» на телевизоре.",
+  "powerSetupWebosStep2": "Найдите «Mobile TV On» — иногда называется «TV On With Mobile» или «Wake On LAN». Обычно находится в разделе Общие → Сеть, или Подключение → Управление мобильным подключением.",
+  "powerSetupWebosStep3": "Включите её.",
+  "powerSetupWebosTipTitle": "Для надёжного пробуждения",
+  "powerSetupWebosTipBody": "Не отключайте телевизор от сети. Убедитесь, что телефон подключён к той же сети Wi-Fi, что и телевизор.",
+  "powerSetupDismiss": "Понятно"
 }

@@ -529,4 +529,31 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get accessibilityDeviceDisconnectedAnnouncement =>
       'Disconnected from TV';
+
+  @override
+  String get powerSetupWebosTitle => 'Enciende tu TV desde Flixsy';
+
+  @override
+  String get powerSetupWebosIntro =>
+      'Tu TV LG necesita un ajuste activado para que Flixsy pueda encenderlo desde el modo de espera.';
+
+  @override
+  String get powerSetupWebosStep1 => 'Abre Ajustes en tu TV.';
+
+  @override
+  String get powerSetupWebosStep2 =>
+      'Busca “Mobile TV On” — a veces aparece como “TV On With Mobile” o “Wake On LAN.” Suele estar en General → Red, o Conexión → Gestión de conexión móvil.';
+
+  @override
+  String get powerSetupWebosStep3 => 'Actívalo.';
+
+  @override
+  String get powerSetupWebosTipTitle => 'Para un encendido fiable';
+
+  @override
+  String get powerSetupWebosTipBody =>
+      'Mantén tu TV enchufado. Asegúrate de que tu teléfono esté en la misma red Wi-Fi que el TV.';
+
+  @override
+  String get powerSetupDismiss => 'Entendido';
 }

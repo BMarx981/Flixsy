@@ -47,24 +47,60 @@ class StandardRemote extends StatelessWidget implements RemoteSkin {
       // still localized — only the spatial arrangement is pinned.
       child: Directionality(
         textDirection: TextDirection.ltr,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final block in layout.blocks)
-                switch (block) {
-                  DpadBlock() => renderer.buildDpad(context, block, onKey),
-                  ButtonRowBlock() => renderer.buildButtonRow(
-                    context,
-                    block,
-                    onKey,
+        // Wrap in a scroll view so the bottom buttons stay reachable on
+        // short phones and in landscape; the `ConstrainedBox(minHeight)`
+        // keeps the column centered within the viewport when content fits,
+        // so taller phones still see the remote anchored to the middle of
+        // the screen instead of jumping to the top.
+        //
+        // The D-pads use [EagerPanGestureRecognizer], which claims the
+        // local arena on touch-down — so the scroll view can never steal
+        // a spin gesture mid-drag.
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Parents inside another scrollable (layout-editor preview, etc.)
+            // pass unbounded vertical constraints — pin the min to 0 in that
+            // case so the column just takes its intrinsic height.
+            final minHeight = constraints.maxHeight.isFinite
+                ? constraints.maxHeight
+                : 0.0;
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: minHeight),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final block in layout.blocks)
+                        switch (block) {
+                          DpadBlock() => renderer.buildDpad(
+                            context,
+                            block,
+                            onKey,
+                          ),
+                          ButtonRowBlock() => renderer.buildButtonRow(
+                            context,
+                            block,
+                            onKey,
+                          ),
+                          VolumeBlock() => renderer.buildVolume(
+                            context,
+                            block,
+                            onKey,
+                          ),
+                          GridBlock() => renderer.buildGrid(
+                            context,
+                            block,
+                            onKey,
+                          ),
+                          SpacerBlock() => renderer.buildSpacer(context, block),
+                        },
+                    ],
                   ),
-                  VolumeBlock() => renderer.buildVolume(context, block, onKey),
-                  GridBlock() => renderer.buildGrid(context, block, onKey),
-                  SpacerBlock() => renderer.buildSpacer(context, block),
-                },
-            ],
-          ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
